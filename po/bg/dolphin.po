@@ -5632,7 +5632,11 @@ msgctxt "@title:group"
 msgid "Display style: "
 msgstr "Стил на дисплея: "
 
+<<<<<<< HEAD
 #: settings/viewmodes/generalviewsettingspage.cpp:65
+=======
+#: settings/viewmodes/generalviewsettingspage.cpp:64
+>>>>>>> 7785be006 (GIT_SILENT Sync po/docbooks with svn)
 #, kde-format
 msgctxt "@option:check"
 msgid "Browse compressed files as folders"
