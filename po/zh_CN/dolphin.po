@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kdeorg\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2026-05-11 00:47+0000\n"
+"POT-Creation-Date: 2025-11-05 00:47+0000\n"
 "PO-Revision-Date: 2024-04-22 15:58\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
@@ -14,8 +14,8 @@ msgstr ""
 "X-Crowdin-Project: kdeorg\n"
 "X-Crowdin-Project-ID: 269464\n"
 "X-Crowdin-Language: zh-CN\n"
-"X-Crowdin-File: /kf6-trunk/messages/dolphin/dolphin.pot\n"
-"X-Crowdin-File-ID: 48282\n"
+"X-Crowdin-File: /kf6-stable/messages/dolphin/dolphin.pot\n"
+"X-Crowdin-File-ID: 52538\n"
 
 #, kde-format
 msgctxt "NAME OF TRANSLATORS"
@@ -169,19 +169,19 @@ msgctxt "@option:check"
 msgid "Do not warn me about these risks again"
 msgstr "不要再次向我警告这些风险"
 
-#: dolphincontextmenu.cpp:138
+#: dolphincontextmenu.cpp:126
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Empty Trash"
 msgstr "清空回收站"
 
-#: dolphincontextmenu.cpp:149 panels/places/placespanel.cpp:53
+#: dolphincontextmenu.cpp:148 panels/places/placespanel.cpp:53
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Configure Trash…"
 msgstr "配置回收站…"
 
-#: dolphincontextmenu.cpp:170
+#: dolphincontextmenu.cpp:169
 #, kde-format
 msgctxt ""
 "@action:inmenu Restore the selected files that are in the trash to the place "
@@ -191,148 +191,176 @@ msgid "Restore to Former Location"
 msgid_plural "Restore to Former Locations"
 msgstr[0] "还原到之前位置"
 
-#: dolphincontextmenu.cpp:236 dolphinmainwindow.cpp:1784
+#: dolphincontextmenu.cpp:232 dolphinmainwindow.cpp:1784
 #, kde-format
 msgctxt "@title:menu Create new folder, file, link, etc."
 msgid "Create New"
 msgstr "新建"
 
-#: dolphincontextmenu.cpp:245
+#: dolphincontextmenu.cpp:241
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Open Path"
 msgstr "打开路径"
 
-#: dolphincontextmenu.cpp:253
+#: dolphincontextmenu.cpp:249
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Open Path in New Tab"
 msgstr "在新标签页中打开路径"
 
-#: dolphincontextmenu.cpp:261
+#: dolphincontextmenu.cpp:257
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Open Path in New Window"
 msgstr "在新窗口中打开路径"
 
-#: dolphincontextmenu.cpp:513
+#: dolphincontextmenu.cpp:507
 #, kde-format
 msgctxt ""
 "@action:inmenu Shortcut, middle click to trigger menu item, keep short"
 msgid "Middle Click"
 msgstr "中键点击"
 
-#: dolphincontextmenu.cpp:524
+#: dolphinmainwindow.cpp:359
 #, kde-format
-msgctxt ""
-"@action:inmenu Shortcut, shift + middle click to trigger menu item, keep "
-"short"
-msgid "Shift+Middle Click"
-msgstr "Shift+中键点击"
+msgctxt "@info:status"
+msgid "Successfully copied."
+msgstr "成功复制。"
 
-#: dolphinmainwindow.cpp:433
+#: dolphinmainwindow.cpp:362
+#, kde-format
+msgctxt "@info:status"
+msgid "Successfully moved."
+msgstr "成功移动。"
+
+#: dolphinmainwindow.cpp:365
+#, kde-format
+msgctxt "@info:status"
+msgid "Successfully linked."
+msgstr "成功创建链接。"
+
+#: dolphinmainwindow.cpp:368
+#, kde-format
+msgctxt "@info:status"
+msgid "Successfully moved to trash."
+msgstr "成功移动到回收站。"
+
+#: dolphinmainwindow.cpp:371
+#, kde-format
+msgctxt "@info:status"
+msgid "Successfully renamed."
+msgstr "成功重命名。"
+
+#: dolphinmainwindow.cpp:375
+#, kde-format
+msgctxt "@info:status"
+msgid "Created folder."
+msgstr "文件夹已创建。"
+
+#: dolphinmainwindow.cpp:451
 #, kde-format
 msgctxt "@info"
 msgid "Go back"
 msgstr "后退"
 
-#: dolphinmainwindow.cpp:434
+#: dolphinmainwindow.cpp:452
 #, kde-format
 msgctxt "@info:whatsthis go back"
 msgid "Return to the previously viewed folder."
 msgstr "返回之前查看的文件夹。"
 
-#: dolphinmainwindow.cpp:440
+#: dolphinmainwindow.cpp:458
 #, kde-format
 msgctxt "@info"
 msgid "Go forward"
 msgstr "前进"
 
-#: dolphinmainwindow.cpp:441
+#: dolphinmainwindow.cpp:459
 #, kde-kuit-format
 msgctxt "@info:whatsthis go forward"
 msgid "This undoes a <interface>Go|Back</interface> action."
 msgstr "撤销 <interface>转到 | 返回</interface> 操作。"
 
-#: dolphinmainwindow.cpp:637 dolphinmainwindow.cpp:683
+#: dolphinmainwindow.cpp:649 dolphinmainwindow.cpp:695
 #, kde-format
 msgctxt "@title:window"
 msgid "Confirmation"
 msgstr "请求确认"
 
-#: dolphinmainwindow.cpp:641
+#: dolphinmainwindow.cpp:653
 #, kde-format
 msgctxt "@action:button 'Quit Dolphin' button"
 msgid "&Quit %1"
 msgstr "退出 %1(&Q)"
 
-#: dolphinmainwindow.cpp:643
+#: dolphinmainwindow.cpp:655
 #, kde-format
 msgid "C&lose Current Tab"
 msgstr "关闭当前标签页(&L)"
 
-#: dolphinmainwindow.cpp:652
+#: dolphinmainwindow.cpp:664
 #, kde-format
 msgid ""
 "You have multiple tabs open in this window, are you sure you want to quit?"
 msgstr "此窗口中有多个打开的标签页，您确定要退出吗？"
 
-#: dolphinmainwindow.cpp:654 dolphinmainwindow.cpp:704
-#: views/dolphinview.cpp:2296
+#: dolphinmainwindow.cpp:666 dolphinmainwindow.cpp:716
+#: views/dolphinview.cpp:2136
 #, kde-format
 msgid "Do not ask again"
 msgstr "不再询问"
 
-#: dolphinmainwindow.cpp:692
+#: dolphinmainwindow.cpp:704
 #, kde-format
 msgid "Show &Terminal Panel"
 msgstr "显示终端面板(&T)"
 
-#: dolphinmainwindow.cpp:702
+#: dolphinmainwindow.cpp:714
 #, kde-format
 msgid ""
 "The program '%1' is still running in the Terminal panel. Are you sure you "
 "want to quit?"
 msgstr "程序 %1 仍在终端面板中运行。您确定要退出吗？"
 
-#: dolphinmainwindow.cpp:937
+#: dolphinmainwindow.cpp:949
 #, kde-format
 msgctxt "@info"
 msgid "Cannot paste: The clipboard is empty."
 msgstr "无法粘贴：剪贴板为空。"
 
-#: dolphinmainwindow.cpp:938
+#: dolphinmainwindow.cpp:950
 #, kde-format
 msgctxt "@info"
 msgid "Cannot paste: You do not have permission to write into this folder."
 msgstr "无法粘贴：您没有写入此文件夹的权限。"
 
-#: dolphinmainwindow.cpp:1349
+#: dolphinmainwindow.cpp:1353
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Open %1"
 msgstr "打开 %1"
 
-#: dolphinmainwindow.cpp:1358 dolphinmainwindow.cpp:2170
+#: dolphinmainwindow.cpp:1362 dolphinmainwindow.cpp:2166
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Open Preferred Search Tool"
 msgstr "打开首选搜索工具"
 
-#: dolphinmainwindow.cpp:1398
+#: dolphinmainwindow.cpp:1402
 #, kde-format
 msgid "Are you sure you want to open 1 terminal window?"
 msgid_plural "Are you sure you want to open %1 terminal windows?"
 msgstr[0] "您确定要打开 %1 个终端窗口吗？"
 
-#: dolphinmainwindow.cpp:1403
+#: dolphinmainwindow.cpp:1407
 #, kde-format
 msgctxt "@action:button"
 msgid "Open %1 Terminal"
 msgid_plural "Open %1 Terminals"
 msgstr[0] "打开 %1 个终端"
 
-#: dolphinmainwindow.cpp:1504
+#: dolphinmainwindow.cpp:1508
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -340,7 +368,7 @@ msgid ""
 "folder."
 msgstr "无法创建新文件：您没有在此文件夹中创建项目的权限。"
 
-#: dolphinmainwindow.cpp:1506
+#: dolphinmainwindow.cpp:1510
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -348,25 +376,25 @@ msgid ""
 "folder."
 msgstr "无法创建新文件夹：您没有在此文件夹中创建项目的权限。"
 
-#: dolphinmainwindow.cpp:1611
+#: dolphinmainwindow.cpp:1615
 #, kde-format
 msgctxt "@action:inmenu menu for configure actions"
 msgid "Configure"
 msgstr "配置"
 
-#: dolphinmainwindow.cpp:1793
+#: dolphinmainwindow.cpp:1790
 #, kde-format
 msgctxt "@action:inmenu File"
 msgid "New &Window"
 msgstr "新建窗口(&W)"
 
-#: dolphinmainwindow.cpp:1794
+#: dolphinmainwindow.cpp:1791
 #, kde-format
 msgctxt "@info"
 msgid "Open a new Dolphin window"
 msgstr "打开新的 Dolphin 窗口"
 
-#: dolphinmainwindow.cpp:1796
+#: dolphinmainwindow.cpp:1793
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -376,13 +404,13 @@ msgstr ""
 "这将打开一个与当前窗口相同的新窗口，使用当前位置。<nl/>您可以在窗口之间拖放项"
 "目。"
 
-#: dolphinmainwindow.cpp:1803
+#: dolphinmainwindow.cpp:1800
 #, kde-format
 msgctxt "@action:inmenu File"
 msgid "New Tab"
 msgstr "新建标签页"
 
-#: dolphinmainwindow.cpp:1805
+#: dolphinmainwindow.cpp:1802
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -394,31 +422,31 @@ msgstr ""
 "口中的额外视图，用于快速在不同位置、不同视图之间切换。您可以在不同标签页之间"
 "拖放项目。"
 
-#: dolphinmainwindow.cpp:1814
+#: dolphinmainwindow.cpp:1811
 #, kde-format
 msgctxt "@action:inmenu Add current folder to places"
 msgid "Add to Places"
 msgstr "添加到常用位置"
 
-#: dolphinmainwindow.cpp:1816
+#: dolphinmainwindow.cpp:1813
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid "This adds the selected folder to the Places panel."
 msgstr "将选中的文件夹添加到常用位置面板。"
 
-#: dolphinmainwindow.cpp:1821
+#: dolphinmainwindow.cpp:1818
 #, kde-format
 msgctxt "@action:inmenu File"
 msgid "Close Tab"
 msgstr "关闭标签页"
 
-#: dolphinmainwindow.cpp:1822
+#: dolphinmainwindow.cpp:1819
 #, kde-format
 msgctxt "@info"
 msgid "Close Tab"
 msgstr "关闭标签页"
 
-#: dolphinmainwindow.cpp:1824
+#: dolphinmainwindow.cpp:1821
 #, kde-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -426,13 +454,13 @@ msgid ""
 "the whole window instead."
 msgstr "这将关闭当前正在显示的标签页。如果没有其他的标签页，窗口将会关闭。"
 
-#: dolphinmainwindow.cpp:1829
+#: dolphinmainwindow.cpp:1826
 #, kde-format
 msgctxt "@info:whatsthis quit"
 msgid "This closes this window."
 msgstr "这将关闭此窗口。"
 
-#: dolphinmainwindow.cpp:1840
+#: dolphinmainwindow.cpp:1837
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -447,13 +475,13 @@ msgstr ""
 "emphasis> 在键盘上彼此左右相邻: <shortcut>Ctrl+X</shortcut>, <shortcut>Ctrl"
 "+C</shortcut> 和 <shortcut>Ctrl+V</shortcut>.</para>"
 
-#: dolphinmainwindow.cpp:1847
+#: dolphinmainwindow.cpp:1844
 #, kde-format
 msgctxt "@action"
 msgid "Cut…"
 msgstr "剪切…"
 
-#: dolphinmainwindow.cpp:1849
+#: dolphinmainwindow.cpp:1846
 #, kde-kuit-format
 msgctxt "@info:whatsthis cut"
 msgid ""
@@ -466,13 +494,13 @@ msgstr ""
 "<emphasis>粘贴</emphasis>操作，将把剪贴板中的对象复制到新的位置。项目在粘贴后"
 "将从原有位置中移除。"
 
-#: dolphinmainwindow.cpp:1856
+#: dolphinmainwindow.cpp:1853
 #, kde-format
 msgctxt "@action"
 msgid "Copy…"
 msgstr "复制…"
 
-#: dolphinmainwindow.cpp:1858
+#: dolphinmainwindow.cpp:1855
 #, kde-kuit-format
 msgctxt "@info:whatsthis copy"
 msgid ""
@@ -483,13 +511,13 @@ msgstr ""
 "这将把当前选中的项目复制到 <emphasis>剪贴板</emphasis>。<nl/>在这之后进行 "
 "<emphasis>粘贴</emphasis>操作，将把剪贴板中的对象复制到新的位置。"
 
-#: dolphinmainwindow.cpp:1867
+#: dolphinmainwindow.cpp:1864
 #, kde-format
 msgctxt "@action:inmenu Edit"
 msgid "Paste"
 msgstr "粘贴"
 
-#: dolphinmainwindow.cpp:1869
+#: dolphinmainwindow.cpp:1866
 #, kde-kuit-format
 msgctxt "@info:whatsthis paste"
 msgid ""
@@ -501,19 +529,19 @@ msgstr ""
 "是通过<emphasis>剪切</emphasis>操作添加到剪贴板的，它们将在复制后从原有位置中"
 "移除。"
 
-#: dolphinmainwindow.cpp:1876
+#: dolphinmainwindow.cpp:1873
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Copy to Other View"
 msgstr "复制到其他视图"
 
-#: dolphinmainwindow.cpp:1877
+#: dolphinmainwindow.cpp:1874
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Copy to Other View…"
 msgstr "复制到其他视图…"
 
-#: dolphinmainwindow.cpp:1879
+#: dolphinmainwindow.cpp:1876
 #, kde-kuit-format
 msgctxt "@info:whatsthis Copy"
 msgid ""
@@ -521,25 +549,25 @@ msgid ""
 "(Only available while in Split View mode.)"
 msgstr "这将把处在焦点的视图中的所选项目复制到其他视图 (仅在拆分视图中可用。)"
 
-#: dolphinmainwindow.cpp:1883
+#: dolphinmainwindow.cpp:1880
 #, kde-format
 msgctxt "@action:inmenu Edit"
 msgid "Copy to Other View"
 msgstr "复制到其他视图"
 
-#: dolphinmainwindow.cpp:1888
+#: dolphinmainwindow.cpp:1885
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Move to Other View"
 msgstr "移动到其他视图"
 
-#: dolphinmainwindow.cpp:1889
+#: dolphinmainwindow.cpp:1886
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Move to Other View…"
 msgstr "移动到其他视图…"
 
-#: dolphinmainwindow.cpp:1891
+#: dolphinmainwindow.cpp:1888
 #, kde-kuit-format
 msgctxt "@info:whatsthis Move"
 msgid ""
@@ -547,25 +575,25 @@ msgid ""
 "(Only available while in Split View mode.)"
 msgstr "这将把处在焦点的视图中的所选项目移动到其他视图 (仅在拆分视图中可用。)"
 
-#: dolphinmainwindow.cpp:1895
+#: dolphinmainwindow.cpp:1892
 #, kde-format
 msgctxt "@action:inmenu Edit"
 msgid "Move to Other View"
 msgstr "移动到其他视图"
 
-#: dolphinmainwindow.cpp:1900
+#: dolphinmainwindow.cpp:1897
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Filter…"
 msgstr "过滤…"
 
-#: dolphinmainwindow.cpp:1901
+#: dolphinmainwindow.cpp:1898
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Show Filter Bar"
 msgstr "显示过滤栏"
 
-#: dolphinmainwindow.cpp:1903
+#: dolphinmainwindow.cpp:1900
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -578,30 +606,30 @@ msgstr ""
 "的文件和文件夹进行过滤显示。视图将仅列出那些在名称中包含了您输入文本的文件和"
 "文件夹。"
 
-#: dolphinmainwindow.cpp:1915
+#: dolphinmainwindow.cpp:1912
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Toggle Filter Bar"
 msgstr "显示/隐藏过滤栏"
 
-#: dolphinmainwindow.cpp:1916
+#: dolphinmainwindow.cpp:1913
 #, kde-format
 msgctxt "@action:intoolbar"
 msgid "Filter"
 msgstr "过滤"
 
-#: dolphinmainwindow.cpp:1924 search/bar.cpp:216
+#: dolphinmainwindow.cpp:1921 search/bar.cpp:214
 #, kde-format
 msgid "Search…"
 msgstr "搜索…"
 
-#: dolphinmainwindow.cpp:1925
+#: dolphinmainwindow.cpp:1922
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Search for files and folders"
 msgstr "搜索文件和文件夹"
 
-#: dolphinmainwindow.cpp:1927
+#: dolphinmainwindow.cpp:1924
 #, kde-kuit-format
 msgctxt "@info:whatsthis find"
 msgid ""
@@ -612,20 +640,20 @@ msgstr ""
 "<para>打开<emphasis>搜索栏</emphasis>，以便为您搜索文件和文件夹。您可以在搜索"
 "栏中输入搜索条件和搜索选项以查找所需项目。</para>"
 
-#: dolphinmainwindow.cpp:1936
+#: dolphinmainwindow.cpp:1933
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Toggle Search Bar"
 msgstr "显示/隐藏搜索栏"
 
-#: dolphinmainwindow.cpp:1937
+#: dolphinmainwindow.cpp:1934
 #, kde-format
 msgctxt "@action:intoolbar"
 msgid "Search"
 msgstr "搜索"
 
 #. i18n: This action toggles a selection mode.
-#: dolphinmainwindow.cpp:1952
+#: dolphinmainwindow.cpp:1949
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Select Files and Folders"
@@ -633,13 +661,13 @@ msgstr "选择文件和文件夹"
 
 #. i18n: Opens a selection mode for selecting files/folders.
 #. The text is kept so unspecific because it will be shown on the toolbar where space is at a premium.
-#: dolphinmainwindow.cpp:1955
+#: dolphinmainwindow.cpp:1952
 #, kde-format
 msgctxt "@action:intoolbar"
 msgid "Select"
 msgstr "选择"
 
-#: dolphinmainwindow.cpp:1958
+#: dolphinmainwindow.cpp:1955
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -655,19 +683,19 @@ msgstr ""
 "和取消选择。</para><para>在选择模式下，窗口底部将显示快速访问栏，提供当前所选"
 "的项目的可用操作。</para>"
 
-#: dolphinmainwindow.cpp:1981
+#: dolphinmainwindow.cpp:1978
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid "This selects all files and folders in the current location."
 msgstr "选择当前位置的所有文件和文件夹。"
 
-#: dolphinmainwindow.cpp:1985 dolphinpart.cpp:166
+#: dolphinmainwindow.cpp:1982 dolphinpart.cpp:168
 #, kde-format
 msgctxt "@action:inmenu Edit"
 msgid "Invert Selection"
 msgstr "反向选择"
 
-#: dolphinmainwindow.cpp:1987
+#: dolphinmainwindow.cpp:1984
 #, kde-kuit-format
 msgctxt "@info:whatsthis invert"
 msgid ""
@@ -675,7 +703,7 @@ msgid ""
 "selected instead."
 msgstr "这将选择当前<emphasis>没有</emphasis>选中的所有项目。"
 
-#: dolphinmainwindow.cpp:2007
+#: dolphinmainwindow.cpp:2004
 #, kde-kuit-format
 msgctxt "@info:whatsthis split"
 msgid ""
@@ -688,7 +716,7 @@ msgstr ""
 "中的内容，并在两个视图之间移动项目。</para><para>不在焦点之内的视图将会变暗。"
 "</para>再次点击此按钮将关闭其中一个视图。"
 
-#: dolphinmainwindow.cpp:2022
+#: dolphinmainwindow.cpp:2019
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -696,25 +724,25 @@ msgid ""
 "window."
 msgstr "如果视图已经拆分，这将把处在焦点的视图弹出到一个新窗口中。"
 
-#: dolphinmainwindow.cpp:2030
+#: dolphinmainwindow.cpp:2027
 #, kde-format
 msgctxt "@action:intoolbar Stash"
 msgid "Stash"
-msgstr "暂存"
+msgstr "临时存储"
 
-#: dolphinmainwindow.cpp:2031
+#: dolphinmainwindow.cpp:2028
 #, kde-format
 msgctxt "@info"
 msgid "Opens the stash virtual directory in a split window"
-msgstr "在拆分窗口中打开暂存虚拟目录"
+msgstr "在拆分窗口中打开临时存储虚拟目录"
 
-#: dolphinmainwindow.cpp:2040
+#: dolphinmainwindow.cpp:2036
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Refresh view"
 msgstr "刷新视图"
 
-#: dolphinmainwindow.cpp:2042
+#: dolphinmainwindow.cpp:2038
 #, kde-kuit-format
 msgctxt "@info:whatsthis refresh"
 msgid ""
@@ -727,31 +755,31 @@ msgstr ""
 "将重新扫描它的内容并在视图中显示它包含的最新文件和文件夹。</para><para>如果文"
 "件夹视图处于拆分状态，此操作将刷新当前处于焦点的视图。</para>"
 
-#: dolphinmainwindow.cpp:2049
+#: dolphinmainwindow.cpp:2045
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Stop"
 msgstr "停止"
 
-#: dolphinmainwindow.cpp:2050
+#: dolphinmainwindow.cpp:2046
 #, kde-format
 msgctxt "@info"
 msgid "Stop loading"
 msgstr "停止加载"
 
-#: dolphinmainwindow.cpp:2051
+#: dolphinmainwindow.cpp:2047
 #, kde-format
 msgctxt "@info"
 msgid "This stops the loading of the contents of the current folder."
 msgstr "此操作将停止加载当前文件夹的内容。"
 
-#: dolphinmainwindow.cpp:2056
+#: dolphinmainwindow.cpp:2052
 #, kde-format
 msgctxt "@action:inmenu Navigation Bar"
 msgid "Editable Location"
 msgstr "可编辑位置"
 
-#: dolphinmainwindow.cpp:2058
+#: dolphinmainwindow.cpp:2054
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -763,13 +791,13 @@ msgstr ""
 "切换<emphasis>位置栏</emphasis>到可编辑状态，以便您直接输入需要前往的位置的路"
 "径。<nl/>右键点击位址栏即可切换到可编辑状态，确定后将自动退出可编辑状态。"
 
-#: dolphinmainwindow.cpp:2066
+#: dolphinmainwindow.cpp:2062
 #, kde-format
 msgctxt "@action:inmenu Navigation Bar"
 msgid "Replace Location"
 msgstr "替换位置"
 
-#: dolphinmainwindow.cpp:2071
+#: dolphinmainwindow.cpp:2067
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -777,19 +805,19 @@ msgid ""
 "enter a different location."
 msgstr "切换到位置栏的可编辑模式，同时选中路径，以便输入一个新位置的路径。"
 
-#: dolphinmainwindow.cpp:2101
+#: dolphinmainwindow.cpp:2097
 #, kde-format
 msgctxt "@action:inmenu File"
 msgid "Undo close tab"
 msgstr "撤销关闭标签页"
 
-#: dolphinmainwindow.cpp:2102
+#: dolphinmainwindow.cpp:2098
 #, kde-format
 msgctxt "@info:whatsthis undo close tab"
 msgid "This returns you to the previously closed tab."
 msgstr "返回之前关闭的标签页。"
 
-#: dolphinmainwindow.cpp:2110
+#: dolphinmainwindow.cpp:2106
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -804,7 +832,7 @@ msgstr ""
 "到其他位置或者<filename>移动到回收站</filename>。<nl/>在进行无法撤销的更改之"
 "前，程序将请求您确认操作。"
 
-#: dolphinmainwindow.cpp:2121
+#: dolphinmainwindow.cpp:2117
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -819,7 +847,7 @@ msgstr ""
 "interface>到其他位置或者<filename>移动到回收站</filename>。<nl/>在进行无法撤"
 "销的更改之前，程序将请求您确认操作。"
 
-#: dolphinmainwindow.cpp:2151
+#: dolphinmainwindow.cpp:2147
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -831,19 +859,19 @@ msgstr ""
 "<filename>主文件夹</filename>，它用于存放个人文件、应用程序的个人数据、配置文"
 "件的隐藏文件夹。"
 
-#: dolphinmainwindow.cpp:2158
+#: dolphinmainwindow.cpp:2154
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Compare Files"
 msgstr "比较文件"
 
-#: dolphinmainwindow.cpp:2164
+#: dolphinmainwindow.cpp:2160
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Manage Disk Space Usage"
 msgstr "管理磁盘空间使用"
 
-#: dolphinmainwindow.cpp:2172
+#: dolphinmainwindow.cpp:2168
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -854,13 +882,13 @@ msgstr ""
 "<para>在当前显示的位置打开首选搜索工具。</para><para>请在<emphasis>更多检索工"
 "具</emphasis>菜单中配置此操作。</para>"
 
-#: dolphinmainwindow.cpp:2186
+#: dolphinmainwindow.cpp:2182
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Open Terminal"
 msgstr "打开终端"
 
-#: dolphinmainwindow.cpp:2188
+#: dolphinmainwindow.cpp:2184
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -872,13 +900,13 @@ msgstr ""
 "para><para>关于终端的更多信息请查看终端应用程序中的帮助信息。</para>"
 
 #. i18n: "Here" refers to the location(s) of the currently selected item(s) or the currently viewed location if nothing is selected.
-#: dolphinmainwindow.cpp:2196
+#: dolphinmainwindow.cpp:2192
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Open Terminal Here"
 msgstr "在此位置打开终端"
 
-#: dolphinmainwindow.cpp:2198
+#: dolphinmainwindow.cpp:2194
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -889,13 +917,13 @@ msgstr ""
 "<para>这将在当前所选项目的位置打开<emphasis>终端</emphasis>应用程序窗口。</"
 "para><para>关于终端的更多信息请查看终端应用程序中的帮助信息。</para>"
 
-#: dolphinmainwindow.cpp:2206
+#: dolphinmainwindow.cpp:2202
 #, kde-format
 msgctxt "@title:menu"
 msgid "&Bookmarks"
 msgstr "书签(&B)"
 
-#: dolphinmainwindow.cpp:2216
+#: dolphinmainwindow.cpp:2212
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -912,96 +940,96 @@ msgstr ""
 "类排布更加清晰，使用更加便捷。</para><para>%1按钮模式的界面更加简洁，但要访问"
 "高级操作时需要更多点击。</para>"
 
-#: dolphinmainwindow.cpp:2241
+#: dolphinmainwindow.cpp:2237
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Go to Tab %1"
 msgstr "切换到标签页 %1"
 
-#: dolphinmainwindow.cpp:2254
+#: dolphinmainwindow.cpp:2250
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Last Tab"
 msgstr "最后一个标签页"
 
-#: dolphinmainwindow.cpp:2255
+#: dolphinmainwindow.cpp:2251
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Go to Last Tab"
 msgstr "切换到最后一个标签页"
 
-#: dolphinmainwindow.cpp:2261
+#: dolphinmainwindow.cpp:2257
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Next Tab"
 msgstr "下一个标签页"
 
-#: dolphinmainwindow.cpp:2262
+#: dolphinmainwindow.cpp:2258
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Go to Next Tab"
 msgstr "切换到下一个标签页"
 
-#: dolphinmainwindow.cpp:2268
+#: dolphinmainwindow.cpp:2264
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Previous Tab"
 msgstr "上一个标签页"
 
-#: dolphinmainwindow.cpp:2269
+#: dolphinmainwindow.cpp:2265
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Go to Previous Tab"
 msgstr "切换到上一个标签页"
 
-#: dolphinmainwindow.cpp:2276
+#: dolphinmainwindow.cpp:2272
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Show Target"
 msgstr "显示目标"
 
-#: dolphinmainwindow.cpp:2282
+#: dolphinmainwindow.cpp:2278
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Open in New Tab"
 msgstr "在新标签页中打开"
 
-#: dolphinmainwindow.cpp:2287
+#: dolphinmainwindow.cpp:2283
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Open in New Tabs"
 msgstr "在新标签页中打开"
 
-#: dolphinmainwindow.cpp:2292
+#: dolphinmainwindow.cpp:2288
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Open in New Window"
 msgstr "在新窗口中打开"
 
-#: dolphinmainwindow.cpp:2297 panels/places/placespanel.cpp:45
+#: dolphinmainwindow.cpp:2293 panels/places/placespanel.cpp:45
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Open in Split View"
 msgstr "在拆分视图中打开"
 
-#: dolphinmainwindow.cpp:2309
+#: dolphinmainwindow.cpp:2305
 #, kde-format
 msgid "&Window Color Scheme"
 msgstr "窗口配色方案(&W)"
 
-#: dolphinmainwindow.cpp:2322
+#: dolphinmainwindow.cpp:2318
 #, kde-format
 msgctxt "@action:inmenu Panels"
 msgid "Unlock Panels"
 msgstr "解锁面板"
 
-#: dolphinmainwindow.cpp:2324
+#: dolphinmainwindow.cpp:2320
 #, kde-format
 msgctxt "@action:inmenu Panels"
 msgid "Lock Panels"
 msgstr "锁定面板"
 
-#: dolphinmainwindow.cpp:2327
+#: dolphinmainwindow.cpp:2323
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1014,13 +1042,13 @@ msgstr ""
 "的面板可以拖放到窗口的另一侧，并且显示关闭按钮。<nl/>锁定的面板的嵌入效果更加"
 "干净。"
 
-#: dolphinmainwindow.cpp:2336
+#: dolphinmainwindow.cpp:2332
 #, kde-format
 msgctxt "@title:window"
 msgid "Information"
 msgstr "信息"
 
-#: dolphinmainwindow.cpp:2359
+#: dolphinmainwindow.cpp:2355
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1030,7 +1058,7 @@ msgstr ""
 "<para>要显示或者隐藏这类面板，请前往<interface> 菜单 | 面板</interface>，或者"
 "<interface>视图 | 面板</interface>。</para>"
 
-#: dolphinmainwindow.cpp:2366
+#: dolphinmainwindow.cpp:2362
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1045,7 +1073,7 @@ msgstr ""
 "前浏览的文件夹的详细信息。<nl/>选中单个项目时，该面板将显示项目的内容预览图。"
 "</para>"
 
-#: dolphinmainwindow.cpp:2374
+#: dolphinmainwindow.cpp:2370
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1059,13 +1087,13 @@ msgstr ""
 "示当前浏览的文件夹的详细信息。<nl/>还提供单个项目的预览图。</para><para>右键"
 "点击面板，即可配置详细信息的类别和显示方式。</para>"
 
-#: dolphinmainwindow.cpp:2383
+#: dolphinmainwindow.cpp:2379
 #, kde-format
 msgctxt "@title:window"
 msgid "Folders"
 msgstr "文件夹"
 
-#: dolphinmainwindow.cpp:2403
+#: dolphinmainwindow.cpp:2399
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1076,7 +1104,7 @@ msgstr ""
 "显示/隐藏窗口左侧的<emphasis>文件夹</emphasis>面板。<nl/><nl/>该面板以"
 "<emphasis>树形视图</emphasis>显示<emphasis>文件系统</emphasis>中的文件夹。"
 
-#: dolphinmainwindow.cpp:2408
+#: dolphinmainwindow.cpp:2404
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1089,13 +1117,13 @@ msgstr ""
 "中的文件夹。</para><para>点击面板中的文件夹即可前往它的位置。点击文件夹左侧的"
 "箭头可以展开查看它的子文件夹，让您能够在多个文件夹之间快捷切换。</para>"
 
-#: dolphinmainwindow.cpp:2418
+#: dolphinmainwindow.cpp:2414
 #, kde-format
 msgctxt "@title:window Shell terminal"
 msgid "Terminal"
 msgstr "终端"
 
-#: dolphinmainwindow.cpp:2444
+#: dolphinmainwindow.cpp:2439
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1111,7 +1139,7 @@ msgstr ""
 "置。</para><para>终端面板在日常使用中可能派不上用场，但在执行高级任务时非常有"
 "用。要了解终端的相关信息，请查看终端应用 (例如 Konsole) 的帮助。</para>"
 
-#: dolphinmainwindow.cpp:2452
+#: dolphinmainwindow.cpp:2447
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1127,45 +1155,31 @@ msgstr ""
 "para><para>终端面板在日常使用中可能派不上用场，但在执行高级任务时非常有用。要"
 "了解终端的相关信息，请查看终端应用 (例如 Konsole) 的帮助。</para>"
 
-#: dolphinmainwindow.cpp:2462 dolphinmainwindow.cpp:3120
+#: dolphinmainwindow.cpp:2457 dolphinmainwindow.cpp:3056
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Focus Terminal Panel"
 msgstr "焦点移到终端面板"
 
-#: dolphinmainwindow.cpp:2463
+#: dolphinmainwindow.cpp:2458
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Move keyboard focus to and from the Terminal panel."
 msgstr "键盘焦点移到和移出终端面板。"
 
-#: dolphinmainwindow.cpp:2469
-#, kde-format
-msgctxt "@action:inmenu"
-msgid "Follow Directory Switch"
-msgstr "跟随目录切换"
-
 #: dolphinmainwindow.cpp:2471
-#, kde-format
-msgctxt "@info:tooltip"
-msgid ""
-"Determines if current working directory must be kept in sync with terminal "
-"whenever directory is changed."
-msgstr "每当切换目录时，是否保持当前工作目录与终端同步。"
-
-#: dolphinmainwindow.cpp:2487
 #, kde-format
 msgctxt "@title:window"
 msgid "Places"
 msgstr "常用位置"
 
-#: dolphinmainwindow.cpp:2515
+#: dolphinmainwindow.cpp:2499
 #, kde-format
 msgctxt "@item:inmenu"
 msgid "Show Hidden Places"
 msgstr "显示隐藏位置"
 
-#: dolphinmainwindow.cpp:2519
+#: dolphinmainwindow.cpp:2503
 #, kde-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1176,7 +1190,7 @@ msgstr ""
 "这将显示常用位置面板中的所有已被隐藏的位置。这些位置将以半透明方式显示，以便"
 "您取消勾选它们的“隐藏”状态。"
 
-#: dolphinmainwindow.cpp:2531
+#: dolphinmainwindow.cpp:2515
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1191,7 +1205,7 @@ msgstr ""
 "存储媒介或网络对象。该面板中还包含了用于查找最近保存的文件和指定的文件类型的"
 "栏目。</para>"
 
-#: dolphinmainwindow.cpp:2538
+#: dolphinmainwindow.cpp:2522
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1212,45 +1226,45 @@ msgstr ""
 "目可以选择隐藏它们。右键点击面板的空白区域，选择<interface>显示隐藏位置</"
 "interface>即可重新显示它们。</para>"
 
-#: dolphinmainwindow.cpp:2552 dolphinmainwindow.cpp:3138
+#: dolphinmainwindow.cpp:2536 dolphinmainwindow.cpp:3074
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Focus Places Panel"
 msgstr "焦点移到位置面板"
 
-#: dolphinmainwindow.cpp:2553
+#: dolphinmainwindow.cpp:2537
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Move keyboard focus to and from the Places panel."
 msgstr "键盘焦点移到和移出位置面板。"
 
-#: dolphinmainwindow.cpp:2559
+#: dolphinmainwindow.cpp:2543
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Show Panels"
 msgstr "显示面板"
 
-#: dolphinmainwindow.cpp:2645
+#: dolphinmainwindow.cpp:2612
 #, kde-format
 msgctxt "@info"
 msgid ""
 "Cannot rename: You do not have permission to rename items in this folder."
 msgstr "无法重命名：您没有在此文件夹中重命名项目的权限。"
 
-#: dolphinmainwindow.cpp:2648 dolphinmainwindow.cpp:2665
+#: dolphinmainwindow.cpp:2615 dolphinmainwindow.cpp:2632
 #, kde-format
 msgctxt "@info"
 msgid ""
 "Cannot delete: You do not have permission to remove items from this folder."
 msgstr "无法删除：您没有从此文件夹中删除项目的权限。"
 
-#: dolphinmainwindow.cpp:2650
+#: dolphinmainwindow.cpp:2617
 #, kde-format
 msgctxt "@info"
 msgid "Cannot cut: You do not have permission to move items from this folder."
 msgstr "无法剪切：您没有从此文件夹中移出项目的权限。"
 
-#: dolphinmainwindow.cpp:2655
+#: dolphinmainwindow.cpp:2622
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -1258,31 +1272,31 @@ msgid ""
 "folder."
 msgstr "无法在此创建副本：您没有在此文件夹中创建项目的权限。"
 
-#: dolphinmainwindow.cpp:2677
+#: dolphinmainwindow.cpp:2644
 #, kde-format
 msgctxt "@info"
 msgid "Cannot copy to other view: No files selected."
 msgstr "无法复制到其他视图：没有选择文件。"
 
-#: dolphinmainwindow.cpp:2679
+#: dolphinmainwindow.cpp:2646
 #, kde-format
 msgctxt "@info"
 msgid "Cannot move to other view: No files selected."
 msgstr "无法移动到其他视图：没有选择文件。"
 
-#: dolphinmainwindow.cpp:2698
+#: dolphinmainwindow.cpp:2665
 #, kde-format
 msgctxt "@info"
 msgid "Cannot copy to other view: The other view already contains these items."
 msgstr "无法复制到其他视图：目标视图已经包含了同样的项目。"
 
-#: dolphinmainwindow.cpp:2701
+#: dolphinmainwindow.cpp:2668
 #, kde-format
 msgctxt "@info"
 msgid "Cannot move to other view: The other view already contains these items."
 msgstr "无法移动到其他视图：目标视图已经包含了同样的项目。"
 
-#: dolphinmainwindow.cpp:2706
+#: dolphinmainwindow.cpp:2673
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -1290,7 +1304,7 @@ msgid ""
 "destination folder."
 msgstr "无法复制到其他视图：您没有写入目标文件夹的权限。"
 
-#: dolphinmainwindow.cpp:2710
+#: dolphinmainwindow.cpp:2677
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -1298,7 +1312,7 @@ msgid ""
 "destination folder."
 msgstr "无法移动到其他视图：您没有写入目标文件夹的权限。"
 
-#: dolphinmainwindow.cpp:2716
+#: dolphinmainwindow.cpp:2683
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -1306,7 +1320,7 @@ msgid ""
 "this folder."
 msgstr "无法移动到其他视图：您没有从此文件夹中移出项目的权限。"
 
-#: dolphinmainwindow.cpp:2740
+#: dolphinmainwindow.cpp:2707
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1320,90 +1334,85 @@ msgstr ""
 "结构的<emphasis>文件系统</emphasis>进行组织。此层级结构的顶端是<emphasis>根目"
 "录</emphasis>，它包含了所有连接到本机的数据。</para>"
 
-#: dolphinmainwindow.cpp:2827 dolphinmainwindow.cpp:2846
+#: dolphinmainwindow.cpp:2795
 #, kde-format
 msgctxt "@action:intoolbar Close left view"
 msgid "Close"
 msgstr "关闭"
 
-#: dolphinmainwindow.cpp:2828 dolphinmainwindow.cpp:2847
+#: dolphinmainwindow.cpp:2796
 #, kde-format
-msgctxt "@info View refer here to split view"
+msgctxt "@info"
+msgid "Close left view"
+msgstr "关闭左侧视图"
+
+#: dolphinmainwindow.cpp:2798
+#, kde-format
+msgctxt "@action:inmenu Close left view"
 msgid "Close Left View"
 msgstr "关闭左侧视图"
 
-#: dolphinmainwindow.cpp:2830 dolphinmainwindow.cpp:2849
+#: dolphinmainwindow.cpp:2800
 #, kde-format
-msgctxt "@action:inmenu View refer here to split view"
-msgid "Close Left View"
-msgstr "关闭左侧视图"
-
-#: dolphinmainwindow.cpp:2832 dolphinmainwindow.cpp:2851
-#, kde-format
-msgctxt "@action:intoolbar Move left split view to a new window"
+msgctxt "@action:intoolbar Move left view to a new window"
 msgid "Pop out Left View"
-msgstr "弹出左侧视图"
+msgstr "弹出左视图"
 
-#: dolphinmainwindow.cpp:2833 dolphinmainwindow.cpp:2852
+#: dolphinmainwindow.cpp:2801
 #, kde-format
-msgctxt "@info View refer here to split view"
-msgid "Move left split view to a new window"
-msgstr "移动左侧的拆分视图到新窗口"
+msgctxt "@info"
+msgid "Move left view to a new window"
+msgstr "弹出左视图为新窗口"
 
-#: dolphinmainwindow.cpp:2835 dolphinmainwindow.cpp:2854
-#: dolphinmainwindow.cpp:2864
+#: dolphinmainwindow.cpp:2803
 #, kde-format
 msgctxt "@action:intoolbar Close right view"
 msgid "Close"
 msgstr "关闭"
 
-#: dolphinmainwindow.cpp:2836 dolphinmainwindow.cpp:2855
-#: dolphinmainwindow.cpp:2865
+#: dolphinmainwindow.cpp:2804
 #, kde-format
-msgctxt "@info View refer here to split view"
+msgctxt "@info"
+msgid "Close right view"
+msgstr "关闭右侧视图"
+
+#: dolphinmainwindow.cpp:2806
+#, kde-format
+msgctxt "@action:inmenu Close left view"
 msgid "Close Right View"
 msgstr "关闭右侧视图"
 
-#: dolphinmainwindow.cpp:2838 dolphinmainwindow.cpp:2857
-#: dolphinmainwindow.cpp:2867
+#: dolphinmainwindow.cpp:2808
 #, kde-format
-msgctxt "@action:inmenu View refer here to split view"
-msgid "Close Right View"
-msgstr "关闭右侧视图"
-
-#: dolphinmainwindow.cpp:2840 dolphinmainwindow.cpp:2859
-#: dolphinmainwindow.cpp:2869
-#, kde-format
-msgctxt "@action:intoolbar Move right split view to a new window"
+msgctxt "@action:intoolbar Move right view to a new window"
 msgid "Pop out Right View"
-msgstr "弹出右侧视图"
+msgstr "弹出右视图"
 
-#: dolphinmainwindow.cpp:2841 dolphinmainwindow.cpp:2860
-#: dolphinmainwindow.cpp:2870
+#: dolphinmainwindow.cpp:2809
 #, kde-format
-msgctxt "@info View refer here to split view"
-msgid "Move right split view to a new window"
-msgstr "移动右侧的拆分视图到新窗口"
+msgctxt "@info"
+msgid "Move right view to a new window"
+msgstr "弹出右视图为新窗口"
 
-#: dolphinmainwindow.cpp:2882
+#: dolphinmainwindow.cpp:2818
 #, kde-format
 msgctxt "@action:intoolbar Split view"
 msgid "Split"
 msgstr "拆分视图"
 
-#: dolphinmainwindow.cpp:2884
+#: dolphinmainwindow.cpp:2820
 #, kde-format
 msgctxt "@info"
 msgid "Split view"
 msgstr "拆分视图"
 
-#: dolphinmainwindow.cpp:2886
+#: dolphinmainwindow.cpp:2822
 #, kde-format
 msgctxt "@action:intoolbar Move view in focus to a new window"
 msgid "Pop out"
 msgstr "弹出"
 
-#: dolphinmainwindow.cpp:2946
+#: dolphinmainwindow.cpp:2882
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1420,7 +1429,7 @@ msgstr ""
 "多数功能可以通过<emphasis>工具栏</emphasis>中的<interface>菜单</interface>按"
 "钮进行调用。</para>"
 
-#: dolphinmainwindow.cpp:2953
+#: dolphinmainwindow.cpp:2889
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1440,7 +1449,7 @@ msgstr ""
 "中找到该操作。</para><para>工具栏的位置和按钮的显示样式也可以在右键菜单中更"
 "改。右键点击某个按钮可以选择显示或隐藏其文本。</para>"
 
-#: dolphinmainwindow.cpp:2965
+#: dolphinmainwindow.cpp:2901
 #, kde-kuit-format
 msgctxt "@info:whatsthis main view"
 msgid ""
@@ -1466,7 +1475,7 @@ msgstr ""
 "html'>点击此处</link>，打开并查看<emphasis>使用手册</emphasis>中的简明介绍页"
 "面。</para>"
 
-#: dolphinmainwindow.cpp:2981
+#: dolphinmainwindow.cpp:2917
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1479,7 +1488,7 @@ msgstr ""
 "以在该对话框设置每个操作对应的快捷键。此应用程序的所有命令均可通过快捷键调"
 "用。</para>"
 
-#: dolphinmainwindow.cpp:2987
+#: dolphinmainwindow.cpp:2923
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1491,7 +1500,7 @@ msgstr ""
 "钮。</para><para><interface>菜单</interface>中显示的所有命令均可作为按钮显示"
 "到工具栏。</para>"
 
-#: dolphinmainwindow.cpp:2991
+#: dolphinmainwindow.cpp:2927
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1509,7 +1518,7 @@ msgstr ""
 #. frustrate the user. If there are multiple languages that the user might
 #. know with a reasonable chance you might want to have 2 external links.
 #. The same might be true for any external link you translate.
-#: dolphinmainwindow.cpp:3011
+#: dolphinmainwindow.cpp:2947
 #, kde-kuit-format
 msgctxt "@info:whatsthis handbook"
 msgid ""
@@ -1524,7 +1533,7 @@ msgstr ""
 "请<link url='https://userbase.kde.org/Dolphin/File_Management'>点击此处</"
 "link>前往 KDE 用户百科网站查看相关文章。</para>"
 
-#: dolphinmainwindow.cpp:3016
+#: dolphinmainwindow.cpp:2952
 #, kde-kuit-format
 msgctxt "@info:whatsthis whatsthis button"
 msgid ""
@@ -1545,7 +1554,7 @@ msgstr ""
 "link>。</para><para>请注意：并非所有窗口都会提供完善的“这是什么？”悬停帮助信"
 "息。</para>"
 
-#: dolphinmainwindow.cpp:3027
+#: dolphinmainwindow.cpp:2963
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1560,7 +1569,7 @@ msgstr ""
 "缺陷报告，请访问<link url='https://community.kde.org/Get_Involved/"
 "Bug_Reporting'>此网页</link>。</para>"
 
-#: dolphinmainwindow.cpp:3036
+#: dolphinmainwindow.cpp:2972
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1579,7 +1588,7 @@ msgstr ""
 "来维持服务器、贡献者会议等必要开销。</para><para><emphasis>KDE e.V.</"
 "emphasis> 是在法律和财务方面代表 KDE 社区的非营利组织。</para>"
 
-#: dolphinmainwindow.cpp:3049
+#: dolphinmainwindow.cpp:2985
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1590,7 +1599,7 @@ msgstr ""
 "您可以在此更改此应用程序的语言。<nl/>您还可以设置备选语言，它们将在首选语言翻"
 "译不完整时显示。"
 
-#: dolphinmainwindow.cpp:3054
+#: dolphinmainwindow.cpp:2990
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1599,7 +1608,7 @@ msgid ""
 msgstr ""
 "打开“关于”对话框，介绍应用程序的版本，许可证，使用的程序库以及开发人员。"
 
-#: dolphinmainwindow.cpp:3059
+#: dolphinmainwindow.cpp:2995
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -1612,53 +1621,47 @@ msgstr ""
 "<nl/>如果您喜爱此应用程序，但还不了解 KDE，或者只是想看一眼它那只萌爆的小绿龙"
 "吉祥物，那就打开这个对话框吧！"
 
-#: dolphinmainwindow.cpp:3114 dolphinmainwindow.cpp:3125
+#: dolphinmainwindow.cpp:3050 dolphinmainwindow.cpp:3061
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Defocus Terminal Panel"
 msgstr "焦点移出终端面板"
 
-#: dolphinmainwindow.cpp:3132
+#: dolphinmainwindow.cpp:3068
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Defocus Terminal Panel"
 msgstr "焦点移出终端面板"
 
-#: dolphinmainwindow.cpp:3143
+#: dolphinmainwindow.cpp:3079
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Defocus Places Panel"
 msgstr "焦点移出位置面板"
 
-#: dolphinnavigatorswidgetaction.cpp:234
+#: dolphinnavigatorswidgetaction.cpp:225
 #, kde-format
 msgid "Enter server URL (e.g. smb://[ip address])"
 msgstr "输入服务器 URL (例如： smb://[IP 地址])"
 
-#: dolphinnavigatorswidgetaction.cpp:261
+#: dolphinnavigatorswidgetaction.cpp:252
 #, kde-format
 msgctxt "@action:button"
 msgid "Empty Trash"
 msgstr "清空回收站"
 
-#: dolphinnavigatorswidgetaction.cpp:262
+#: dolphinnavigatorswidgetaction.cpp:253
 #, kde-format
 msgid "Empties Trash to create free space"
 msgstr "清空回收站以腾出存储空间"
 
-#: dolphinnavigatorswidgetaction.cpp:288
+#: dolphinnavigatorswidgetaction.cpp:279
 #, kde-format
 msgctxt "@action:button"
 msgid "Add Network Folder"
 msgstr "添加网络文件夹"
 
-#: dolphinnavigatorswidgetaction.cpp:319
-#, kde-format
-msgctxt "@action:button"
-msgid "Open KDE Connect"
-msgstr "打开 KDE Connect"
-
-#: dolphinnavigatorswidgetaction.cpp:356
+#: dolphinnavigatorswidgetaction.cpp:318
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Location Bar"
@@ -1689,84 +1692,84 @@ msgstr ""
 "安装 <application>%1</application> 失败：%2 (%3)<nl/>请尝试手动安装 "
 "<application>%1</application>。"
 
-#: dolphinpart.cpp:147
+#: dolphinpart.cpp:149
 #, kde-format
 msgctxt "@action:inmenu Edit"
 msgid "&Edit File Type…"
 msgstr "编辑文件类型(&E)…"
 
-#: dolphinpart.cpp:151
+#: dolphinpart.cpp:153
 #, kde-format
 msgctxt "@action:inmenu Edit"
 msgid "Select Items Matching…"
 msgstr "选择匹配的项目…"
 
-#: dolphinpart.cpp:156
+#: dolphinpart.cpp:158
 #, kde-format
 msgctxt "@action:inmenu Edit"
 msgid "Unselect Items Matching…"
 msgstr "取消选择匹配的项目…"
 
-#: dolphinpart.cpp:162
+#: dolphinpart.cpp:164
 #, kde-format
 msgctxt "@action:inmenu Edit"
 msgid "Unselect All"
 msgstr "全部不选"
 
-#: dolphinpart.cpp:177
+#: dolphinpart.cpp:179
 #, kde-format
 msgctxt "@action:inmenu Go"
 msgid "App&lications"
 msgstr "应用程序(&L)"
 
-#: dolphinpart.cpp:178
+#: dolphinpart.cpp:180
 #, kde-format
 msgctxt "@action:inmenu Go"
 msgid "&Network Folders"
 msgstr "网络文件夹(&N)"
 
-#: dolphinpart.cpp:179
+#: dolphinpart.cpp:181
 #, kde-format
 msgctxt "@action:inmenu Go"
 msgid "Trash"
 msgstr "回收站"
 
-#: dolphinpart.cpp:182
+#: dolphinpart.cpp:184
 #, kde-format
 msgctxt "@action:inmenu Go"
 msgid "Autostart"
 msgstr "自动启动"
 
-#: dolphinpart.cpp:188
+#: dolphinpart.cpp:190
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Find File…"
 msgstr "查找文件…"
 
-#: dolphinpart.cpp:194
+#: dolphinpart.cpp:196
 #, kde-format
 msgctxt "@action:inmenu Tools"
 msgid "Open &Terminal"
 msgstr "打开终端(&T)"
 
-#: dolphinpart.cpp:446
+#: dolphinpart.cpp:448
 #, kde-format
 msgctxt "@title:window"
 msgid "Select"
 msgstr "选择"
 
-#: dolphinpart.cpp:446
+#: dolphinpart.cpp:448
 #, kde-format
 msgid "Select all items matching this pattern:"
 msgstr "选择与此模式匹配的全部项目："
 
-#: dolphinpart.cpp:451
+#: dolphinpart.cpp:453
 #, kde-format
 msgctxt "@title:window"
 msgid "Unselect"
 msgstr "取消选择"
 
-#: dolphinpart.cpp:451
+#: dolphinpart.cpp:453
 #, kde-format
 msgid "Unselect all items matching this pattern:"
 msgstr "取消选择与此模式匹配的全部项目："
@@ -1820,43 +1823,43 @@ msgstr "最近关闭的标签页"
 msgid "Empty Recently Closed Tabs"
 msgstr "清空最近关闭的标签页"
 
-#: dolphintabbar.cpp:186
+#: dolphintabbar.cpp:156
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "New Tab"
 msgstr "新建标签页"
 
-#: dolphintabbar.cpp:187
+#: dolphintabbar.cpp:157
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Detach Tab"
 msgstr "分离标签页"
 
-#: dolphintabbar.cpp:188
+#: dolphintabbar.cpp:158
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Close Other Tabs"
 msgstr "关闭其他标签页"
 
-#: dolphintabbar.cpp:189
+#: dolphintabbar.cpp:159
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Close Tab"
 msgstr "关闭标签页"
 
-#: dolphintabbar.cpp:191
+#: dolphintabbar.cpp:161
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Rename Tab"
 msgstr "重命名标签页"
 
-#: dolphintabbar.cpp:210
+#: dolphintabbar.cpp:180
 #, kde-format
 msgctxt "@title:window for text input"
 msgid "Rename Tab"
 msgstr "重命名标签页"
 
-#: dolphintabbar.cpp:210
+#: dolphintabbar.cpp:180
 #, kde-format
 msgid "New tab name:"
 msgstr "新标签页名称："
@@ -1864,7 +1867,7 @@ msgstr "新标签页名称："
 #. i18n: This accessible name will be announced any time the user moves keyboard focus e.g. from the toolbar or the places panel towards the main working
 #. area of Dolphin. It gives structure. This container does not only contain the main view but also the status bar, the search panel, filter, and selection
 #. mode bars, so calling it just a "View" is a bit wrong, but hopefully still gets the point across.
-#: dolphintabwidget.cpp:54
+#: dolphintabwidget.cpp:53
 #, kde-format
 msgctxt "accessible name of Dolphin's view container"
 msgid "Location View"
@@ -1872,7 +1875,7 @@ msgstr "位置视图"
 
 #. i18n: %1 is the primary view and %2 the secondary view. For left to right languages the primary view is on the left so we also want it to be on the
 #. left in the tab name. In right to left languages the primary view would be on the right so the tab name should match.
-#: dolphintabwidget.cpp:534
+#: dolphintabwidget.cpp:533
 #, kde-format
 msgctxt "@title:tab Active primary view | (Inactive secondary view)"
 msgid "%1 | (%2)"
@@ -1880,7 +1883,7 @@ msgstr "%1 | (%2)"
 
 #. i18n: %1 is the primary view and %2 the secondary view. For left to right languages the primary view is on the left so we also want it to be on the
 #. left in the tab name. In right to left languages the primary view would be on the right so the tab name should match.
-#: dolphintabwidget.cpp:538
+#: dolphintabwidget.cpp:537
 #, kde-format
 msgctxt "@title:tab (Inactive primary view) | Active secondary view"
 msgid "(%1) | %2"
@@ -1932,138 +1935,97 @@ msgstr "您无法写入此文件夹。"
 msgid "Running Dolphin as root can be dangerous. Please be careful."
 msgstr "以 Root 用户身份运行 Dolphin 是十分危险的。请务必小心。"
 
-#: dolphinviewcontainer.cpp:157
+#: dolphinviewcontainer.cpp:155
 #, kde-format
 msgctxt "@info:progress"
 msgid "Loading folder…"
 msgstr "正在加载文件夹…"
 
-#: dolphinviewcontainer.cpp:160
+#: dolphinviewcontainer.cpp:158
 #, kde-format
 msgctxt "@info:progress"
 msgid "Sorting…"
 msgstr "正在排序…"
 
-#: dolphinviewcontainer.cpp:679
+#: dolphinviewcontainer.cpp:684
 #, kde-format
 msgctxt "@info"
 msgid "Searching…"
 msgstr "正在搜索…"
 
-#: dolphinviewcontainer.cpp:699
+#: dolphinviewcontainer.cpp:704
 #, kde-format
 msgctxt "@info:status"
 msgid "No items found."
 msgstr "未找到项目。"
 
-#: dolphinviewcontainer.cpp:733
-#, kde-format
-msgctxt "@action"
-msgid "Open as File"
-msgstr "作为文件打开"
-
-#: dolphinviewcontainer.cpp:750
-#, kde-kuit-format
-msgctxt "@info"
-msgid "Trying to open a file as a folder: <filename>%1</filename>"
-msgstr "正在尝试将文件作为文件夹打开： <filename>%1</filename>"
-
-#: dolphinviewcontainer.cpp:914
+#: dolphinviewcontainer.cpp:895
 #, kde-format
 msgctxt "@info:status"
 msgid "Dolphin does not support web pages, the web browser has been launched"
 msgstr "Dolphin 不支持显示网页，已启动网页浏览器"
 
-#: dolphinviewcontainer.cpp:917
+#: dolphinviewcontainer.cpp:898
 #, kde-format
 msgctxt "@info:status"
 msgid ""
 "Protocol not supported by Dolphin, default application has been launched"
 msgstr "Dolphin 不支持此协议，已启动默认应用程序"
 
-#: dolphinviewcontainer.cpp:924
+#: dolphinviewcontainer.cpp:905
 #, kde-format
 msgctxt "@info:status"
 msgid "Invalid protocol '%1'"
 msgstr "无效的协议“%1”"
 
-#: dolphinviewcontainer.cpp:926
+#: dolphinviewcontainer.cpp:907
 #, kde-format
 msgctxt "@info:status"
 msgid "Invalid protocol"
 msgstr "无效的协议"
 
-#: dolphinviewcontainer.cpp:1029
+#: dolphinviewcontainer.cpp:1009
 #, kde-format
 msgctxt "@info"
 msgid "Authorization required to enter this folder."
 msgstr "进入此文件夹需要身份验证。"
 
-#: dolphinviewcontainer.cpp:1034
+#: dolphinviewcontainer.cpp:1014
 #, kde-format
 msgctxt "@action"
 msgid "Create missing folder"
 msgstr "创建缺失的文件夹"
 
-#: dolphinviewcontainer.cpp:1051
+#: dolphinviewcontainer.cpp:1031
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Create the folder at this path and open it"
 msgstr "在此路径创建文件夹并打开"
 
-#: dolphinviewcontainer.cpp:1054
+#: dolphinviewcontainer.cpp:1034
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "You do not have permission to create the folder"
 msgstr "您没有创建该文件夹的权限"
 
-#: dolphinviewcontainer.cpp:1098 dolphinviewcontainer.cpp:1101
+#: dolphinviewcontainer.cpp:1078 dolphinviewcontainer.cpp:1081
 #, kde-kuit-format
 msgid ""
 "Current location changed, <filename>%1</filename> is no longer accessible."
 msgstr "当前位置已经更改，<filename>%1</filename> 已经无法访问。"
 
-#: filterbar/filterbar.cpp:36
+#: filterbar/filterbar.cpp:29
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Keep Filter When Changing Folders"
 msgstr "切换文件夹时保持过滤"
 
-#: filterbar/filterbar.cpp:43
+#: filterbar/filterbar.cpp:36
 #, kde-format
 msgid "Filter…"
 msgstr "过滤…"
 
-#: filterbar/filterbar.cpp:51
-#, kde-format
-msgid "Invalid expression"
-msgstr "无效的表达式"
-
-#: filterbar/filterbar.cpp:60
-#, kde-format
-msgctxt "@info:tooltip"
-msgid "Match case"
-msgstr "区分大小写"
-
-#: filterbar/filterbar.cpp:66
-#, kde-format
-msgctxt "@item:inlistbox"
-msgid "Plain Text"
-msgstr "纯文本"
-
-#: filterbar/filterbar.cpp:67
-#, kde-format
-msgctxt "@item:inlistbox"
-msgid "Glob Pattern"
-msgstr "通配符模式"
-
-#: filterbar/filterbar.cpp:68
-#, kde-format
-msgctxt "@item:inlistbox"
-msgid "Regular Expression"
-msgstr "正则表达式"
-
-#: filterbar/filterbar.cpp:78
+#: filterbar/filterbar.cpp:44
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Hide Filter Bar"
@@ -2411,105 +2373,105 @@ msgid "One Item"
 msgid_plural "%1 Items"
 msgstr[0] "%1 个项目"
 
-#: kitemviews/kfileitemlistwidget.cpp:74
+#: kitemviews/kfileitemlistwidget.cpp:76
 #, kde-format
 msgctxt "@item:intable"
 msgid "%1 item"
 msgid_plural "%1 items"
 msgstr[0] "%1 个项目"
 
-#: kitemviews/kfileitemlistwidget.cpp:100
+#: kitemviews/kfileitemlistwidget.cpp:102
 #, kde-format
 msgctxt "width × height"
 msgid "%1 × %2"
 msgstr "%1 × %2"
 
-#: kitemviews/kfileitemmodel.cpp:2647
+#: kitemviews/kfileitemmodel.cpp:2356
 #, kde-format
 msgctxt "@title:group Groups that start with a digit"
 msgid "0 - 9"
 msgstr "0 - 9"
 
-#: kitemviews/kfileitemmodel.cpp:2649
+#: kitemviews/kfileitemmodel.cpp:2358
 #, kde-format
 msgctxt "@title:group"
 msgid "Others"
 msgstr "其他"
 
-#: kitemviews/kfileitemmodel.cpp:2681
+#: kitemviews/kfileitemmodel.cpp:2390
 #, kde-format
 msgctxt "@title:group Size"
 msgid "Folders"
 msgstr "文件夹"
 
-#: kitemviews/kfileitemmodel.cpp:2689
+#: kitemviews/kfileitemmodel.cpp:2398
 #, kde-format
 msgctxt "@title:group Size"
 msgid "Small"
 msgstr "小"
 
-#: kitemviews/kfileitemmodel.cpp:2691
+#: kitemviews/kfileitemmodel.cpp:2400
 #, kde-format
 msgctxt "@title:group Size"
 msgid "Medium"
 msgstr "中"
 
-#: kitemviews/kfileitemmodel.cpp:2693
+#: kitemviews/kfileitemmodel.cpp:2402
 #, kde-format
 msgctxt "@title:group Size"
 msgid "Big"
 msgstr "大"
 
-#: kitemviews/kfileitemmodel.cpp:2739
+#: kitemviews/kfileitemmodel.cpp:2448
 #, kde-format
 msgctxt "@title:group Date"
 msgid "Today"
 msgstr "今天"
 
-#: kitemviews/kfileitemmodel.cpp:2742
+#: kitemviews/kfileitemmodel.cpp:2451
 #, kde-format
 msgctxt "@title:group Date"
 msgid "Yesterday"
 msgstr "昨天"
 
-#: kitemviews/kfileitemmodel.cpp:2745
+#: kitemviews/kfileitemmodel.cpp:2454
 #, kde-format
 msgctxt "@title:group Date: The week day name: dddd"
 msgid "dddd"
 msgstr "dddd"
 
-#: kitemviews/kfileitemmodel.cpp:2749
+#: kitemviews/kfileitemmodel.cpp:2458
 #, kde-format
 msgctxt ""
 "Can be used to script translation of \"dddd\"with context @title:group Date"
 msgid "%1"
 msgstr "%1"
 
-#: kitemviews/kfileitemmodel.cpp:2754
+#: kitemviews/kfileitemmodel.cpp:2463
 #, kde-format
 msgctxt "@title:group Date"
 msgid "One Week Ago"
 msgstr "一周前"
 
-#: kitemviews/kfileitemmodel.cpp:2757
+#: kitemviews/kfileitemmodel.cpp:2466
 #, kde-format
 msgctxt "@title:group Date"
 msgid "Two Weeks Ago"
 msgstr "两周前"
 
-#: kitemviews/kfileitemmodel.cpp:2760
+#: kitemviews/kfileitemmodel.cpp:2469
 #, kde-format
 msgctxt "@title:group Date"
 msgid "Three Weeks Ago"
 msgstr "三周前"
 
-#: kitemviews/kfileitemmodel.cpp:2764
+#: kitemviews/kfileitemmodel.cpp:2473
 #, kde-format
 msgctxt "@title:group Date"
 msgid "Earlier this Month"
 msgstr "本月更早"
 
-#: kitemviews/kfileitemmodel.cpp:2778
+#: kitemviews/kfileitemmodel.cpp:2487
 #, kde-format
 msgctxt ""
 "@title:group Date: MMMM is full month name in current locale, and yyyy is "
@@ -2519,7 +2481,7 @@ msgctxt ""
 msgid "'Yesterday' (MMMM, yyyy)"
 msgstr "昨天（yyyy年MMMM）"
 
-#: kitemviews/kfileitemmodel.cpp:2785
+#: kitemviews/kfileitemmodel.cpp:2494
 #, kde-format
 msgctxt ""
 "Can be used to script translation of \"'Yesterday' (MMMM, yyyy)\" with "
@@ -2527,7 +2489,7 @@ msgctxt ""
 msgid "%1"
 msgstr "%1"
 
-#: kitemviews/kfileitemmodel.cpp:2798
+#: kitemviews/kfileitemmodel.cpp:2507
 #, kde-format
 msgctxt ""
 "@title:group Date: The week day name: dddd, MMMM is full month name in "
@@ -2535,7 +2497,7 @@ msgctxt ""
 msgid "dddd (MMMM, yyyy)"
 msgstr "dddd（yyyy年MMMM）"
 
-#: kitemviews/kfileitemmodel.cpp:2802
+#: kitemviews/kfileitemmodel.cpp:2511
 #, kde-format
 msgctxt ""
 "Can be used to script translation of \"dddd (MMMM, yyyy)\" with context "
@@ -2543,7 +2505,7 @@ msgctxt ""
 msgid "%1"
 msgstr "%1"
 
-#: kitemviews/kfileitemmodel.cpp:2810
+#: kitemviews/kfileitemmodel.cpp:2519
 #, kde-format
 msgctxt ""
 "@title:group Date: MMMM is full month name in current locale, and yyyy is "
@@ -2553,7 +2515,7 @@ msgctxt ""
 msgid "'One Week Ago' (MMMM, yyyy)"
 msgstr "“一周前”（yyyy年MMMM）"
 
-#: kitemviews/kfileitemmodel.cpp:2817
+#: kitemviews/kfileitemmodel.cpp:2526
 #, kde-format
 msgctxt ""
 "Can be used to script translation of \"'One Week Ago' (MMMM, yyyy)\" with "
@@ -2561,7 +2523,7 @@ msgctxt ""
 msgid "%1"
 msgstr "%1"
 
-#: kitemviews/kfileitemmodel.cpp:2831
+#: kitemviews/kfileitemmodel.cpp:2540
 #, kde-format
 msgctxt ""
 "@title:group Date: MMMM is full month name in current locale, and yyyy is "
@@ -2571,7 +2533,7 @@ msgctxt ""
 msgid "'Two Weeks Ago' (MMMM, yyyy)"
 msgstr "“两周前”（yyyy年MMMM）"
 
-#: kitemviews/kfileitemmodel.cpp:2838
+#: kitemviews/kfileitemmodel.cpp:2547
 #, kde-format
 msgctxt ""
 "Can be used to script translation of \"'Two Weeks Ago' (MMMM, yyyy)\" with "
@@ -2579,7 +2541,7 @@ msgctxt ""
 msgid "%1"
 msgstr "%1"
 
-#: kitemviews/kfileitemmodel.cpp:2852
+#: kitemviews/kfileitemmodel.cpp:2561
 #, kde-format
 msgctxt ""
 "@title:group Date: MMMM is full month name in current locale, and yyyy is "
@@ -2589,7 +2551,7 @@ msgctxt ""
 msgid "'Three Weeks Ago' (MMMM, yyyy)"
 msgstr "“三周前”（yyyy年MMMM）"
 
-#: kitemviews/kfileitemmodel.cpp:2859
+#: kitemviews/kfileitemmodel.cpp:2568
 #, kde-format
 msgctxt ""
 "Can be used to script translation of \"'Three Weeks Ago' (MMMM, yyyy)\" with "
@@ -2597,7 +2559,7 @@ msgctxt ""
 msgid "%1"
 msgstr "%1"
 
-#: kitemviews/kfileitemmodel.cpp:2873
+#: kitemviews/kfileitemmodel.cpp:2582
 #, kde-format
 msgctxt ""
 "@title:group Date: MMMM is full month name in current locale, and yyyy is "
@@ -2607,7 +2569,7 @@ msgctxt ""
 msgid "'Earlier on' MMMM, yyyy"
 msgstr "'早于'yyyy年MMMM"
 
-#: kitemviews/kfileitemmodel.cpp:2880
+#: kitemviews/kfileitemmodel.cpp:2589
 #, kde-format
 msgctxt ""
 "Can be used to script translation of \"'Earlier on' MMMM, yyyy\" with "
@@ -2615,7 +2577,7 @@ msgctxt ""
 msgid "%1"
 msgstr "%1"
 
-#: kitemviews/kfileitemmodel.cpp:2894
+#: kitemviews/kfileitemmodel.cpp:2603
 #, kde-format
 msgctxt ""
 "@title:group The month and year: MMMM is full month name in current locale, "
@@ -2623,7 +2585,7 @@ msgctxt ""
 msgid "MMMM, yyyy"
 msgstr "yyyy年MMMM"
 
-#: kitemviews/kfileitemmodel.cpp:2898
+#: kitemviews/kfileitemmodel.cpp:2607
 #, kde-format
 msgctxt ""
 "Can be used to script translation of \"MMMM, yyyy\" with context @title:"
@@ -2631,318 +2593,288 @@ msgctxt ""
 msgid "%1"
 msgstr "%1"
 
-#: kitemviews/kfileitemmodel.cpp:2938 kitemviews/kfileitemmodel.cpp:2951
-#: kitemviews/kfileitemmodel.cpp:2964
+#: kitemviews/kfileitemmodel.cpp:2647 kitemviews/kfileitemmodel.cpp:2660
+#: kitemviews/kfileitemmodel.cpp:2673
 #, kde-format
 msgctxt "@item:intext Access permission, concatenated"
 msgid "Read, "
 msgstr "读取，"
 
-#: kitemviews/kfileitemmodel.cpp:2941 kitemviews/kfileitemmodel.cpp:2954
-#: kitemviews/kfileitemmodel.cpp:2967
+#: kitemviews/kfileitemmodel.cpp:2650 kitemviews/kfileitemmodel.cpp:2663
+#: kitemviews/kfileitemmodel.cpp:2676
 #, kde-format
 msgctxt "@item:intext Access permission, concatenated"
 msgid "Write, "
 msgstr "写入，"
 
-#: kitemviews/kfileitemmodel.cpp:2944 kitemviews/kfileitemmodel.cpp:2957
-#: kitemviews/kfileitemmodel.cpp:2970
+#: kitemviews/kfileitemmodel.cpp:2653 kitemviews/kfileitemmodel.cpp:2666
+#: kitemviews/kfileitemmodel.cpp:2679
 #, kde-format
 msgctxt "@item:intext Access permission, concatenated"
 msgid "Execute, "
 msgstr "执行，"
 
-#: kitemviews/kfileitemmodel.cpp:2946 kitemviews/kfileitemmodel.cpp:2959
-#: kitemviews/kfileitemmodel.cpp:2972
+#: kitemviews/kfileitemmodel.cpp:2655 kitemviews/kfileitemmodel.cpp:2668
+#: kitemviews/kfileitemmodel.cpp:2681
 #, kde-format
 msgctxt "@item:intext Access permission, concatenated"
 msgid "Forbidden"
 msgstr "禁止"
 
-#: kitemviews/kfileitemmodel.cpp:2974
+#: kitemviews/kfileitemmodel.cpp:2683
 #, kde-format
 msgctxt "@title:group Files and folders by permissions"
 msgid "User: %1 | Group: %2 | Others: %3"
 msgstr "用户：%1 | 用户组：%2 | 其他：%3"
 
-#: kitemviews/kfileitemmodel.cpp:3064
+#: kitemviews/kfileitemmodel.cpp:2773
 msgctxt "@label"
 msgid "Name"
 msgstr "名称"
 
-#: kitemviews/kfileitemmodel.cpp:3065
+#: kitemviews/kfileitemmodel.cpp:2774
 msgctxt "@label"
 msgid "Size"
 msgstr "大小"
 
-#: kitemviews/kfileitemmodel.cpp:3066
+#: kitemviews/kfileitemmodel.cpp:2775
 msgctxt "@label"
 msgid "Modified"
 msgstr "修改时间"
 
-#: kitemviews/kfileitemmodel.cpp:3066 kitemviews/kfileitemmodel.cpp:3067
-#: kitemviews/kfileitemmodel.cpp:3068
+#: kitemviews/kfileitemmodel.cpp:2775 kitemviews/kfileitemmodel.cpp:2776
+#: kitemviews/kfileitemmodel.cpp:2777
 msgctxt "@tooltip"
 msgid "The date format can be selected in settings."
 msgstr "日期格式可以在设置中更改。"
 
-#: kitemviews/kfileitemmodel.cpp:3067
+#: kitemviews/kfileitemmodel.cpp:2776
 msgctxt "@label"
 msgid "Created"
-msgstr "创建时间"
+msgstr "创建日期"
 
-#: kitemviews/kfileitemmodel.cpp:3068
+#: kitemviews/kfileitemmodel.cpp:2777
 msgctxt "@label"
 msgid "Accessed"
 msgstr "访问时间"
 
-#: kitemviews/kfileitemmodel.cpp:3069
+#: kitemviews/kfileitemmodel.cpp:2778
 msgctxt "@label"
 msgid "Type"
 msgstr "类型"
 
-#: kitemviews/kfileitemmodel.cpp:3070
+#: kitemviews/kfileitemmodel.cpp:2779
 msgctxt "@label"
 msgid "Rating"
 msgstr "评分"
 
-#: kitemviews/kfileitemmodel.cpp:3071
+#: kitemviews/kfileitemmodel.cpp:2780
 msgctxt "@label"
 msgid "Tags"
 msgstr "标签"
 
-#: kitemviews/kfileitemmodel.cpp:3072
+#: kitemviews/kfileitemmodel.cpp:2781
 msgctxt "@label"
 msgid "Comment"
 msgstr "备注"
 
-#: kitemviews/kfileitemmodel.cpp:3073
+#: kitemviews/kfileitemmodel.cpp:2782
 msgctxt "@label"
 msgid "Title"
 msgstr "标题"
 
-#: kitemviews/kfileitemmodel.cpp:3073 kitemviews/kfileitemmodel.cpp:3074
-#: kitemviews/kfileitemmodel.cpp:3075 kitemviews/kfileitemmodel.cpp:3076
-#: kitemviews/kfileitemmodel.cpp:3077 kitemviews/kfileitemmodel.cpp:3078
+#: kitemviews/kfileitemmodel.cpp:2782 kitemviews/kfileitemmodel.cpp:2783
+#: kitemviews/kfileitemmodel.cpp:2784 kitemviews/kfileitemmodel.cpp:2785
+#: kitemviews/kfileitemmodel.cpp:2786 kitemviews/kfileitemmodel.cpp:2787
 msgctxt "@label"
 msgid "Document"
 msgstr "文档"
 
-#: kitemviews/kfileitemmodel.cpp:3074
+#: kitemviews/kfileitemmodel.cpp:2783
 msgctxt "@label"
 msgid "Author"
 msgstr "作者"
 
-#: kitemviews/kfileitemmodel.cpp:3075
+#: kitemviews/kfileitemmodel.cpp:2784
 msgctxt "@label"
 msgid "Publisher"
 msgstr "出版商"
 
-#: kitemviews/kfileitemmodel.cpp:3076
+#: kitemviews/kfileitemmodel.cpp:2785
 msgctxt "@label"
 msgid "Page Count"
 msgstr "页数"
 
-#: kitemviews/kfileitemmodel.cpp:3077
+#: kitemviews/kfileitemmodel.cpp:2786
 msgctxt "@label"
 msgid "Word Count"
 msgstr "字数"
 
-#: kitemviews/kfileitemmodel.cpp:3078
+#: kitemviews/kfileitemmodel.cpp:2787
 msgctxt "@label"
 msgid "Line Count"
 msgstr "行数"
 
-#: kitemviews/kfileitemmodel.cpp:3079
+#: kitemviews/kfileitemmodel.cpp:2788
 msgctxt "@label"
 msgid "Date Photographed"
 msgstr "拍摄日期"
 
-#: kitemviews/kfileitemmodel.cpp:3079 kitemviews/kfileitemmodel.cpp:3080
-#: kitemviews/kfileitemmodel.cpp:3081 kitemviews/kfileitemmodel.cpp:3082
-#: kitemviews/kfileitemmodel.cpp:3083
+#: kitemviews/kfileitemmodel.cpp:2788 kitemviews/kfileitemmodel.cpp:2789
+#: kitemviews/kfileitemmodel.cpp:2790 kitemviews/kfileitemmodel.cpp:2791
+#: kitemviews/kfileitemmodel.cpp:2792
 msgctxt "@label"
 msgid "Image"
 msgstr "图像"
 
-#: kitemviews/kfileitemmodel.cpp:3080 kitemviews/kfileitemmodel.cpp:3096
+#: kitemviews/kfileitemmodel.cpp:2789
 msgctxt "@label width x height"
 msgid "Dimensions"
 msgstr "尺寸"
 
-#: kitemviews/kfileitemmodel.cpp:3081 kitemviews/kfileitemmodel.cpp:3099
-msgctxt "@label"
-msgid "Height"
-msgstr "高度"
-
-#: kitemviews/kfileitemmodel.cpp:3082
-msgctxt "@label"
-msgid "Orientation"
-msgstr "方向"
-
-#: kitemviews/kfileitemmodel.cpp:3083 kitemviews/kfileitemmodel.cpp:3102
+#: kitemviews/kfileitemmodel.cpp:2790
 msgctxt "@label"
 msgid "Width"
 msgstr "宽度"
 
-#: kitemviews/kfileitemmodel.cpp:3084
+#: kitemviews/kfileitemmodel.cpp:2791
 msgctxt "@label"
-msgid "Album"
-msgstr "专辑"
+msgid "Height"
+msgstr "高度"
 
-#: kitemviews/kfileitemmodel.cpp:3084 kitemviews/kfileitemmodel.cpp:3085
-#: kitemviews/kfileitemmodel.cpp:3086 kitemviews/kfileitemmodel.cpp:3087
-#: kitemviews/kfileitemmodel.cpp:3088 kitemviews/kfileitemmodel.cpp:3089
-#: kitemviews/kfileitemmodel.cpp:3090 kitemviews/kfileitemmodel.cpp:3091
+#: kitemviews/kfileitemmodel.cpp:2792
 msgctxt "@label"
-msgid "Audio"
-msgstr "音频"
+msgid "Orientation"
+msgstr "方向"
 
-#: kitemviews/kfileitemmodel.cpp:3085
+#: kitemviews/kfileitemmodel.cpp:2793
 msgctxt "@label"
 msgid "Artist"
 msgstr "艺人"
 
-#: kitemviews/kfileitemmodel.cpp:3086 kitemviews/kfileitemmodel.cpp:3093
+#: kitemviews/kfileitemmodel.cpp:2793 kitemviews/kfileitemmodel.cpp:2794
+#: kitemviews/kfileitemmodel.cpp:2795 kitemviews/kfileitemmodel.cpp:2796
+#: kitemviews/kfileitemmodel.cpp:2797 kitemviews/kfileitemmodel.cpp:2798
+#: kitemviews/kfileitemmodel.cpp:2799
 msgctxt "@label"
-msgid "Audio Codec"
-msgstr "音频编码"
+msgid "Audio"
+msgstr "音频"
 
-#: kitemviews/kfileitemmodel.cpp:3087 kitemviews/kfileitemmodel.cpp:3094
-msgctxt "@label"
-msgid "Bitrate"
-msgstr "码率"
-
-#: kitemviews/kfileitemmodel.cpp:3088 kitemviews/kfileitemmodel.cpp:3097
-msgctxt "@label"
-msgid "Duration"
-msgstr "时长"
-
-#: kitemviews/kfileitemmodel.cpp:3089
+#: kitemviews/kfileitemmodel.cpp:2794
 msgctxt "@label"
 msgid "Genre"
 msgstr "流派"
 
-#: kitemviews/kfileitemmodel.cpp:3090
+#: kitemviews/kfileitemmodel.cpp:2795
 msgctxt "@label"
-msgid "Release Year"
-msgstr "发行年份"
+msgid "Album"
+msgstr "专辑"
 
-#: kitemviews/kfileitemmodel.cpp:3091
+#: kitemviews/kfileitemmodel.cpp:2796 kitemviews/kfileitemmodel.cpp:2802
+msgctxt "@label"
+msgid "Duration"
+msgstr "时长"
+
+#: kitemviews/kfileitemmodel.cpp:2797
+msgctxt "@label"
+msgid "Bitrate"
+msgstr "码率"
+
+#: kitemviews/kfileitemmodel.cpp:2798
 msgctxt "@label"
 msgid "Track"
 msgstr "曲目"
 
-#: kitemviews/kfileitemmodel.cpp:3092
+#: kitemviews/kfileitemmodel.cpp:2799
+msgctxt "@label"
+msgid "Release Year"
+msgstr "发行年份"
+
+#: kitemviews/kfileitemmodel.cpp:2800
 msgctxt "@label"
 msgid "Aspect Ratio"
 msgstr "宽高比"
 
-#: kitemviews/kfileitemmodel.cpp:3092 kitemviews/kfileitemmodel.cpp:3093
-#: kitemviews/kfileitemmodel.cpp:3094 kitemviews/kfileitemmodel.cpp:3095
-#: kitemviews/kfileitemmodel.cpp:3096 kitemviews/kfileitemmodel.cpp:3097
-#: kitemviews/kfileitemmodel.cpp:3098 kitemviews/kfileitemmodel.cpp:3099
-#: kitemviews/kfileitemmodel.cpp:3100 kitemviews/kfileitemmodel.cpp:3101
-#: kitemviews/kfileitemmodel.cpp:3102
+#: kitemviews/kfileitemmodel.cpp:2800 kitemviews/kfileitemmodel.cpp:2801
+#: kitemviews/kfileitemmodel.cpp:2802
 msgctxt "@label"
 msgid "Video"
 msgstr "视频"
 
-#: kitemviews/kfileitemmodel.cpp:3095
-msgctxt "@label"
-msgid "Color Space"
-msgstr "色彩空间"
-
-#: kitemviews/kfileitemmodel.cpp:3098
+#: kitemviews/kfileitemmodel.cpp:2801
 msgctxt "@label"
 msgid "Frame Rate"
 msgstr "帧率"
 
-#: kitemviews/kfileitemmodel.cpp:3100
-msgctxt "@label"
-msgid "Pixel Format"
-msgstr "像素格式"
-
-#: kitemviews/kfileitemmodel.cpp:3101
-msgctxt "@label"
-msgid "Video Codec"
-msgstr "视频编码"
-
-#: kitemviews/kfileitemmodel.cpp:3103
+#: kitemviews/kfileitemmodel.cpp:2803
 msgctxt "@label"
 msgid "Path"
 msgstr "路径"
 
-#: kitemviews/kfileitemmodel.cpp:3103 kitemviews/kfileitemmodel.cpp:3104
-#: kitemviews/kfileitemmodel.cpp:3105 kitemviews/kfileitemmodel.cpp:3106
-#: kitemviews/kfileitemmodel.cpp:3107 kitemviews/kfileitemmodel.cpp:3108
-#: kitemviews/kfileitemmodel.cpp:3109 kitemviews/kfileitemmodel.cpp:3110
-#: kitemviews/kfileitemmodel.cpp:3111
+#: kitemviews/kfileitemmodel.cpp:2803 kitemviews/kfileitemmodel.cpp:2804
+#: kitemviews/kfileitemmodel.cpp:2805 kitemviews/kfileitemmodel.cpp:2806
+#: kitemviews/kfileitemmodel.cpp:2807 kitemviews/kfileitemmodel.cpp:2808
+#: kitemviews/kfileitemmodel.cpp:2809 kitemviews/kfileitemmodel.cpp:2810
 msgctxt "@label"
 msgid "Other"
 msgstr "其他"
 
-#: kitemviews/kfileitemmodel.cpp:3104
-msgctxt "@label"
-msgid "Folder Name"
-msgstr "文件夹名"
-
-#: kitemviews/kfileitemmodel.cpp:3105
+#: kitemviews/kfileitemmodel.cpp:2804
 msgctxt "@label"
 msgid "File Extension"
 msgstr "文件扩展名"
 
-#: kitemviews/kfileitemmodel.cpp:3106
+#: kitemviews/kfileitemmodel.cpp:2805
 msgctxt "@label"
 msgid "Deletion Time"
 msgstr "删除时间"
 
-#: kitemviews/kfileitemmodel.cpp:3107
+#: kitemviews/kfileitemmodel.cpp:2806
 msgctxt "@label"
 msgid "Link Destination"
 msgstr "链接目标"
 
-#: kitemviews/kfileitemmodel.cpp:3108
+#: kitemviews/kfileitemmodel.cpp:2807
 msgctxt "@label"
 msgid "Downloaded From"
 msgstr "下载来源"
 
-#: kitemviews/kfileitemmodel.cpp:3109
+#: kitemviews/kfileitemmodel.cpp:2808
 msgctxt "@label"
 msgid "Permissions"
 msgstr "权限"
 
-#: kitemviews/kfileitemmodel.cpp:3109
+#: kitemviews/kfileitemmodel.cpp:2808
 msgctxt "@tooltip"
 msgid ""
 "The permission format can be changed in settings. Options are Symbolic, "
 "Numeric (Octal) or Combined formats"
 msgstr "权限格式可以在设置中更改。可选项有符号式、数字式 (八进制)、组合式。"
 
-#: kitemviews/kfileitemmodel.cpp:3110
+#: kitemviews/kfileitemmodel.cpp:2809
 msgctxt "@label"
 msgid "Owner"
 msgstr "所有者"
 
-#: kitemviews/kfileitemmodel.cpp:3111
+#: kitemviews/kfileitemmodel.cpp:2810
 msgctxt "@label"
 msgid "User Group"
 msgstr "用户组"
 
-#: kitemviews/kfileitemmodel.cpp:3212
+#: kitemviews/kfileitemmodel.cpp:2911
 #, kde-format
 msgctxt "@info:status"
 msgid "Unknown error."
 msgstr "未知错误。"
 
-#: kitemviews/kstandarditemlistwidget.cpp:121
+#: kitemviews/kstandarditemlistwidget.cpp:123
 #, kde-format
 msgctxt "@accessible rating"
 msgid "%1 and a half stars"
 msgid_plural "%1 and a half stars"
 msgstr[0] "%1.5 星"
 
-#: kitemviews/kstandarditemlistwidget.cpp:123
+#: kitemviews/kstandarditemlistwidget.cpp:125
 #, kde-format
 msgctxt "@accessible rating"
 msgid "%1 star"
@@ -3163,55 +3095,55 @@ msgstr "如果处于主目录中，限制文件夹面板到主目录"
 msgid "Automatic scrolling"
 msgstr "自动滚动"
 
-#: panels/folders/treeviewcontextmenu.cpp:48
+#: panels/folders/treeviewcontextmenu.cpp:50
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Cut"
 msgstr "剪切"
 
-#: panels/folders/treeviewcontextmenu.cpp:52
+#: panels/folders/treeviewcontextmenu.cpp:54
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Copy"
 msgstr "复制"
 
-#: panels/folders/treeviewcontextmenu.cpp:68
+#: panels/folders/treeviewcontextmenu.cpp:70
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Rename…"
 msgstr "重命名…"
 
-#: panels/folders/treeviewcontextmenu.cpp:81
+#: panels/folders/treeviewcontextmenu.cpp:83
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Move to Trash"
 msgstr "移动到回收站"
 
-#: panels/folders/treeviewcontextmenu.cpp:91
+#: panels/folders/treeviewcontextmenu.cpp:93
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Delete"
 msgstr "删除"
 
-#: panels/folders/treeviewcontextmenu.cpp:101
+#: panels/folders/treeviewcontextmenu.cpp:103
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Show Hidden Files"
 msgstr "显示隐藏文件"
 
-#: panels/folders/treeviewcontextmenu.cpp:111
+#: panels/folders/treeviewcontextmenu.cpp:113
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Limit to Home Directory"
 msgstr "限制到主目录"
 
-#: panels/folders/treeviewcontextmenu.cpp:120
+#: panels/folders/treeviewcontextmenu.cpp:122
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Automatic Scrolling"
 msgstr "自动滚动"
 
-#: panels/folders/treeviewcontextmenu.cpp:130
+#: panels/folders/treeviewcontextmenu.cpp:132
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Properties"
@@ -3241,31 +3173,31 @@ msgstr "悬停时显示项目"
 msgid "Date display format"
 msgstr "日期显示格式"
 
-#: panels/information/informationpanel.cpp:159
+#: panels/information/informationpanel.cpp:156
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Preview"
 msgstr "预览图"
 
-#: panels/information/informationpanel.cpp:164
+#: panels/information/informationpanel.cpp:161
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Auto-Play media files"
 msgstr "自动播放媒体文件"
 
-#: panels/information/informationpanel.cpp:169
+#: panels/information/informationpanel.cpp:166
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Show item on hover"
 msgstr "悬停时显示项目"
 
-#: panels/information/informationpanel.cpp:174
+#: panels/information/informationpanel.cpp:171
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Configure…"
 msgstr "配置…"
 
-#: panels/information/informationpanel.cpp:180
+#: panels/information/informationpanel.cpp:177
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Condensed Date"
@@ -3284,12 +3216,12 @@ msgid "%1 item selected"
 msgid_plural "%1 items selected"
 msgstr[0] "已选中 %1 项"
 
-#: panels/information/mediawidget.cpp:262
+#: panels/information/mediawidget.cpp:246
 #, kde-format
 msgid "play"
 msgstr "播放"
 
-#: panels/information/mediawidget.cpp:268
+#: panels/information/mediawidget.cpp:252
 #, kde-format
 msgid "pause"
 msgstr "暂停"
@@ -3300,14 +3232,14 @@ msgstr "暂停"
 msgid "Size of icons in the Places Panel (-1 means \"automatic\")"
 msgstr "位置面板中的图标大小 (-1 为自动)"
 
-#: panels/terminal/terminalpanel.cpp:202
+#: panels/terminal/terminalpanel.cpp:185
 #, kde-format
 msgid ""
 "Terminal cannot be shown because Konsole is not installed. Please install it "
 "and then reopen the panel."
 msgstr "由于未安装 Konsole，无法显示终端。请安装它, 然后重新打开面板。"
 
-#: panels/terminal/terminalpanel.cpp:209
+#: panels/terminal/terminalpanel.cpp:192
 #, kde-format
 msgid "Install Konsole"
 msgstr "安装 Konsole"
@@ -3362,13 +3294,13 @@ msgstr ""
 "果。</item><item>点击“保存”图标将当前搜索配置添加到<emphasis>位置面板</"
 "emphasis>中。</item></list></para>"
 
-#: search/bar.cpp:215
+#: search/bar.cpp:213
 #, kde-format
 msgctxt "@info:placeholder"
 msgid "Search in file contents…"
 msgstr "搜索文件内容…"
 
-#: search/bar.cpp:229
+#: search/bar.cpp:227
 #, kde-kuit-format
 msgctxt "@info:tooltip"
 msgid "Limit the search to <filename>%1</filename> and its subfolders."
@@ -3379,7 +3311,7 @@ msgstr "限制搜索范围到 <filename>%1</filename> 及其子文件夹。"
 #. i18n: The "Everywhere" button makes Dolphin search all files in "/" recursively. "From the root up" is meant to
 #. communicate this colloquially while containing the technical term "root". It is fine to drop the technicalities here
 #. and only to communicate that everything in the file system is supposed to be searched here.
-#: search/bar.cpp:238
+#: search/bar.cpp:236
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Search all directories from the root up."
@@ -3388,7 +3320,7 @@ msgstr "从根目录开始搜索所有目录。"
 #. i18n: Tooltip for "Everywhere" button as opposed to searching for files in specific folders. The search tool uses
 #. file indexing and will therefore only be able to search through directories which have been put into a data base.
 #. Please make sure your translation of the path to the Search settings page is identical to translation there.
-#: search/bar.cpp:242
+#: search/bar.cpp:240
 #, kde-kuit-format
 msgctxt "@info:tooltip"
 msgid ""
@@ -3680,80 +3612,80 @@ msgctxt "@action:button"
 msgid "Install KFind…"
 msgstr "安装 KFind…"
 
-#: search/popup.cpp:368
+#: search/popup.cpp:364
 #, kde-kuit-format
 msgctxt "@info"
 msgid "<application>KFind</application> installed successfully."
 msgstr "<application>KFind</application> 已成功安装。"
 
-#: search/popup.cpp:372
+#: search/popup.cpp:368
 #, kde-format
 msgctxt "@info:status"
 msgid "Installing KFind"
 msgstr "正在安装 KFind"
 
-#: search/selectors/dateselector.cpp:59
+#: search/selectors/dateselector.cpp:54
 #, kde-format
 msgctxt "@item:inlistbox"
 msgid "Any Date"
 msgstr "任意日期"
 
-#: search/selectors/filetypeselector.cpp:25
+#: search/selectors/filetypeselector.cpp:23
 #, kde-format
 msgctxt "@item:inlistbox"
 msgid "Any Type"
 msgstr "任意类型"
 
-#: search/selectors/minimumratingselector.cpp:22
+#: search/selectors/minimumratingselector.cpp:20
 #, kde-format
 msgctxt "@item:inlistbox"
 msgid "Any Rating"
 msgstr "任何评分"
 
-#: search/selectors/minimumratingselector.cpp:24
+#: search/selectors/minimumratingselector.cpp:21
 #, kde-format
 msgctxt "@item:inlistbox"
 msgid "1 or more"
 msgstr "1 或以上"
 
-#: search/selectors/minimumratingselector.cpp:25
+#: search/selectors/minimumratingselector.cpp:22
 #, kde-format
 msgctxt "@item:inlistbox"
 msgid "2 or more"
 msgstr "2 或以上"
 
-#: search/selectors/minimumratingselector.cpp:26
+#: search/selectors/minimumratingselector.cpp:23
 #, kde-format
 msgctxt "@item:inlistbox"
 msgid "3 or more"
 msgstr "3 或以上"
 
-#: search/selectors/minimumratingselector.cpp:27
+#: search/selectors/minimumratingselector.cpp:24
 #, kde-format
 msgctxt "@item:inlistbox"
 msgid "4 or more"
 msgstr "4 或以上"
 
-#: search/selectors/minimumratingselector.cpp:28
+#: search/selectors/minimumratingselector.cpp:25
 #, kde-format
 msgctxt "@item:inlistbox 5 star rating, has a star icon in front"
 msgid "5"
 msgstr "5"
 
-#: search/selectors/tagsselector.cpp:191
+#: search/selectors/tagsselector.cpp:179
 #, kde-format
 msgctxt ""
 "list separator for file tags e.g. all images tagged 'family & party & 2025'"
 msgid " && "
 msgstr " 、 "
 
-#: search/selectors/tagsselector.cpp:194
+#: search/selectors/tagsselector.cpp:182
 #, kde-format
 msgctxt "@action:button Required tags for search results: None"
 msgid "None"
 msgstr "无"
 
-#: selectionmode/bottombarcontentscontainer.cpp:167
+#: selectionmode/bottombarcontentscontainer.cpp:155
 #, kde-format
 msgctxt "@info explaining the next step in a process"
 msgid "Select the files and folders that should be copied."
@@ -3761,41 +3693,41 @@ msgstr "选择要复制的文件和文件夹。"
 
 #. i18n: Aborts the current step-by-step process to copy files by leaving the selection mode.
 #. i18n: Aborts the current step-by-step process to copy the location of files by leaving the selection mode.
-#: selectionmode/bottombarcontentscontainer.cpp:174
-#: selectionmode/bottombarcontentscontainer.cpp:209
-#: selectionmode/bottombarcontentscontainer.cpp:232
+#: selectionmode/bottombarcontentscontainer.cpp:162
+#: selectionmode/bottombarcontentscontainer.cpp:197
+#: selectionmode/bottombarcontentscontainer.cpp:220
 #, kde-format
 msgctxt "@action:button"
 msgid "Cancel Copying"
 msgstr "取消复制"
 
-#: selectionmode/bottombarcontentscontainer.cpp:202
+#: selectionmode/bottombarcontentscontainer.cpp:190
 #, kde-format
 msgctxt "@info explaining the next step in a process"
 msgid "Select one file or folder whose location should be copied."
 msgstr "选择一个要复制位置的文件或者文件夹。"
 
 #. i18n: "Copy over" refers to copying to the other split view area that is currently visible to the user.
-#: selectionmode/bottombarcontentscontainer.cpp:224
+#: selectionmode/bottombarcontentscontainer.cpp:212
 #, kde-format
 msgctxt "@info explaining the next step in a process"
 msgid "Select the files and folders that should be copied over."
 msgstr "选择要复制的文件和文件夹。"
 
-#: selectionmode/bottombarcontentscontainer.cpp:245
+#: selectionmode/bottombarcontentscontainer.cpp:233
 #, kde-format
 msgctxt "@info explaining the next step in a process"
 msgid "Select the files and folders that should be cut."
 msgstr "选择要剪切的文件和文件夹。"
 
 #. i18n: Aborts the current step-by-step process to cut files by leaving the selection mode.
-#: selectionmode/bottombarcontentscontainer.cpp:252
+#: selectionmode/bottombarcontentscontainer.cpp:240
 #, kde-format
 msgctxt "@action:button"
 msgid "Cancel Cutting"
 msgstr "取消剪切"
 
-#: selectionmode/bottombarcontentscontainer.cpp:281
+#: selectionmode/bottombarcontentscontainer.cpp:269
 #, kde-format
 msgctxt "@info explaining the next step in a process"
 msgid "Select the files and folders that should be permanently deleted."
@@ -3803,21 +3735,21 @@ msgstr "选择要彻底删除的文件和文件夹。"
 
 #. i18n: Aborts the current step-by-step process to delete files by leaving the selection mode.
 #. i18n: Aborts the current step-by-step process of moving files to the trash by leaving the selection mode.
-#: selectionmode/bottombarcontentscontainer.cpp:288
-#: selectionmode/bottombarcontentscontainer.cpp:400
+#: selectionmode/bottombarcontentscontainer.cpp:276
+#: selectionmode/bottombarcontentscontainer.cpp:388
 #, kde-format
 msgctxt "@action:button"
 msgid "Cancel"
 msgstr "取消"
 
-#: selectionmode/bottombarcontentscontainer.cpp:301
+#: selectionmode/bottombarcontentscontainer.cpp:289
 #, kde-format
 msgctxt "@info explaining the next step in a process"
 msgid "Select the files and folders that should be duplicated here."
 msgstr "选择要在此处复制副本的文件和文件夹。"
 
 #. i18n: Aborts the current step-by-step process to duplicate files by leaving the selection mode.
-#: selectionmode/bottombarcontentscontainer.cpp:308
+#: selectionmode/bottombarcontentscontainer.cpp:296
 #, kde-format
 msgctxt "@action:button"
 msgid "Cancel Duplicating"
@@ -3825,33 +3757,33 @@ msgstr "取消复制副本"
 
 #. i18n: This button appears in a bar if there isn't enough horizontal space to fit all the other buttons so please keep it short.
 #. The small button opens a menu that contains the actions that didn't fit on the bar.
-#: selectionmode/bottombarcontentscontainer.cpp:325
+#: selectionmode/bottombarcontentscontainer.cpp:313
 #, kde-format
 msgctxt "@action keep short"
 msgid "More"
 msgstr "更多"
 
 #. i18n: "Move over" refers to moving to the other split view area that is currently visible to the user.
-#: selectionmode/bottombarcontentscontainer.cpp:371
+#: selectionmode/bottombarcontentscontainer.cpp:359
 #, kde-format
 msgctxt "@info explaining the next step in a process"
 msgid "Select the files and folders that should be moved over."
 msgstr "选择要移动的文件和文件夹。"
 
 #. i18n: Aborts the current step-by-step process to copy the location of files by leaving the selection mode.
-#: selectionmode/bottombarcontentscontainer.cpp:379
+#: selectionmode/bottombarcontentscontainer.cpp:367
 #, kde-format
 msgctxt "@action:button"
 msgid "Cancel Moving"
 msgstr "取消移动"
 
-#: selectionmode/bottombarcontentscontainer.cpp:393
+#: selectionmode/bottombarcontentscontainer.cpp:381
 #, kde-format
 msgctxt "@info explaining the next step in a process"
 msgid "Select the files and folders that should be moved to the Trash."
 msgstr "选择要移动到回收站的文件和文件夹。"
 
-#: selectionmode/bottombarcontentscontainer.cpp:413
+#: selectionmode/bottombarcontentscontainer.cpp:401
 #, kde-kuit-format
 msgid ""
 "<para>The selected files and folders were added to the Clipboard. Now the "
@@ -3865,26 +3797,26 @@ msgstr ""
 "<emphasis>粘贴</emphasis>操作来将复制到剪贴板的内容直接粘贴到其他应用程序。</"
 "para>"
 
-#: selectionmode/bottombarcontentscontainer.cpp:434
+#: selectionmode/bottombarcontentscontainer.cpp:422
 #, kde-format
 msgctxt ""
 "@action A more elaborate and clearly worded version of the Paste action"
 msgid "Paste from Clipboard"
 msgstr "从剪贴板粘贴"
 
-#: selectionmode/bottombarcontentscontainer.cpp:439
+#: selectionmode/bottombarcontentscontainer.cpp:427
 #, kde-format
 msgctxt "@action Dismisses a bar explaining how to use the Paste action"
 msgid "Dismiss This Reminder"
 msgstr "忽略此提醒"
 
-#: selectionmode/bottombarcontentscontainer.cpp:441
+#: selectionmode/bottombarcontentscontainer.cpp:429
 #, kde-format
 msgctxt "@action Dismisses an explanatory area and never shows it again"
 msgid "Don't Remind Me Again"
 msgstr "不再提示"
 
-#: selectionmode/bottombarcontentscontainer.cpp:458
+#: selectionmode/bottombarcontentscontainer.cpp:446
 #, kde-format
 msgctxt "@info explains the next step in a process"
 msgid ""
@@ -3895,7 +3827,7 @@ msgstr ""
 "选中多个项目时，可以批量重命名。"
 
 #. i18n: Aborts the current step-by-step process to delete files by leaving the selection mode.
-#: selectionmode/bottombarcontentscontainer.cpp:466
+#: selectionmode/bottombarcontentscontainer.cpp:454
 #, kde-format
 msgctxt "@action:button"
 msgid "Cancel Renaming"
@@ -3906,7 +3838,7 @@ msgstr "取消重命名"
 #. the file/files like "file1" or "file1, file2 and file3" or an aggregate like "8 Selected Folders".
 #. If this sort of word puzzle can not be correctly translated in your language, translate it as "NULL" (without the quotes)
 #. and a fallback will be used.
-#: selectionmode/bottombarcontentscontainer.cpp:613
+#: selectionmode/bottombarcontentscontainer.cpp:601
 #, kde-format
 msgctxt "@action"
 msgid "Copy %2 to the Clipboard"
@@ -3918,7 +3850,7 @@ msgstr[0] "复制 %2 项到剪贴板"
 #. the file/files like "file1" or "file1, file2 and file3" or an aggregate like "8 Selected Folders".
 #. If this sort of word puzzle can not be correctly translated in your language, translate it as "NULL" (without the quotes)
 #. and a fallback will be used.
-#: selectionmode/bottombarcontentscontainer.cpp:624
+#: selectionmode/bottombarcontentscontainer.cpp:612
 #, kde-format
 msgctxt "@action"
 msgid "Copy the Location of %2 to the Clipboard"
@@ -3930,7 +3862,7 @@ msgstr[0] "复制 %2 项的位置到剪贴板"
 #. the file/files like "file1" or "file1, file2 and file3" or an aggregate like "8 Selected Folders".
 #. If this sort of word puzzle can not be correctly translated in your language, translate it as "NULL" (without the quotes)
 #. and a fallback will be used.
-#: selectionmode/bottombarcontentscontainer.cpp:632
+#: selectionmode/bottombarcontentscontainer.cpp:620
 #, kde-format
 msgctxt "@action"
 msgid "Cut %2 to the Clipboard"
@@ -3942,7 +3874,7 @@ msgstr[0] "剪切 %2 项到剪贴板"
 #. the file/files like "file1" or "file1, file2 and file3" or an aggregate like "8 Selected Folders".
 #. If this sort of word puzzle can not be correctly translated in your language, translate it as "NULL" (without the quotes)
 #. and a fallback will be used.
-#: selectionmode/bottombarcontentscontainer.cpp:640
+#: selectionmode/bottombarcontentscontainer.cpp:628
 #, kde-format
 msgctxt "@action"
 msgid "Permanently Delete %2"
@@ -3954,7 +3886,7 @@ msgstr[0] "彻底删除 %2"
 #. the file/files like "file1" or "file1, file2 and file3" or an aggregate like "8 Selected Folders".
 #. If this sort of word puzzle can not be correctly translated in your language, translate it as "NULL" (without the quotes)
 #. and a fallback will be used.
-#: selectionmode/bottombarcontentscontainer.cpp:648
+#: selectionmode/bottombarcontentscontainer.cpp:636
 #, kde-format
 msgctxt "@action"
 msgid "Duplicate %2"
@@ -3966,7 +3898,7 @@ msgstr[0] "复制 %2 项为副本"
 #. the file/files like "file1" or "file1, file2 and file3" or an aggregate like "8 Selected Folders".
 #. If this sort of word puzzle can not be correctly translated in your language, translate it as "NULL" (without the quotes)
 #. and a fallback will be used.
-#: selectionmode/bottombarcontentscontainer.cpp:656
+#: selectionmode/bottombarcontentscontainer.cpp:644
 #, kde-format
 msgctxt "@action"
 msgid "Move %2 to the Trash"
@@ -3978,7 +3910,7 @@ msgstr[0] "移动 %2 项到回收站"
 #. the file/files like "file1" or "file1, file2 and file3" or an aggregate like "8 Selected Folders".
 #. If this sort of word puzzle can not be correctly translated in your language, translate it as "NULL" (without the quotes)
 #. and a fallback will be used.
-#: selectionmode/bottombarcontentscontainer.cpp:664
+#: selectionmode/bottombarcontentscontainer.cpp:652
 #, kde-format
 msgctxt "@action"
 msgid "Rename %2"
@@ -4028,51 +3960,59 @@ msgctxt "@action:button"
 msgid "Exit Selection Mode"
 msgstr "退出选择模式"
 
-#: servicemenushortcutmanager.cpp:26
+#: settings/contextmenu/contextmenusettingspage.cpp:59
 #, kde-format
-msgctxt "@title:group"
-msgid "Context Menu Actions"
-msgstr "右键菜单操作"
+msgctxt "@label:textbox"
+msgid "Select which services should be shown in the context menu:"
+msgstr "选择右键菜单中要显示的服务："
 
-#: settings/contextmenu/contextmenusettingspage.cpp:60
+#: settings/contextmenu/contextmenusettingspage.cpp:64
 #, kde-format
 msgctxt "@label:textbox"
 msgid "Search…"
 msgstr "搜索…"
 
-#: settings/contextmenu/contextmenusettingspage.cpp:68
+#: settings/contextmenu/contextmenusettingspage.cpp:89
 #, kde-format
 msgctxt "@action:button"
-msgid "Download Services…"
-msgstr "下载服务…"
+msgid "Download New Services…"
+msgstr "下载新的服务…"
 
-#: settings/contextmenu/contextmenusettingspage.cpp:79
+#: settings/contextmenu/contextmenusettingspage.cpp:208
 #, kde-format
-msgctxt "@action:button"
-msgid "Shortcuts…"
-msgstr "快捷键…"
+msgctxt "@info"
+msgid ""
+"Dolphin must be restarted to apply the updated version control system "
+"settings."
+msgstr "更新了版本控制系统的设置后，必须重启 Dolphin 才能使其生效。"
 
-#: settings/contextmenu/contextmenusettingspage.cpp:234
+#: settings/contextmenu/contextmenusettingspage.cpp:210
+#, kde-format
+msgctxt "@info"
+msgid "Restart now?"
+msgstr "现在重新启动吗？"
+
+#: settings/contextmenu/contextmenusettingspage.cpp:246
 #, kde-format
 msgctxt "@option:check"
 msgid "Delete"
 msgstr "删除"
 
-#: settings/contextmenu/contextmenusettingspage.cpp:237
-#: settings/contextmenu/contextmenusettingspage.cpp:244
-#: settings/contextmenu/contextmenusettingspage.cpp:255
+#: settings/contextmenu/contextmenusettingspage.cpp:249
+#: settings/contextmenu/contextmenusettingspage.cpp:256
+#: settings/contextmenu/contextmenusettingspage.cpp:267
 #, kde-format
 msgctxt "@item:tooltip"
 msgid "Built-in dolphin"
 msgstr "Dolphin 内建"
 
-#: settings/contextmenu/contextmenusettingspage.cpp:241
+#: settings/contextmenu/contextmenusettingspage.cpp:253
 #, kde-format
 msgctxt "@option:check"
 msgid "'Copy To' and 'Move To' commands"
 msgstr "“复制到”和“移动到”命令"
 
-#: settings/contextmenu/contextmenusettingspage.cpp:287
+#: settings/contextmenu/contextmenusettingspage.cpp:299
 #, kde-format
 msgctxt "@item:inmenu"
 msgid "%1: %2"
@@ -4312,29 +4252,15 @@ msgstr ""
 "此选项用于切换视图的样式。当前支持的值包括图标 (0)、详情 (1) 和紧凑 (2) 视"
 "图。"
 
-#. i18n: ectx: label, entry (ZoomLevel), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:31
-#, kde-format
-msgctxt "@label"
-msgid "Zoom Level"
-msgstr "缩放级别"
-
-#. i18n: ectx: whatsthis, entry (ZoomLevel), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:32
-#, kde-format
-msgctxt "@info:whatsthis"
-msgid "Zoom level of the folder."
-msgstr "文件夹的缩放级别。"
-
 #. i18n: ectx: label, entry (PreviewsShown), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:37
+#: settings/dolphin_directoryviewpropertysettings.kcfg:31
 #, kde-format
 msgctxt "@label"
 msgid "Previews shown"
 msgstr "显示预览图"
 
 #. i18n: ectx: whatsthis, entry (PreviewsShown), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:38
+#: settings/dolphin_directoryviewpropertysettings.kcfg:32
 #, kde-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -4343,14 +4269,14 @@ msgid ""
 msgstr "勾选此项后，图标将显示为文件内容的预览图。"
 
 #. i18n: ectx: label, entry (GroupedSorting), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:43
+#: settings/dolphin_directoryviewpropertysettings.kcfg:37
 #, kde-format
 msgctxt "@label"
 msgid "Grouped Sorting"
 msgstr "分组显示"
 
 #. i18n: ectx: whatsthis, entry (GroupedSorting), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:44
+#: settings/dolphin_directoryviewpropertysettings.kcfg:38
 #, kde-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -4358,148 +4284,130 @@ msgid ""
 msgstr "勾选此项后，项目在排序时将按照所选类别分组显示。"
 
 #. i18n: ectx: label, entry (SortRole), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:49
+#: settings/dolphin_directoryviewpropertysettings.kcfg:43
 #, kde-format
 msgctxt "@label"
 msgid "Sort files by"
 msgstr "文件排序方式"
 
 #. i18n: ectx: whatsthis, entry (SortRole), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:50
+#: settings/dolphin_directoryviewpropertysettings.kcfg:44
 #, kde-format
 msgctxt "@info:whatsthis"
 msgid ""
 "This option defines which attribute (text, size, date, etc.) sorting is "
 "performed on."
-msgstr "这个选项定义正在被排序的属性 (文本、大小、日期等)。"
+msgstr "这个选项定义正在被排序的属性 (文字、大小、日期等)。"
 
 #. i18n: ectx: label, entry (SortOrder), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:55
+#: settings/dolphin_directoryviewpropertysettings.kcfg:49
 #, kde-format
 msgctxt "@label"
 msgid "Order in which to sort files"
 msgstr "文件排序顺序"
 
 #. i18n: ectx: label, entry (SortFoldersFirst), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:62
+#: settings/dolphin_directoryviewpropertysettings.kcfg:56
 #, kde-format
 msgctxt "@label"
 msgid "Show folders first when sorting files and folders"
 msgstr "在对文件和文件夹进行排序时，文件夹靠前显示"
 
 #. i18n: ectx: label, entry (SortHiddenLast), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:67
+#: settings/dolphin_directoryviewpropertysettings.kcfg:61
 #, kde-format
 msgctxt "@label"
 msgid "Show hidden files and folders last"
 msgstr "隐藏文件和文件夹靠后显示"
 
 #. i18n: ectx: label, entry (VisibleRoles), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:72
+#: settings/dolphin_directoryviewpropertysettings.kcfg:66
 #, kde-format
 msgctxt "@label"
 msgid "Visible roles"
 msgstr "可见角色"
 
 #. i18n: ectx: label, entry (HeaderColumnWidths), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:77
+#: settings/dolphin_directoryviewpropertysettings.kcfg:71
 #, kde-format
 msgctxt "@label"
 msgid "Header column widths"
 msgstr "表头列宽"
 
 #. i18n: ectx: label, entry (Timestamp), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:82
+#: settings/dolphin_directoryviewpropertysettings.kcfg:76
 #, kde-format
 msgctxt "@label"
 msgid "Properties last changed"
 msgstr "上次更改的属性"
 
 #. i18n: ectx: whatsthis, entry (Timestamp), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:83
+#: settings/dolphin_directoryviewpropertysettings.kcfg:77
 #, kde-format
 msgctxt "@info:whatsthis"
 msgid "The last time these properties were changed by the user."
 msgstr "用户上次更改这些属性的时间。"
 
 #. i18n: ectx: label, entry (DynamicViewPassed), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:87
+#: settings/dolphin_directoryviewpropertysettings.kcfg:81
 #, kde-format
 msgctxt "@label"
 msgid "View mode changed once by dynamic view"
 msgstr "动态视图更改了一次视图模式"
 
 #. i18n: ectx: label, entry (AdditionalInfo), group (Dolphin)
-#: settings/dolphin_directoryviewpropertysettings.kcfg:93
+#: settings/dolphin_directoryviewpropertysettings.kcfg:87
 #, kde-format
 msgctxt "@label"
 msgid "Additional Information"
 msgstr "额外信息"
 
 #. i18n: ectx: label, entry (DoubleClickViewAction), group (General)
-#: settings/dolphin_generalsettings.kcfg:19
+#: settings/dolphin_generalsettings.kcfg:18
 #, kde-format
 msgid "Select Action"
 msgstr "选择操作"
 
 #. i18n: ectx: label, entry (DoubleClickViewCustomAction), group (General)
-#: settings/dolphin_generalsettings.kcfg:23
+#: settings/dolphin_generalsettings.kcfg:22
 #, kde-format
 msgid "Custom Action"
 msgstr "自定义操作"
 
 #. i18n: ectx: label, entry (EditableUrl), group (General)
-#: settings/dolphin_generalsettings.kcfg:26
+#: settings/dolphin_generalsettings.kcfg:25
 #, kde-format
 msgid "Should the URL be editable for the user"
 msgstr "用户是否可以编辑 URL"
 
 #. i18n: ectx: label, entry (UrlCompletionMode), group (General)
-#: settings/dolphin_generalsettings.kcfg:30
+#: settings/dolphin_generalsettings.kcfg:29
 #, kde-format
 msgid "Text completion mode of the URL Navigator"
 msgstr "URL 导航器的文本补全模式"
 
 #. i18n: ectx: label, entry (ShowFullPath), group (General)
-#: settings/dolphin_generalsettings.kcfg:34
+#: settings/dolphin_generalsettings.kcfg:33
 #, kde-format
 msgid "Should the full path be shown inside the location bar"
 msgstr "位置栏是否显示完整路径"
 
 #. i18n: ectx: label, entry (ShowFullPathInTitlebar), group (General)
-#: settings/dolphin_generalsettings.kcfg:38
+#: settings/dolphin_generalsettings.kcfg:37
 #, kde-format
 msgid "Should the full path be shown in the title bar"
 msgstr "标题栏是否显示完整路径"
 
 #. i18n: ectx: label, entry (OpenExternallyCalledFolderInNewTab), group (General)
-#: settings/dolphin_generalsettings.kcfg:42
+#: settings/dolphin_generalsettings.kcfg:41
 #, kde-format
 msgid ""
 "Should an externally called folder open in a new tab in an existing Dolphin "
 "instance"
 msgstr "外部程序发起打开文件夹操作时，是否在当前 Dolphin 实例的新标签页中打开"
 
-#. i18n: ectx: label, entry (AlwaysShowTabBar), group (General)
-#: settings/dolphin_generalsettings.kcfg:46
-#, kde-format
-msgid "Should the tab bar always be shown, even when there is only one tab"
-msgstr "是否总是显示标签页栏，即使只有一个标签页"
-
-#. i18n: ectx: label, entry (ShowCloseButtonOnTabs), group (General)
-#: settings/dolphin_generalsettings.kcfg:51
-#, kde-format
-msgid "Should tabs have close buttons"
-msgstr "标签页是否显示关闭按钮"
-
-#. i18n: ectx: label, entry (TabStyle), group (General)
-#: settings/dolphin_generalsettings.kcfg:56
-#, kde-format
-msgid "Tab style"
-msgstr "标签页样式"
-
 #. i18n: ectx: label, entry (Version), group (General)
-#: settings/dolphin_generalsettings.kcfg:66
+#: settings/dolphin_generalsettings.kcfg:45
 #, kde-format
 msgid ""
 "Internal config version of Dolphin, mainly Used to determine whether an "
@@ -4510,7 +4418,7 @@ msgstr ""
 "移已移除、已重命名的配置条目等操作。"
 
 #. i18n: ectx: label, entry (ModifiedStartupSettings), group (General)
-#: settings/dolphin_generalsettings.kcfg:70
+#: settings/dolphin_generalsettings.kcfg:49
 #, kde-format
 msgid ""
 "Have the startup settings been modified (internal setting not shown in the "
@@ -4518,49 +4426,49 @@ msgid ""
 msgstr "启动设置已经修改 (界面中不显示内部设置)"
 
 #. i18n: ectx: label, entry (HomeUrl), group (General)
-#: settings/dolphin_generalsettings.kcfg:74
+#: settings/dolphin_generalsettings.kcfg:53
 #, kde-format
 msgid "Home URL"
 msgstr "主文件夹 URL"
 
 #. i18n: ectx: label, entry (RememberOpenedTabs), group (General)
-#: settings/dolphin_generalsettings.kcfg:78
+#: settings/dolphin_generalsettings.kcfg:57
 #, kde-format
 msgid "Remember open folders and tabs"
 msgstr "记住上次关闭时的文件夹和标签页"
 
 #. i18n: ectx: label, entry (SplitView), group (General)
-#: settings/dolphin_generalsettings.kcfg:82
+#: settings/dolphin_generalsettings.kcfg:61
 #, kde-format
 msgid "Place two views side by side"
 msgstr "并排显示两个视图"
 
 #. i18n: ectx: label, entry (FilterBar), group (General)
-#: settings/dolphin_generalsettings.kcfg:87
+#: settings/dolphin_generalsettings.kcfg:66
 #, kde-format
 msgid "Should the filter bar be shown"
 msgstr "是否显示过滤栏"
 
 #. i18n: ectx: label, entry (GlobalViewProps), group (General)
-#: settings/dolphin_generalsettings.kcfg:91
+#: settings/dolphin_generalsettings.kcfg:70
 #, kde-format
 msgid "Should the view properties be used for all folders"
 msgstr "所有文件夹是否使用相同的视图属性"
 
 #. i18n: ectx: label, entry (BrowseThroughArchives), group (General)
-#: settings/dolphin_generalsettings.kcfg:95
+#: settings/dolphin_generalsettings.kcfg:74
 #, kde-format
 msgid "Browse through archives"
 msgstr "浏览压缩文件内容"
 
 #. i18n: ectx: label, entry (ConfirmClosingMultipleTabs), group (General)
-#: settings/dolphin_generalsettings.kcfg:99
+#: settings/dolphin_generalsettings.kcfg:78
 #, kde-format
 msgid "Ask for confirmation when closing windows with multiple tabs."
 msgstr "关闭包含多个标签页的窗口时需要用户确认。"
 
 #. i18n: ectx: label, entry (ConfirmClosingTerminalRunningProgram), group (General)
-#: settings/dolphin_generalsettings.kcfg:103
+#: settings/dolphin_generalsettings.kcfg:82
 #, kde-format
 msgid ""
 "Ask for confirmation when closing windows with a program that is still "
@@ -4568,19 +4476,19 @@ msgid ""
 msgstr "在程序仍然在终端面板中运行时关闭窗口需要确认。"
 
 #. i18n: ectx: label, entry (RenameInline), group (General)
-#: settings/dolphin_generalsettings.kcfg:107
+#: settings/dolphin_generalsettings.kcfg:86
 #, kde-format
 msgid "Rename single items inline"
 msgstr "重命名单个项目"
 
 #. i18n: ectx: label, entry (ShowSelectionToggle), group (General)
-#: settings/dolphin_generalsettings.kcfg:111
+#: settings/dolphin_generalsettings.kcfg:90
 #, kde-format
 msgid "Show selection toggle"
 msgstr "显示选择开关"
 
 #. i18n: ectx: label, entry (ShowPasteBarAfterCopying), group (General)
-#: settings/dolphin_generalsettings.kcfg:115
+#: settings/dolphin_generalsettings.kcfg:94
 #, kde-format
 msgid ""
 "Show a bar for easy pasting after a cut or copy was done using the selection "
@@ -4588,67 +4496,67 @@ msgid ""
 msgstr "在使用选择模式底部工具栏进行剪切或者复制后，显示用于快速粘贴的工具栏。"
 
 #. i18n: ectx: label, entry (UseTabForSwitchingSplitView), group (General)
-#: settings/dolphin_generalsettings.kcfg:119
+#: settings/dolphin_generalsettings.kcfg:98
 #, kde-format
 msgid "Use tab for switching between right and left view"
 msgstr "按 Tab 键切换左、右视图"
 
-#. i18n: ectx: label, entry (CloseSplitViewChoice), group (General)
-#: settings/dolphin_generalsettings.kcfg:128
+#. i18n: ectx: label, entry (CloseActiveSplitView), group (General)
+#: settings/dolphin_generalsettings.kcfg:102
 #, kde-format
-msgid "Close split view"
-msgstr "关闭拆分视图"
+msgid "Close the view in focus when turning off split view"
+msgstr "关闭拆分视图时，关闭焦点所在的视图"
 
 #. i18n: ectx: label, entry (OpenNewTabAfterLastTab), group (General)
-#: settings/dolphin_generalsettings.kcfg:132
+#: settings/dolphin_generalsettings.kcfg:106
 #, kde-format
 msgid "New tab will be open after last one"
 msgstr "新标签页将在最后一个标签页之后打开"
 
 #. i18n: ectx: label, entry (ShowToolTips), group (General)
-#: settings/dolphin_generalsettings.kcfg:136
+#: settings/dolphin_generalsettings.kcfg:110
 #, kde-format
 msgid "Show item information on hover"
 msgstr "悬停时显示项目信息"
 
 #. i18n: ectx: label, entry (ViewPropsTimestamp), group (General)
-#: settings/dolphin_generalsettings.kcfg:140
+#: settings/dolphin_generalsettings.kcfg:114
 #, kde-format
 msgid "Timestamp since when the view properties are valid"
 msgstr "启用此视图属性时的时间戳"
 
 #. i18n: ectx: label, entry (AutoExpandFolders), group (General)
-#: settings/dolphin_generalsettings.kcfg:143
+#: settings/dolphin_generalsettings.kcfg:117
 #, kde-format
 msgid "Use auto-expanding folders for all view types"
 msgstr "所有视图类型均使用自动展开的文件夹"
 
 #. i18n: ectx: label, entry (ShowStatusBar), group (General)
-#: settings/dolphin_generalsettings.kcfg:152
+#: settings/dolphin_generalsettings.kcfg:126
 #, kde-format
 msgid "Statusbar"
 msgstr "状态栏"
 
 #. i18n: ectx: label, entry (ShowZoomSlider), group (General)
-#: settings/dolphin_generalsettings.kcfg:157
+#: settings/dolphin_generalsettings.kcfg:131
 #, kde-format
 msgid "Show zoom slider in the statusbar"
 msgstr "在状态栏上显示缩放滑动条"
 
 #. i18n: ectx: label, entry (LockPanels), group (General)
-#: settings/dolphin_generalsettings.kcfg:161
+#: settings/dolphin_generalsettings.kcfg:135
 #, kde-format
 msgid "Lock the layout of the panels"
 msgstr "锁定面板布局"
 
 #. i18n: ectx: label, entry (EnlargeSmallPreviews), group (General)
-#: settings/dolphin_generalsettings.kcfg:165
+#: settings/dolphin_generalsettings.kcfg:139
 #, kde-format
 msgid "Enlarge Small Previews"
 msgstr "放大预览图"
 
 #. i18n: ectx: label, entry (SortingChoice), group (General)
-#: settings/dolphin_generalsettings.kcfg:174
+#: settings/dolphin_generalsettings.kcfg:148
 #, kde-format
 msgid ""
 "Choose Natural, Case Sensitive, or Case Insensitive order of sorting the "
@@ -4656,31 +4564,31 @@ msgid ""
 msgstr "选择按照语言习惯、区分大小写、不区分大小写等方式对项目进行排序"
 
 #. i18n: ectx: label, entry (HideXTrashFile), group (General)
-#: settings/dolphin_generalsettings.kcfg:179
+#: settings/dolphin_generalsettings.kcfg:153
 #, kde-format
 msgid "Also hide files with application/x-trash mimetype"
 msgstr "同时隐藏 MIME 类型为 application/x-trash 的文件"
 
 #. i18n: ectx: label, entry (DynamicView), group (General)
-#: settings/dolphin_generalsettings.kcfg:183
+#: settings/dolphin_generalsettings.kcfg:157
 #, kde-format
 msgid "Enable dynamic view"
 msgstr "启用动态视图"
 
 #. i18n: ectx: label, entry (ConfirmOpenManyFolders), group (Notification Messages)
-#: settings/dolphin_generalsettings.kcfg:189
+#: settings/dolphin_generalsettings.kcfg:163
 #, kde-format
 msgid "Ask for confirmation when opening many folders at once."
 msgstr "一次打开大量文件夹时请求确认。"
 
 #. i18n: ectx: label, entry (ConfirmOpenManyTerminals), group (Notification Messages)
-#: settings/dolphin_generalsettings.kcfg:193
+#: settings/dolphin_generalsettings.kcfg:167
 #, kde-format
 msgid "Ask for confirmation when opening many terminals at once."
 msgstr "一次打开大量终端时请求确认。"
 
 #. i18n: ectx: label, entry (ConfirmRenameFileType), group (Notification Messages)
-#: settings/dolphin_generalsettings.kcfg:197
+#: settings/dolphin_generalsettings.kcfg:171
 #, kde-format
 msgid "Ask for confirmation when renaming file changes its type."
 msgstr "通过重命名更改文件类型时请求确认。"
@@ -4750,266 +4658,223 @@ msgstr "您有尚未保存的更改。您想要应用这些更改，还是放弃
 msgid "Warning"
 msgstr "警告"
 
-#: settings/interface/confirmationssettingspage.cpp:50
+#: settings/interface/confirmationssettingspage.cpp:49
 #, kde-format
 msgctxt "@title:group"
-msgid "Ask for confirmation in KDE applications when:"
-msgstr "在 KDE 程序中进行以下操作时请求确认："
+msgid "Ask for confirmation in all KDE applications when:"
+msgstr "在所有 KDE 程序中进行以下操作时请求确认："
 
-#: settings/interface/confirmationssettingspage.cpp:53
+#: settings/interface/confirmationssettingspage.cpp:52
 #, kde-format
 msgctxt "@option:check Ask for confirmation when"
 msgid "Moving files or folders to trash"
 msgstr "移动文件或者文件夹到回收站"
 
-#: settings/interface/confirmationssettingspage.cpp:54
+#: settings/interface/confirmationssettingspage.cpp:53
 #, kde-format
 msgctxt "@option:check Ask for confirmation when"
 msgid "Emptying trash"
 msgstr "清空回收站"
 
-#: settings/interface/confirmationssettingspage.cpp:55
+#: settings/interface/confirmationssettingspage.cpp:54
 #, kde-format
 msgctxt "@option:check Ask for confirmation when"
 msgid "Deleting files or folders"
 msgstr "彻底删除文件或者文件夹"
 
-#: settings/interface/confirmationssettingspage.cpp:57
+#: settings/interface/confirmationssettingspage.cpp:56
 #, kde-format
 msgctxt "@title:group"
 msgid "Ask for confirmation in Dolphin when:"
 msgstr "在 Dolphin 中进行以下操作时请求确认："
 
-#: settings/interface/confirmationssettingspage.cpp:60
+#: settings/interface/confirmationssettingspage.cpp:59
 #, kde-format
 msgctxt "@option:check Ask for confirmation in Dolphin when"
 msgid "Closing windows with multiple tabs"
 msgstr "关闭窗口时有多个标签页"
 
-#: settings/interface/confirmationssettingspage.cpp:64
+#: settings/interface/confirmationssettingspage.cpp:63
 #, kde-format
 msgctxt "@option:check Ask for confirmation when"
 msgid "Closing windows with a program running in the Terminal panel"
 msgstr "关闭窗口时终端面板正在运行程序"
 
-#: settings/interface/confirmationssettingspage.cpp:67
+#: settings/interface/confirmationssettingspage.cpp:66
 #, kde-format
 msgctxt "@option:check Ask for confirmation in Dolphin when"
 msgid "Opening many folders at once"
 msgstr "一次打开大量文件夹"
 
-#: settings/interface/confirmationssettingspage.cpp:68
+#: settings/interface/confirmationssettingspage.cpp:67
 #, kde-format
 msgctxt "@option:check Ask for confirmation in Dolphin when"
 msgid "Opening many terminals at once"
 msgstr "一次打开大量终端"
 
-#: settings/interface/confirmationssettingspage.cpp:69
+#: settings/interface/confirmationssettingspage.cpp:68
 #, kde-format
 msgctxt "@option:check Ask for confirmation in Dolphin when"
 msgid "Switching to act as an administrator"
 msgstr "正在切换到以管理员身份操作"
 
-#: settings/interface/confirmationssettingspage.cpp:70
+#: settings/interface/confirmationssettingspage.cpp:69
 #, kde-format
 msgctxt "@option:check Ask for confirmation in Dolphin when"
 msgid "Renaming a file will change its type"
 msgstr "重命名文件将改变其文件类型"
 
-#: settings/interface/confirmationssettingspage.cpp:72
+#: settings/interface/confirmationssettingspage.cpp:71
 #, kde-format
 msgctxt "@title:group"
 msgid "When opening an executable file:"
 msgstr "打开可执行文件时："
 
-#: settings/interface/confirmationssettingspage.cpp:76
+#: settings/interface/confirmationssettingspage.cpp:75
 #, kde-format
 msgid "Always ask"
 msgstr "总是询问"
 
-#: settings/interface/confirmationssettingspage.cpp:76
+#: settings/interface/confirmationssettingspage.cpp:75
 #, kde-format
 msgid "Open in application"
 msgstr "在应用程序中打开"
 
-#: settings/interface/confirmationssettingspage.cpp:76
+#: settings/interface/confirmationssettingspage.cpp:75
 #, kde-format
 msgid "Run script"
 msgstr "作为脚本运行"
 
-#: settings/interface/folderstabssettingspage.cpp:54
+#: settings/interface/folderstabssettingspage.cpp:49
 #, kde-format
 msgctxt "@option:radio Show on startup"
 msgid "Folders, tabs, and window state from last time"
 msgstr "恢复之前的文件夹、标签页和窗口状态"
 
-#: settings/interface/folderstabssettingspage.cpp:59
+#: settings/interface/folderstabssettingspage.cpp:54
 #, kde-format
 msgctxt "@option:radio"
 msgid "Show home location on startup"
 msgstr "启动时显示主文件夹位置"
 
 #. i18n: For entering the absolute path to a user-specified home folder. Default: /home/userName/
-#: settings/interface/folderstabssettingspage.cpp:67
+#: settings/interface/folderstabssettingspage.cpp:61
 #, kde-format
 msgctxt "@info:placeholder"
 msgid "Enter home location path"
 msgstr "输入主文件夹路径"
 
-#: settings/interface/folderstabssettingspage.cpp:75
+#: settings/interface/folderstabssettingspage.cpp:68
 #, kde-format
 msgctxt "@action:button"
 msgid "Select Home Location"
 msgstr "选择主文件夹位置"
 
-#: settings/interface/folderstabssettingspage.cpp:85
+#: settings/interface/folderstabssettingspage.cpp:78
 #, kde-format
 msgctxt "@action:button"
 msgid "Use Current Location"
 msgstr "使用当前位置"
 
-#: settings/interface/folderstabssettingspage.cpp:89
+#: settings/interface/folderstabssettingspage.cpp:82
 #, kde-format
 msgctxt "@action:button"
 msgid "Use Default Location"
 msgstr "使用默认位置"
 
-#: settings/interface/folderstabssettingspage.cpp:97
+#: settings/interface/folderstabssettingspage.cpp:90
 #, kde-format
 msgctxt "@label:textbox"
 msgid "Show on startup:"
 msgstr "启动时显示："
 
-#: settings/interface/folderstabssettingspage.cpp:110
+#: settings/interface/folderstabssettingspage.cpp:103
 #, kde-format
 msgctxt "@label:checkbox"
 msgid "Opening Folders:"
 msgstr "打开文件夹："
 
-#: settings/interface/folderstabssettingspage.cpp:111
+#: settings/interface/folderstabssettingspage.cpp:104
 #, kde-format
 msgctxt "@option:check Opening Folders"
 msgid "Keep a single Dolphin window, opening new folders in tabs"
 msgstr "保持单个 Dolphin 窗口，在标签页中打开新文件夹"
 
-#: settings/interface/folderstabssettingspage.cpp:115
+#: settings/interface/folderstabssettingspage.cpp:108
 #, kde-format
 msgctxt "@label:checkbox"
 msgid "Window:"
 msgstr "窗口："
 
-#: settings/interface/folderstabssettingspage.cpp:116
+#: settings/interface/folderstabssettingspage.cpp:109
 #, kde-format
 msgctxt "@option:check Startup Settings"
 msgid "Show full path in title bar"
 msgstr "标题栏显示完整路径"
 
-#: settings/interface/folderstabssettingspage.cpp:119
+#: settings/interface/folderstabssettingspage.cpp:112
 #, kde-format
 msgctxt "@option:check Window Startup Settings"
 msgid "Show filter bar"
 msgstr "显示过滤栏"
 
-#: settings/interface/folderstabssettingspage.cpp:125
-#, kde-format
-msgctxt "@option:check"
-msgid "Always show tab bar"
-msgstr "总是显示标签页栏"
-
-#: settings/interface/folderstabssettingspage.cpp:126
-#, kde-format
-msgctxt "@label:checkbox"
-msgid "Tab width:"
-msgstr "标签页宽度："
-
-#: settings/interface/folderstabssettingspage.cpp:127
-#, kde-format
-msgctxt "@option:check"
-msgid "Show close button on tabs"
-msgstr "显示标签页的关闭按钮"
-
-#: settings/interface/folderstabssettingspage.cpp:130
-#, kde-format
-msgctxt "@option:radio size as in tab width"
-msgid "Tab width adapts to folder name"
-msgstr "标签页宽度按文件夹名称调整"
-
-#: settings/interface/folderstabssettingspage.cpp:131
-#, kde-format
-msgctxt "@option:radio size as in tab width"
-msgid "Tabs all have the same fixed width"
-msgstr "标签页使用相同的固定宽度"
-
-#: settings/interface/folderstabssettingspage.cpp:132
-#, kde-format
-msgctxt "@option:radio width as in tab width"
-msgid "Tabs span the available width"
-msgstr "标签页占满可用宽度"
-
-#: settings/interface/folderstabssettingspage.cpp:137
-#, kde-format
-msgctxt "@title:group"
-msgid "Tab style: "
-msgstr "标签页样式："
-
-#: settings/interface/folderstabssettingspage.cpp:141
+#: settings/interface/folderstabssettingspage.cpp:118
 #, kde-format
 msgctxt "option:radio"
 msgid "After current tab"
 msgstr "当前标签页右侧"
 
-#: settings/interface/folderstabssettingspage.cpp:142
+#: settings/interface/folderstabssettingspage.cpp:119
 #, kde-format
 msgctxt "option:radio"
 msgid "At end of tab bar"
 msgstr "标签页栏最右侧"
 
-#: settings/interface/folderstabssettingspage.cpp:146
+#: settings/interface/folderstabssettingspage.cpp:123
 #, kde-format
 msgctxt "@title:group"
 msgid "Open new tabs: "
 msgstr "新标签页位置："
 
-#: settings/interface/folderstabssettingspage.cpp:152
-#, kde-format
-msgctxt "@info"
-msgid "When closing a split view"
-msgstr "关闭拆分视图时"
-
-#: settings/interface/folderstabssettingspage.cpp:154
-#, kde-format
-msgid "Close the active pane"
-msgstr "关闭活动窗格"
-
-#: settings/interface/folderstabssettingspage.cpp:154
-#, kde-format
-msgid "Close the inactive pane"
-msgstr "关闭非活动窗格"
-
-#: settings/interface/folderstabssettingspage.cpp:154
-#, kde-format
-msgid "Close the right pane"
-msgstr "关闭右侧窗格"
-
-#: settings/interface/folderstabssettingspage.cpp:161
+#: settings/interface/folderstabssettingspage.cpp:130
 #, kde-format
 msgctxt "@title:group"
 msgid "Split view: "
 msgstr "拆分视图:："
 
-#: settings/interface/folderstabssettingspage.cpp:164
+#: settings/interface/folderstabssettingspage.cpp:131
 #, kde-format
 msgctxt "option:check split view panes"
 msgid "Switch between views with Tab key"
 msgstr "按 Tab 键切换视图"
 
-#: settings/interface/folderstabssettingspage.cpp:168
+#: settings/interface/folderstabssettingspage.cpp:136
+#, kde-format
+msgctxt "option:check"
+msgid "Turning off split view closes the view in focus"
+msgstr "关闭拆分视图时，关闭焦点所在的视图"
+
+#: settings/interface/folderstabssettingspage.cpp:139
+#, kde-format
+msgid ""
+"When unchecked, the opposite view will be closed. The Close icon always "
+"illustrates which view (left or right) will be closed."
+msgstr ""
+"如果不选中此项，将关闭不处于焦点的视图。点击关闭图标时它所在的视图就是要被关"
+"闭的视图。"
+
+#: settings/interface/folderstabssettingspage.cpp:142
+#, kde-format
+msgid "New windows:"
+msgstr "新窗口状态："
+
+#: settings/interface/folderstabssettingspage.cpp:143
 #, kde-format
 msgctxt "@option:check Startup Settings"
-msgid "Open new windows in split view mode"
-msgstr "在拆分视图模式中打开新窗口"
+msgid "Begin in split view mode"
+msgstr "使用拆分视图模式"
 
-#: settings/interface/folderstabssettingspage.cpp:342
+#: settings/interface/folderstabssettingspage.cpp:291
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -5049,43 +4914,43 @@ msgctxt "@title:tab Status & Location bars settings"
 msgid "Status && Location bars"
 msgstr "状态栏与位置栏"
 
-#: settings/interface/panelsettingspage.cpp:41
+#: settings/interface/panelsettingspage.cpp:35
 #, kde-format
 msgctxt "@option:check"
 msgid "Show previews"
 msgstr "显示预览"
 
-#: settings/interface/panelsettingspage.cpp:42
+#: settings/interface/panelsettingspage.cpp:36
 #, kde-format
 msgctxt "@option:check"
 msgid "Auto-play media files"
 msgstr "自动播放媒体文件"
 
-#: settings/interface/panelsettingspage.cpp:43
+#: settings/interface/panelsettingspage.cpp:37
 #, kde-format
 msgctxt "@option:check"
 msgid "Show item on hover"
 msgstr "悬停时显示项目"
 
-#: settings/interface/panelsettingspage.cpp:44
+#: settings/interface/panelsettingspage.cpp:38
 #, kde-format
 msgctxt "@option:check"
 msgid "Use &long date, for example '%1'"
 msgstr "使用长日期 (例如“%1”)(&L)"
 
-#: settings/interface/panelsettingspage.cpp:45
+#: settings/interface/panelsettingspage.cpp:39
 #, kde-format
 msgctxt "@option:check"
 msgid "Use &condensed date, for example '%1'"
 msgstr "使用短日期 (例如“%1”)(&C)"
 
-#: settings/interface/panelsettingspage.cpp:51
+#: settings/interface/panelsettingspage.cpp:45
 #, kde-format
 msgctxt "@label:checkbox"
 msgid "Information Panel:"
 msgstr "信息面板："
 
-#: settings/interface/panelsettingspage.cpp:58
+#: settings/interface/panelsettingspage.cpp:53
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -5168,48 +5033,48 @@ msgctxt "@title:group"
 msgid "Remote storage:"
 msgstr "远程存储："
 
-#: settings/interface/statusandlocationbarssettingspage.cpp:43
+#: settings/interface/statusandlocationbarssettingspage.cpp:42
 #, kde-format
 msgctxt "@option:radio"
 msgid "Small"
 msgstr "小"
 
-#: settings/interface/statusandlocationbarssettingspage.cpp:44
+#: settings/interface/statusandlocationbarssettingspage.cpp:43
 #, kde-format
 msgctxt "@option:radio"
 msgid "Full width"
 msgstr "完整宽度"
 
-#: settings/interface/statusandlocationbarssettingspage.cpp:45
+#: settings/interface/statusandlocationbarssettingspage.cpp:44
 #, kde-format
 msgctxt "@option:check"
 msgid "Show zoom slider"
 msgstr "显示缩放滑动条"
 
-#: settings/interface/statusandlocationbarssettingspage.cpp:46
+#: settings/interface/statusandlocationbarssettingspage.cpp:45
 #, kde-format
 msgctxt "@option:check"
 msgid "Disabled"
 msgstr "禁用"
 
-#: settings/interface/statusandlocationbarssettingspage.cpp:52
+#: settings/interface/statusandlocationbarssettingspage.cpp:51
 #, kde-format
 msgctxt "@title:group"
 msgid "Status Bar:"
 msgstr "状态栏："
 
-#: settings/interface/statusandlocationbarssettingspage.cpp:69
+#: settings/interface/statusandlocationbarssettingspage.cpp:68
 #, kde-format
 msgctxt "@option:check Startup Settings"
 msgid "Make location bar editable"
 msgstr "位置栏默认在可编辑状态"
 
-#: settings/interface/statusandlocationbarssettingspage.cpp:70
+#: settings/interface/statusandlocationbarssettingspage.cpp:69
 #, kde-format
 msgid "Location bar:"
 msgstr "位置栏："
 
-#: settings/interface/statusandlocationbarssettingspage.cpp:72
+#: settings/interface/statusandlocationbarssettingspage.cpp:71
 #, kde-format
 msgctxt "@option:check Startup Settings"
 msgid "Show full path inside location bar"
@@ -5242,115 +5107,115 @@ msgctxt "@title:tab"
 msgid "Details"
 msgstr "详情"
 
-#: settings/viewmodes/contentdisplaytab.cpp:39
+#: settings/viewmodes/contentdisplaytab.cpp:38
 #, kde-format
 msgctxt "option:radio"
 msgid "Natural"
 msgstr "按语言习惯"
 
-#: settings/viewmodes/contentdisplaytab.cpp:40
+#: settings/viewmodes/contentdisplaytab.cpp:39
 #, kde-format
 msgctxt "option:radio"
 msgid "Alphabetical, case insensitive"
 msgstr "按字母顺序，不区分大小写"
 
-#: settings/viewmodes/contentdisplaytab.cpp:41
+#: settings/viewmodes/contentdisplaytab.cpp:40
 #, kde-format
 msgctxt "option:radio"
 msgid "Alphabetical, case sensitive"
 msgstr "按字母顺序，区分大小写"
 
-#: settings/viewmodes/contentdisplaytab.cpp:47
+#: settings/viewmodes/contentdisplaytab.cpp:46
 #, kde-format
 msgctxt "@title:group"
 msgid "Sorting mode: "
 msgstr "排序方式："
 
-#: settings/viewmodes/contentdisplaytab.cpp:53
+#: settings/viewmodes/contentdisplaytab.cpp:52
 #, kde-format
 msgctxt "option:radio"
 msgid "Show number of items"
 msgstr "显示项目数量"
 
-#: settings/viewmodes/contentdisplaytab.cpp:54
+#: settings/viewmodes/contentdisplaytab.cpp:53
 #, kde-format
 msgctxt "option:radio"
 msgid "Show size of contents, up to "
 msgstr "显示内容大小，上限为 "
 
-#: settings/viewmodes/contentdisplaytab.cpp:55
+#: settings/viewmodes/contentdisplaytab.cpp:54
 #, kde-format
 msgctxt "option:radio"
 msgid "Show no size"
 msgstr "不显示大小"
 
-#: settings/viewmodes/contentdisplaytab.cpp:64
+#: settings/viewmodes/contentdisplaytab.cpp:63
 #, kde-format
 msgid " level deep"
 msgid_plural " levels deep"
 msgstr[0] " 级深度"
 
-#: settings/viewmodes/contentdisplaytab.cpp:73
+#: settings/viewmodes/contentdisplaytab.cpp:72
 #, kde-format
 msgctxt "@title:group"
 msgid "Folder size:"
 msgstr "文件夹大小："
 
-#: settings/viewmodes/contentdisplaytab.cpp:83
+#: settings/viewmodes/contentdisplaytab.cpp:82
 #, kde-format
 msgctxt "option:radio as in relative date"
 msgid "Relative (e.g. '%1')"
 msgstr "相对日期 (例如“%1”)"
 
-#: settings/viewmodes/contentdisplaytab.cpp:85
+#: settings/viewmodes/contentdisplaytab.cpp:84
 #, kde-format
 msgctxt "option:radio as in absolute date"
 msgid "Absolute (e.g. '%1')"
 msgstr "绝对日期 (例如“%1”)"
 
-#: settings/viewmodes/contentdisplaytab.cpp:91
+#: settings/viewmodes/contentdisplaytab.cpp:90
 #, kde-format
 msgctxt "@title:group"
 msgid "Date style:"
 msgstr "日期样式："
 
-#: settings/viewmodes/contentdisplaytab.cpp:94
+#: settings/viewmodes/contentdisplaytab.cpp:93
 #, kde-format
 msgctxt "option:radio as symbolic style "
 msgid "Symbolic (e.g. 'drwxr-xr-x')"
 msgstr "符号式 (例如“drwxr-xr-x”)"
 
-#: settings/viewmodes/contentdisplaytab.cpp:95
+#: settings/viewmodes/contentdisplaytab.cpp:94
 #, kde-format
 msgctxt "option:radio as numeric style"
 msgid "Numeric (Octal) (e.g. '755')"
 msgstr "数字式 (例如“755”) (八进制)"
 
-#: settings/viewmodes/contentdisplaytab.cpp:96
+#: settings/viewmodes/contentdisplaytab.cpp:95
 #, kde-format
 msgctxt "option:radio as combined style"
 msgid "Combined (e.g. 'drwxr-xr-x (755)')"
 msgstr "组合式 (例如“drwxr-xr-x (755)”)"
 
-#: settings/viewmodes/contentdisplaytab.cpp:98
+#: settings/viewmodes/contentdisplaytab.cpp:97
 #, kde-format
 msgctxt "@title:group"
 msgid "Permissions style:"
 msgstr "权限格式："
 
-#: settings/viewmodes/contentdisplaytab.cpp:107
+#: settings/viewmodes/contentdisplaytab.cpp:106
 #, kde-format
 msgctxt "@option:radio Long file names"
 msgid "Elide in the middle (e.g. ’Some very… name.txt')"
 msgstr "省略中间部分 (例如：“文件名开头…末尾.txt”)"
 
-#: settings/viewmodes/contentdisplaytab.cpp:108
+#: settings/viewmodes/contentdisplaytab.cpp:107
 #, kde-format
 msgctxt "@option:radio Long file names"
 msgid "Elide at the end (e.g. ’Some very long….txt')"
 msgstr "省略末尾部分 (例如：“文件名开头….txt”)"
 
-#: settings/viewmodes/contentdisplaytab.cpp:110
+#: settings/viewmodes/contentdisplaytab.cpp:109
 #, kde-format
 msgctxt "@title:group"
 msgid "Long file names:"
@@ -5374,7 +5239,7 @@ msgctxt "@action:button Choose font"
 msgid "Choose…"
 msgstr "选择…"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:35
+#: settings/viewmodes/generalviewsettingspage.cpp:34
 #, kde-format
 msgctxt "@option:radio"
 msgid "Use common display style for all folders"
@@ -5382,7 +5247,7 @@ msgstr "所有文件夹使用相同的显示样式"
 
 #. i18n: The information in this sentence contradicts the preceding sentence. That's what the word "still" is communicating.
 #. The previous sentence is "Use common display style for all folders".
-#: settings/viewmodes/generalviewsettingspage.cpp:38
+#: settings/viewmodes/generalviewsettingspage.cpp:37
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -5390,13 +5255,13 @@ msgid ""
 "custom display style."
 msgstr "某些特殊视图，如搜索、最近文件或回收站，仍将使用自定义显示样式。"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:43
+#: settings/viewmodes/generalviewsettingspage.cpp:42
 #, kde-format
 msgctxt "@option:radio"
 msgid "Remember display style for each folder"
 msgstr "单独记忆每个文件夹的显示样式"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:45
+#: settings/viewmodes/generalviewsettingspage.cpp:44
 #, kde-format
 msgctxt "@info"
 msgid ""
@@ -5406,73 +5271,73 @@ msgstr ""
 "Dolphin 会将文件系统元数据添加到您更改过视图属性的文件夹中。如果无法添加，则"
 "会创建一个隐藏的 .directory 文件作为替代方案。"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:51
+#: settings/viewmodes/generalviewsettingspage.cpp:50
 #, kde-format
 msgctxt "option:check"
 msgid "Use icons view mode for locations which mostly contain media files"
 msgstr "在主要包含媒体文件的位置使用图标视图模式"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:56
+#: settings/viewmodes/generalviewsettingspage.cpp:55
 #, kde-format
 msgctxt "@title:group"
 msgid "Display style: "
 msgstr "显示样式："
 
-#: settings/viewmodes/generalviewsettingspage.cpp:65
+#: settings/viewmodes/generalviewsettingspage.cpp:64
 #, kde-format
 msgctxt "@option:check"
 msgid "Browse compressed files as folders"
 msgstr "将压缩文件作为文件夹浏览"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:66
+#: settings/viewmodes/generalviewsettingspage.cpp:65
 #, kde-format
 msgctxt "option:check"
 msgid "Open folders during drag operations"
 msgstr "拖放操作时打开文件夹"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:67
+#: settings/viewmodes/generalviewsettingspage.cpp:66
 #, kde-format
 msgctxt "@title:group"
 msgid "Browsing: "
 msgstr "浏览： "
 
-#: settings/viewmodes/generalviewsettingspage.cpp:74
+#: settings/viewmodes/generalviewsettingspage.cpp:73
 #, kde-format
 msgctxt "@option:check"
 msgid "Show item information on hover"
 msgstr "悬停时显示项目信息"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:75
-#: settings/viewmodes/generalviewsettingspage.cpp:83
+#: settings/viewmodes/generalviewsettingspage.cpp:74
+#: settings/viewmodes/generalviewsettingspage.cpp:82
 #, kde-format
 msgctxt "@title:group"
 msgid "Miscellaneous: "
 msgstr "其他功能："
 
-#: settings/viewmodes/generalviewsettingspage.cpp:79
+#: settings/viewmodes/generalviewsettingspage.cpp:78
 #, kde-format
 msgctxt "@option:check"
 msgid "Show selection marker"
 msgstr "显示选择标记"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:87
+#: settings/viewmodes/generalviewsettingspage.cpp:86
 #, kde-format
 msgctxt "option:check"
 msgid "Rename single items inline"
 msgstr "重命名单个项目"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:88
+#: settings/viewmodes/generalviewsettingspage.cpp:87
 #, kde-format
 msgid "Renaming multiple items is always done with a dialog window."
 msgstr "重命名多个项目时必须打开重命名对话框进行操作。"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:91
+#: settings/viewmodes/generalviewsettingspage.cpp:90
 #, kde-format
 msgctxt "option:check"
 msgid "Also hide backup files while hiding hidden files"
 msgstr "隐藏隐藏文件时同时隐藏备份文件"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:95
+#: settings/viewmodes/generalviewsettingspage.cpp:94
 #, kde-format
 msgctxt ""
 "@info:tooltip %1 are the file patterns for mimetype application/x-trash"
@@ -5481,7 +5346,7 @@ msgid ""
 "%1"
 msgstr "备份文件是 MIME 类型为 application/x-trash 的文件，模式：%1"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:128
+#: settings/viewmodes/generalviewsettingspage.cpp:127
 #, kde-format
 msgctxt ""
 "Accessible description for combobox with actions of double click view "
@@ -5490,13 +5355,13 @@ msgid "Action to trigger when double clicking view background"
 msgstr "双击视图背景时触发操作"
 
 #. i18n: Completes the sentence "Double-click triggers [Nothing]".
-#: settings/viewmodes/generalviewsettingspage.cpp:130
+#: settings/viewmodes/generalviewsettingspage.cpp:129
 #, kde-format
 msgctxt "@item:inlistbox"
 msgid "Nothing"
 msgstr "无操作"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:131
+#: settings/viewmodes/generalviewsettingspage.cpp:130
 #, kde-format
 msgctxt "@item:inlistbox"
 msgid "Custom Command"
@@ -5506,19 +5371,19 @@ msgstr "自定义命令"
 #. (While using a left-to-right language it will be to the right of "triggers", in a right-to-left layout it will be to the left.)
 #. So please try to keep this translation in a way that it is a complete sentence when reading the content of the combobox as part of the sentence.
 #. There can be many possible actions in the combobox. The default is "Nothing". Other actions are "New Tab", "Create Folder", "Show Hidden Files", …
-#: settings/viewmodes/generalviewsettingspage.cpp:156
+#: settings/viewmodes/generalviewsettingspage.cpp:155
 #, kde-format
 msgctxt "@info"
 msgid "Double-click triggers"
 msgstr "双击触发"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:163
+#: settings/viewmodes/generalviewsettingspage.cpp:162
 #, kde-format
 msgctxt "@title:group"
 msgid "Background: "
 msgstr "背景："
 
-#: settings/viewmodes/generalviewsettingspage.cpp:168
+#: settings/viewmodes/generalviewsettingspage.cpp:167
 #, kde-format
 msgctxt ""
 "Accessible description for custom command text field of double click view "
@@ -5526,13 +5391,13 @@ msgctxt ""
 msgid "Enter custom command to trigger when double clicking view background"
 msgstr "输入在双击视图背景时要触发的自定义命令"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:169
+#: settings/viewmodes/generalviewsettingspage.cpp:168
 #, kde-format
 msgctxt "@info:placeholder for terminal command"
 msgid "Command…"
 msgstr "命令…"
 
-#: settings/viewmodes/generalviewsettingspage.cpp:173
+#: settings/viewmodes/generalviewsettingspage.cpp:172
 #, kde-format
 msgctxt "@label"
 msgid ""
@@ -5551,165 +5416,159 @@ msgctxt "@title:tab how file items columns are displayed"
 msgid "Content Display"
 msgstr "内容"
 
-#: settings/viewmodes/viewsettingstab.cpp:53
+#: settings/viewmodes/viewsettingstab.cpp:49
 #, kde-format
 msgctxt "@label:listbox"
 msgid "Default icon size:"
 msgstr "默认图标大小："
 
-#: settings/viewmodes/viewsettingstab.cpp:60
+#: settings/viewmodes/viewsettingstab.cpp:56
 #, kde-format
 msgctxt "@label:listbox"
 msgid "Preview icon size:"
 msgstr "预览图大小："
 
-#: settings/viewmodes/viewsettingstab.cpp:66
+#: settings/viewmodes/viewsettingstab.cpp:62
 #, kde-format
 msgctxt "@label:listbox"
 msgid "Label font:"
 msgstr "标签字体："
 
-#: settings/viewmodes/viewsettingstab.cpp:72
-#, kde-format
-msgctxt "@info"
-msgid "Some font styles are reserved by Dolphin and may be overridden."
-msgstr "一些字体样式由 Dolphin 保留且可能被覆盖。"
-
-#: settings/viewmodes/viewsettingstab.cpp:82
+#: settings/viewmodes/viewsettingstab.cpp:67
 #, kde-format
 msgctxt "@item:inlistbox Label width"
 msgid "Small"
 msgstr "小"
 
-#: settings/viewmodes/viewsettingstab.cpp:83
+#: settings/viewmodes/viewsettingstab.cpp:68
 #, kde-format
 msgctxt "@item:inlistbox Label width"
 msgid "Medium"
 msgstr "中"
 
-#: settings/viewmodes/viewsettingstab.cpp:84
+#: settings/viewmodes/viewsettingstab.cpp:69
 #, kde-format
 msgctxt "@item:inlistbox Label width"
 msgid "Large"
 msgstr "大"
 
-#: settings/viewmodes/viewsettingstab.cpp:85
+#: settings/viewmodes/viewsettingstab.cpp:70
 #, kde-format
 msgctxt "@item:inlistbox Label width"
 msgid "Huge"
 msgstr "超大"
 
-#: settings/viewmodes/viewsettingstab.cpp:86
+#: settings/viewmodes/viewsettingstab.cpp:71
 #, kde-format
 msgctxt "@label:listbox"
 msgid "Label width:"
 msgstr "标签宽度："
 
-#: settings/viewmodes/viewsettingstab.cpp:89
+#: settings/viewmodes/viewsettingstab.cpp:74
 #, kde-format
 msgctxt "@item:inlistbox Maximum lines"
 msgid "Unlimited"
 msgstr "无限制"
 
-#: settings/viewmodes/viewsettingstab.cpp:90
+#: settings/viewmodes/viewsettingstab.cpp:75
 #, kde-format
 msgctxt "@item:inlistbox Maximum lines"
 msgid "1"
 msgstr "1"
 
-#: settings/viewmodes/viewsettingstab.cpp:91
+#: settings/viewmodes/viewsettingstab.cpp:76
 #, kde-format
 msgctxt "@item:inlistbox Maximum lines"
 msgid "2"
 msgstr "2"
 
-#: settings/viewmodes/viewsettingstab.cpp:92
+#: settings/viewmodes/viewsettingstab.cpp:77
 #, kde-format
 msgctxt "@item:inlistbox Maximum lines"
 msgid "3"
 msgstr "3"
 
-#: settings/viewmodes/viewsettingstab.cpp:93
+#: settings/viewmodes/viewsettingstab.cpp:78
 #, kde-format
 msgctxt "@item:inlistbox Maximum lines"
 msgid "4"
 msgstr "4"
 
-#: settings/viewmodes/viewsettingstab.cpp:94
+#: settings/viewmodes/viewsettingstab.cpp:79
 #, kde-format
 msgctxt "@item:inlistbox Maximum lines"
 msgid "5"
 msgstr "5"
 
-#: settings/viewmodes/viewsettingstab.cpp:95
+#: settings/viewmodes/viewsettingstab.cpp:80
 #, kde-format
 msgctxt "@label:listbox"
 msgid "Maximum lines:"
 msgstr "最大行数："
 
-#: settings/viewmodes/viewsettingstab.cpp:100
+#: settings/viewmodes/viewsettingstab.cpp:85
 #, kde-format
 msgctxt "@item:inlistbox Maximum width"
 msgid "Unlimited"
 msgstr "无限制"
 
-#: settings/viewmodes/viewsettingstab.cpp:101
+#: settings/viewmodes/viewsettingstab.cpp:86
 #, kde-format
 msgctxt "@item:inlistbox Maximum width"
 msgid "Small"
 msgstr "小"
 
-#: settings/viewmodes/viewsettingstab.cpp:102
+#: settings/viewmodes/viewsettingstab.cpp:87
 #, kde-format
 msgctxt "@item:inlistbox Maximum width"
 msgid "Medium"
 msgstr "中"
 
-#: settings/viewmodes/viewsettingstab.cpp:103
+#: settings/viewmodes/viewsettingstab.cpp:88
 #, kde-format
 msgctxt "@item:inlistbox Maximum width"
 msgid "Large"
 msgstr "大"
 
-#: settings/viewmodes/viewsettingstab.cpp:104
+#: settings/viewmodes/viewsettingstab.cpp:89
 #, kde-format
 msgctxt "@label:listbox"
 msgid "Maximum width:"
 msgstr "最大宽度："
 
-#: settings/viewmodes/viewsettingstab.cpp:108
+#: settings/viewmodes/viewsettingstab.cpp:93
 #, kde-format
 msgctxt "@option:check"
 msgid "Expandable"
 msgstr "可展开"
 
-#: settings/viewmodes/viewsettingstab.cpp:109
+#: settings/viewmodes/viewsettingstab.cpp:94
 #, kde-format
 msgctxt "@label:checkbox"
 msgid "Folders:"
 msgstr "文件夹："
 
-#: settings/viewmodes/viewsettingstab.cpp:112
+#: settings/viewmodes/viewsettingstab.cpp:97
 #, kde-format
 msgctxt "@option:radio how files/folders are opened"
 msgid "By clicking anywhere on the row"
 msgstr "点击行内任意位置高亮"
 
-#: settings/viewmodes/viewsettingstab.cpp:113
+#: settings/viewmodes/viewsettingstab.cpp:98
 #, kde-format
 msgctxt "@option:radio how files/folders are opened"
 msgid "By clicking on icon or name"
 msgstr "点击图标或者文件名高亮"
 
 #. i18n: Users can choose here if items are opened by clicking on their name/icon or by clicking in the row.
-#: settings/viewmodes/viewsettingstab.cpp:121
+#: settings/viewmodes/viewsettingstab.cpp:106
 #, kde-format
 msgctxt "@title:group"
 msgid "Open files and folders:"
 msgstr "打开文件和文件夹："
 
-#: settings/viewmodes/viewsettingstab.cpp:278
-#: statusbar/dolphinstatusbar.cpp:415
+#: settings/viewmodes/viewsettingstab.cpp:248
+#: statusbar/dolphinstatusbar.cpp:404
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Size: 1 pixel"
@@ -5927,35 +5786,35 @@ msgctxt "@action:button"
 msgid "Install Filelight…"
 msgstr "安装 Filelight…"
 
-#: statusbar/dolphinstatusbar.cpp:68
+#: statusbar/dolphinstatusbar.cpp:61
 #, kde-format
 msgctxt "Used as a noun, i.e. 'Here is the zoom level:'"
 msgid "Zoom:"
 msgstr "缩放："
 
-#: statusbar/dolphinstatusbar.cpp:72
+#: statusbar/dolphinstatusbar.cpp:65
 #, kde-format
 msgid "Zoom"
 msgstr "缩放"
 
-#: statusbar/dolphinstatusbar.cpp:73
+#: statusbar/dolphinstatusbar.cpp:66
 #, kde-format
 msgctxt "Description for zoom-slider (accessibility)"
 msgid "Sets the size of the file icons."
 msgstr "设置文件图标大小。"
 
-#: statusbar/dolphinstatusbar.cpp:94
+#: statusbar/dolphinstatusbar.cpp:87
 #, kde-format
 msgid "Stop"
 msgstr "停止"
 
-#: statusbar/dolphinstatusbar.cpp:96
+#: statusbar/dolphinstatusbar.cpp:89
 #, kde-format
 msgctxt "@tooltip"
 msgid "Stop loading"
 msgstr "停止加载"
 
-#: statusbar/dolphinstatusbar.cpp:155
+#: statusbar/dolphinstatusbar.cpp:143
 #, kde-kuit-format
 msgctxt "@info:whatsthis Statusbar"
 msgid ""
@@ -5968,30 +5827,30 @@ msgid ""
 "device.</item></list></para>"
 msgstr ""
 "<para>这是<emphasis>状态栏</emphasis>。它默认包含了三个元素：(从左到"
-"右)<list><item><emphasis>文本区域</emphasis>，显示选中项目的大小。在选中单个"
+"右)<list><item><emphasis>文字区域</emphasis>，显示选中项目的大小。在选中单个"
 "项目时，将同时显示它的文件类型。</item><item><emphasis>缩放滑动条</"
 "emphasis>，用于调整视图中图标的大小。</item><item><emphasis>空间信息</"
 "emphasis>，用于显示当前位置的存储设备的可用空间。</item></list></para>"
 
-#: statusbar/dolphinstatusbar.cpp:347
+#: statusbar/dolphinstatusbar.cpp:352
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Show Zoom Slider"
 msgstr "显示缩放滑动条"
 
-#: statusbar/statusbarspaceinfo.cpp:129
+#: statusbar/statusbarspaceinfo.cpp:131
 #, kde-format
 msgctxt "@info:status Free disk space"
 msgid "%1 free"
 msgstr "剩余 %1"
 
-#: statusbar/statusbarspaceinfo.cpp:130
+#: statusbar/statusbarspaceinfo.cpp:132
 #, kde-format
 msgctxt "tooltip:status Free disk space"
 msgid "%1 free out of %2 (%3% used)"
 msgstr "%1 可用，总容量 %2 (已用 %3%)"
 
-#: statusbar/statusbarspaceinfo.cpp:132
+#: statusbar/statusbarspaceinfo.cpp:134
 #, kde-format
 msgctxt "@info:tooltip for the free disk space button"
 msgid ""
@@ -6040,118 +5899,118 @@ msgstr "Dolphin 设置的子集。"
 msgid "Select Remote Charset"
 msgstr "选择远程字符集"
 
-#: views/dolphinremoteencoding.cpp:89
+#: views/dolphinremoteencoding.cpp:91
 #, kde-format
 msgid "Default"
 msgstr "默认"
 
-#: views/dolphinremoteencoding.cpp:98
+#: views/dolphinremoteencoding.cpp:100
 #, kde-format
 msgid "Reload"
 msgstr "重新加载"
 
-#: views/dolphinview.cpp:731
+#: views/dolphinview.cpp:674
 #, kde-format
 msgctxt "@info:status"
 msgid "1 folder selected"
 msgid_plural "%1 folders selected"
 msgstr[0] "已选中 %1 个文件夹"
 
-#: views/dolphinview.cpp:732
+#: views/dolphinview.cpp:675
 #, kde-format
 msgctxt "@info:status"
 msgid "1 file selected"
 msgid_plural "%1 files selected"
 msgstr[0] "已选中 %1 个文件"
 
-#: views/dolphinview.cpp:734
+#: views/dolphinview.cpp:677
 #, kde-format
 msgctxt "@info:status"
 msgid "1 folder"
 msgid_plural "%1 folders"
 msgstr[0] "%1 个文件夹"
 
-#: views/dolphinview.cpp:735
+#: views/dolphinview.cpp:678
 #, kde-format
 msgctxt "@info:status"
 msgid "1 file"
 msgid_plural "%1 files"
 msgstr[0] "%1 个文件"
 
-#: views/dolphinview.cpp:739
+#: views/dolphinview.cpp:682
 #, kde-format
 msgctxt "@info:status folders, files (size)"
 msgid "%1, %2 (%3)"
 msgstr "%1，%2 (%3)"
 
-#: views/dolphinview.cpp:741
+#: views/dolphinview.cpp:684
 #, kde-format
 msgctxt "@info:status files (size)"
 msgid "%1 (%2)"
 msgstr "%1 (%2)"
 
-#: views/dolphinview.cpp:745
+#: views/dolphinview.cpp:688
 #, kde-format
 msgctxt "@info:status"
 msgid "0 folders, 0 files"
 msgstr "0 个文件夹，0 个文件"
 
-#: views/dolphinview.cpp:987 views/dolphinview.cpp:996
+#: views/dolphinview.cpp:926 views/dolphinview.cpp:935
 #, kde-format
 msgctxt "<filename> copy"
 msgid "%1 copy"
 msgstr "%1 副本"
 
-#: views/dolphinview.cpp:1189
+#: views/dolphinview.cpp:1122
 #, kde-format
 msgid "Are you sure you want to open 1 item?"
 msgid_plural "Are you sure you want to open %1 items?"
 msgstr[0] "您确定要打开这 %1 项吗？"
 
-#: views/dolphinview.cpp:1194
+#: views/dolphinview.cpp:1127
 #, kde-format
 msgctxt "@action:button"
 msgid "Open %1 Item"
 msgid_plural "Open %1 Items"
 msgstr[0] "打开 %1 个项目"
 
-#: views/dolphinview.cpp:1327
+#: views/dolphinview.cpp:1260
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Side Padding"
 msgstr "侧边距"
 
-#: views/dolphinview.cpp:1331
+#: views/dolphinview.cpp:1264
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Automatic Column Widths"
 msgstr "自动列宽"
 
-#: views/dolphinview.cpp:1336
+#: views/dolphinview.cpp:1269
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Custom Column Widths"
 msgstr "自定义列宽"
 
-#: views/dolphinview.cpp:2066
+#: views/dolphinview.cpp:1907
 #, kde-format
 msgctxt "@info:status"
 msgid "Trash operation completed."
 msgstr "移动到回收站操作已完成。"
 
-#: views/dolphinview.cpp:2076
+#: views/dolphinview.cpp:1917
 #, kde-format
 msgctxt "@info:status"
 msgid "Delete operation completed."
 msgstr "删除操作已完成。"
 
-#: views/dolphinview.cpp:2244
+#: views/dolphinview.cpp:2084
 #, kde-format
 msgctxt "@action:button"
 msgid "Rename and Hide"
 msgstr "重命名并隐藏"
 
-#: views/dolphinview.cpp:2248
+#: views/dolphinview.cpp:2088
 #, kde-format
 msgid ""
 "Adding a dot to the beginning of this file's name will hide it from view.\n"
@@ -6160,7 +6019,7 @@ msgstr ""
 "在文件名的开头添加一个英文点号会将其隐藏。\n"
 "您仍然想要重命名它吗？"
 
-#: views/dolphinview.cpp:2250
+#: views/dolphinview.cpp:2090
 #, kde-format
 msgid ""
 "Adding a dot to the beginning of this folder's name will hide it from view.\n"
@@ -6169,23 +6028,23 @@ msgstr ""
 "在文件夹名的开头添加一个英文点号会将其隐藏。\n"
 "您仍然想要重命名它吗？"
 
-#: views/dolphinview.cpp:2252
+#: views/dolphinview.cpp:2092
 #, kde-format
 msgid "Hide this File?"
 msgstr "隐藏此文件？"
 
-#: views/dolphinview.cpp:2252
+#: views/dolphinview.cpp:2092
 #, kde-format
 msgid "Hide this Folder?"
 msgstr "隐藏此文件夹？"
 
-#: views/dolphinview.cpp:2273
+#: views/dolphinview.cpp:2113
 #, kde-format
 msgctxt "@action:button"
 msgid "Rename"
 msgstr "重命名"
 
-#: views/dolphinview.cpp:2283
+#: views/dolphinview.cpp:2123
 #, kde-format
 msgid ""
 "This will make the file type unknown.\n"
@@ -6197,7 +6056,7 @@ msgstr ""
 "文件内容不会改变，但应用程序可能不再能够识别它。\n"
 "您确定要重命名该文件吗？"
 
-#: views/dolphinview.cpp:2287
+#: views/dolphinview.cpp:2127
 #, kde-format
 msgid ""
 "This will change the file type from \"%1\" to \"%2\".\n"
@@ -6209,117 +6068,107 @@ msgstr ""
 "文件内容不会改变，但应用程序可能不再能够识别它。\n"
 "您确定要重命名该文件吗？"
 
-#: views/dolphinview.cpp:2293
+#: views/dolphinview.cpp:2133
 #, kde-format
 msgctxt "@title:window"
 msgid "Change File Type"
 msgstr "更改文件类型"
 
-#: views/dolphinview.cpp:2337
+#: views/dolphinview.cpp:2177
 #, kde-format
 msgctxt "@info:status"
 msgid "The location is empty."
 msgstr "位置为空。"
 
-#: views/dolphinview.cpp:2339
+#: views/dolphinview.cpp:2179
 #, kde-format
 msgctxt "@info:status"
 msgid "The location '%1' is invalid."
 msgstr "位置“%1”无效。"
 
-#: views/dolphinview.cpp:2720
+#: views/dolphinview.cpp:2511
 #, kde-format
 msgid "Loading…"
 msgstr "正在加载…"
 
-#: views/dolphinview.cpp:2749
+#: views/dolphinview.cpp:2540
 #, kde-format
 msgid "Loading canceled"
 msgstr "加载已取消"
 
-#: views/dolphinview.cpp:2751
+#: views/dolphinview.cpp:2542
 #, kde-format
 msgid "No items matching the filter"
 msgstr "没有匹配此过滤条件的项目"
 
-#: views/dolphinview.cpp:2753
+#: views/dolphinview.cpp:2544
 #, kde-format
 msgid "No items matching the search"
 msgstr "没有匹配此搜索条件的项目"
 
-#: views/dolphinview.cpp:2755
+#: views/dolphinview.cpp:2546
 #, kde-format
 msgid "Trash is empty"
 msgstr "回收站为空"
 
-#: views/dolphinview.cpp:2758
+#: views/dolphinview.cpp:2549
 #, kde-format
 msgid "No tags"
 msgstr "无标签"
 
-#: views/dolphinview.cpp:2761
+#: views/dolphinview.cpp:2552
 #, kde-format
 msgid "No files tagged with \"%1\""
 msgstr "没有标记为“%1”的文件"
 
-#: views/dolphinview.cpp:2765
+#: views/dolphinview.cpp:2556
 #, kde-format
 msgid "No recently used items"
 msgstr "没有最近使用过的项目"
 
-#: views/dolphinview.cpp:2767
+#: views/dolphinview.cpp:2558
 #, kde-format
 msgid "No shared folders found"
 msgstr "没有找到共享文件夹"
 
-#: views/dolphinview.cpp:2769
+#: views/dolphinview.cpp:2560
 #, kde-format
 msgid "No relevant network resources found"
 msgstr "没有找到相关的网络资源"
 
-#: views/dolphinview.cpp:2771
+#: views/dolphinview.cpp:2562
 #, kde-format
 msgid "No MTP-compatible devices found"
 msgstr "没有找到 MTP 兼容设备"
 
-#: views/dolphinview.cpp:2773
+#: views/dolphinview.cpp:2564
 #, kde-format
 msgid "No Apple devices found"
 msgstr "未发现苹果设备"
 
-#: views/dolphinview.cpp:2776
-#, kde-format
-msgid "No KDE Connect devices found"
-msgstr "没有找到 KDE Connect 设备"
-
-#: views/dolphinview.cpp:2778
-#, kde-format
-msgid "No storage found on this device"
-msgstr "没有在此设备上找到存储装置"
-
-#: views/dolphinview.cpp:2781
+#: views/dolphinview.cpp:2566
 #, kde-format
 msgid "No Bluetooth devices found"
 msgstr "没有找到蓝牙设备"
 
-#: views/dolphinview.cpp:2783
+#: views/dolphinview.cpp:2568
 #, kde-format
 msgid "Folder is empty"
 msgstr "文件夹为空"
 
-#: views/dolphinviewactionhandler.cpp:85
+#: views/dolphinviewactionhandler.cpp:84
 #, kde-format
 msgctxt "@action"
 msgid "Create Folder…"
 msgstr "创建文件夹…"
 
-#: views/dolphinviewactionhandler.cpp:92
+#: views/dolphinviewactionhandler.cpp:91
 #, kde-format
 msgctxt "@action"
 msgid "Create File…"
 msgstr "创建文件…"
 
-#: views/dolphinviewactionhandler.cpp:101
+#: views/dolphinviewactionhandler.cpp:100
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -6329,7 +6178,7 @@ msgstr ""
 "这将重命名当前选中的项目。<nl/>如果同时重命名多个文件，它们将使用相同的主文件"
 "名，仅通过一个数字后缀进行区分。"
 
-#: views/dolphinviewactionhandler.cpp:113
+#: views/dolphinviewactionhandler.cpp:112
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -6340,7 +6189,7 @@ msgstr ""
 "这将把选中的项目移动到<filename>回收站</filename>。<nl/>回收站是用于临时存储"
 "被删除文件的位置。如果之后磁盘空间不足，回收站中的项目可能会被删除。"
 
-#: views/dolphinviewactionhandler.cpp:126
+#: views/dolphinviewactionhandler.cpp:125
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -6348,25 +6197,25 @@ msgid ""
 "recovered by normal means."
 msgstr "这将彻底删除当前选中项目。它们将无法通过常规手段进行恢复。"
 
-#: views/dolphinviewactionhandler.cpp:136
+#: views/dolphinviewactionhandler.cpp:135
 #, kde-format
 msgctxt "@action \"Move to Trash\" for non-local files, etc."
 msgid "Delete (using shortcut for Trash)"
 msgstr "删除 (使用移动到回收站快捷键)"
 
-#: views/dolphinviewactionhandler.cpp:142
+#: views/dolphinviewactionhandler.cpp:141
 #, kde-format
 msgctxt "@action:inmenu File"
 msgid "Duplicate Here"
 msgstr "创建副本到此位置"
 
-#: views/dolphinviewactionhandler.cpp:150
+#: views/dolphinviewactionhandler.cpp:149
 #, kde-format
 msgctxt "@action:inmenu File"
 msgid "Properties"
 msgstr "属性"
 
-#: views/dolphinviewactionhandler.cpp:152
+#: views/dolphinviewactionhandler.cpp:151
 #, kde-kuit-format
 msgctxt "@info:whatsthis properties"
 msgid ""
@@ -6378,43 +6227,43 @@ msgstr ""
 "在新窗口中显示选中项目的完整属性列表。<nl/>如果没有选中任何项目，则会显示当前"
 "查看文件夹的属性。<nl/>您可以在该对话框中配置高级选项，如读写权限管理等。"
 
-#: views/dolphinviewactionhandler.cpp:162
+#: views/dolphinviewactionhandler.cpp:161
 #, kde-format
 msgctxt "@action:incontextmenu"
 msgid "Copy Location"
 msgstr "复制位置"
 
-#: views/dolphinviewactionhandler.cpp:163
+#: views/dolphinviewactionhandler.cpp:162
 #, kde-format
 msgctxt "@info:whatsthis copy_location"
 msgid "This will copy the path of the first selected item into the clipboard."
 msgstr "这将复制第一个被选中对象的路径到剪贴板。"
 
-#: views/dolphinviewactionhandler.cpp:171
+#: views/dolphinviewactionhandler.cpp:170
 #, kde-format
 msgctxt "@action:inmenu File"
 msgid "Move to Trash…"
 msgstr "移动到回收站…"
 
-#: views/dolphinviewactionhandler.cpp:172
+#: views/dolphinviewactionhandler.cpp:171
 #, kde-format
 msgctxt "@action:inmenu File"
 msgid "Delete…"
 msgstr "删除…"
 
-#: views/dolphinviewactionhandler.cpp:173
+#: views/dolphinviewactionhandler.cpp:172
 #, kde-format
 msgctxt "@action:inmenu File"
 msgid "Duplicate Here…"
 msgstr "创建副本到此位置…"
 
-#: views/dolphinviewactionhandler.cpp:174
+#: views/dolphinviewactionhandler.cpp:173
 #, kde-format
 msgctxt "@action:incontextmenu"
 msgid "Copy Location…"
 msgstr "复制位置…"
 
-#: views/dolphinviewactionhandler.cpp:203
+#: views/dolphinviewactionhandler.cpp:202
 #, kde-kuit-format
 msgctxt "@info:whatsthis Icons view mode"
 msgid ""
@@ -6428,7 +6277,7 @@ msgstr ""
 "分文件、文件夹、特定<emphasis>文件类型</emphasis>等。</para><para>勾选"
 "<interface>预览图</interface>选项后，浏览图片时将更加方便。</para>"
 
-#: views/dolphinviewactionhandler.cpp:210
+#: views/dolphinviewactionhandler.cpp:209
 #, kde-kuit-format
 msgctxt "@info:whatsthis Compact view mode"
 msgid ""
@@ -6440,7 +6289,7 @@ msgstr ""
 "图标的一侧。</para><para>此模式在能在相同的空间内显示更多项目，有助于管理内容"
 "较多的文件夹。</para>"
 
-#: views/dolphinviewactionhandler.cpp:214
+#: views/dolphinviewactionhandler.cpp:213
 #, kde-kuit-format
 msgctxt "@info:whatsthis Details view mode"
 msgid ""
@@ -6458,60 +6307,60 @@ msgstr ""
 "夹的内容而无需离开当前位置，只需点击左侧的区域展开即可。您可以通过此功能同时"
 "查看多个文件夹中的内容。</para>"
 
-#: views/dolphinviewactionhandler.cpp:224
+#: views/dolphinviewactionhandler.cpp:223
 #, kde-format
 msgctxt "@action:intoolbar"
 msgid "Change View Mode"
 msgstr "更改视图模式"
 
-#: views/dolphinviewactionhandler.cpp:225
+#: views/dolphinviewactionhandler.cpp:224
 #, kde-kuit-format
 msgctxt "@info:whatsthis View Mode Toolbutton"
 msgid "This cycles through all view modes."
 msgstr "循环切换所有视图模式。"
 
-#: views/dolphinviewactionhandler.cpp:245
+#: views/dolphinviewactionhandler.cpp:244
 #, kde-format
 msgctxt "@info:whatsthis zoom in"
 msgid "This increases the icon size."
 msgstr "放大图标尺寸。"
 
-#: views/dolphinviewactionhandler.cpp:248
+#: views/dolphinviewactionhandler.cpp:247
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Reset Zoom Level"
 msgstr "重置缩放级别"
 
-#: views/dolphinviewactionhandler.cpp:249
+#: views/dolphinviewactionhandler.cpp:248
 #, kde-format
 msgid "Zoom To Default"
 msgstr "缩放到默认级别"
 
-#: views/dolphinviewactionhandler.cpp:250
+#: views/dolphinviewactionhandler.cpp:249
 #, kde-format
 msgctxt "@info:whatsthis zoom reset"
 msgid "This resets the icon size to default."
 msgstr "重置图标大小为默认值。"
 
-#: views/dolphinviewactionhandler.cpp:256
+#: views/dolphinviewactionhandler.cpp:255
 #, kde-format
 msgctxt "@info:whatsthis zoom out"
 msgid "This reduces the icon size."
 msgstr "缩小图标尺寸。"
 
-#: views/dolphinviewactionhandler.cpp:262
+#: views/dolphinviewactionhandler.cpp:261
 #, kde-format
 msgctxt "@action:intoolbar"
 msgid "Show Previews"
 msgstr "显示预览图"
 
-#: views/dolphinviewactionhandler.cpp:263
+#: views/dolphinviewactionhandler.cpp:262
 #, kde-format
 msgctxt "@info"
 msgid "Show preview of files and folders"
 msgstr "显示文件和文件夹的预览图"
 
-#: views/dolphinviewactionhandler.cpp:265
+#: views/dolphinviewactionhandler.cpp:264
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -6522,49 +6371,49 @@ msgstr ""
 "勾选此项后，图标将显示文件或者文件夹内容的预览。<nl/>例如图像文件的图标将变成"
 "该图像的缩略图。"
 
-#: views/dolphinviewactionhandler.cpp:274
+#: views/dolphinviewactionhandler.cpp:273
 #, kde-format
 msgctxt "@action:inmenu Sort"
 msgid "Folders First"
 msgstr "文件夹靠前"
 
-#: views/dolphinviewactionhandler.cpp:278
+#: views/dolphinviewactionhandler.cpp:277
 #, kde-format
 msgctxt "@action:inmenu Sort"
 msgid "Hidden Files Last"
 msgstr "隐藏文件靠后"
 
-#: views/dolphinviewactionhandler.cpp:286
+#: views/dolphinviewactionhandler.cpp:285
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Sort By"
 msgstr "排序方式"
 
-#: views/dolphinviewactionhandler.cpp:321
+#: views/dolphinviewactionhandler.cpp:320
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Show Additional Information"
 msgstr "显示更多信息"
 
-#: views/dolphinviewactionhandler.cpp:332
+#: views/dolphinviewactionhandler.cpp:331
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Show in Groups"
 msgstr "分组显示"
 
-#: views/dolphinviewactionhandler.cpp:333
+#: views/dolphinviewactionhandler.cpp:332
 #, kde-format
 msgctxt "@info:whatsthis"
 msgid "This groups files and folders by their first letter."
 msgstr "按首字母分组显示文件和文件夹。"
 
-#: views/dolphinviewactionhandler.cpp:338
+#: views/dolphinviewactionhandler.cpp:337
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Show Hidden Files"
 msgstr "显示隐藏文件"
 
-#: views/dolphinviewactionhandler.cpp:340
+#: views/dolphinviewactionhandler.cpp:339
 #, kde-kuit-format
 msgctxt "@info:whatsthis"
 msgid ""
@@ -6584,26 +6433,26 @@ msgstr ""
 "称。“application/x-trash” MIME 类型的文件，例如备份文件等，可以在：配置 "
 "Dolphin > 视图 > 常规 标签页中将它们设置为隐藏。</para>"
 
-#: views/dolphinviewactionhandler.cpp:354
+#: views/dolphinviewactionhandler.cpp:353
 #, kde-format
 msgctxt "@action:inmenu View"
 msgid "Adjust View Display Style…"
 msgstr "调整视图显示样式…"
 
-#: views/dolphinviewactionhandler.cpp:357
+#: views/dolphinviewactionhandler.cpp:356
 #, kde-format
 msgctxt "@info:whatsthis"
 msgid ""
 "This opens a window in which all folder view properties can be adjusted."
 msgstr "打开一个对话框，您可以在其中调整所有文件夹的视图属性。"
 
-#: views/dolphinviewactionhandler.cpp:363
+#: views/dolphinviewactionhandler.cpp:362
 #, kde-format
 msgctxt "@action:intoolbar"
 msgid "View Settings"
 msgstr "视图设置"
 
-#: views/dolphinviewactionhandler.cpp:365
+#: views/dolphinviewactionhandler.cpp:364
 #, kde-kuit-format
 msgctxt "@info:whatsthis View Settings Toolbutton"
 msgid ""
@@ -6611,17 +6460,29 @@ msgid ""
 "related actions."
 msgstr "这将在全部视图模式之间循环切换。下拉菜单包含各种与视图相关的操作。"
 
-#: views/dolphinviewactionhandler.cpp:394
+#: views/dolphinviewactionhandler.cpp:393
 #, kde-format
-msgctxt "@item:intable, Heading of a list of fields"
-msgid "Sort by Field"
+msgctxt "item:intable"
+msgid "Sort By field"
 msgstr "按字段排序"
 
-#: views/dolphinviewactionhandler.cpp:397
+#: views/dolphinviewactionhandler.cpp:396
 #, kde-format
-msgctxt "@item:intable, Heading of a list of fields"
+msgctxt "item:intable"
 msgid "Show Field"
 msgstr "显示字段"
+
+#: views/dolphinviewactionhandler.cpp:441
+#, kde-format
+msgctxt "@action:intoolbar as in sort by file attribute"
+msgid "Sort By: %1"
+msgstr "排序方式：%1"
+
+#: views/dolphinviewactionhandler.cpp:442
+#, kde-format
+msgctxt "@action:intoolbar as in show field for file attribute"
+msgid "Show Field: %1"
+msgstr "显示字段：%1"
 
 #: views/dolphinviewactionhandler.cpp:688
 #, kde-format
