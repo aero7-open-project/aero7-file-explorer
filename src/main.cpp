@@ -26,6 +26,7 @@
 #include <KIconTheme>
 #include <KLocalizedString>
 #include <KWindowSystem>
+#include <AeroQt/stylesheet.h>
 
 #define HAVE_STYLE_MANAGER __has_include(<KStyleManager>)
 #if HAVE_STYLE_MANAGER
@@ -88,6 +89,7 @@ int main(int argc, char **argv)
     QApplication::setStyle(QStringLiteral("breeze"));
 #endif
 #endif
+    Aero::registerStylesheet(&app);
 
     KLocalizedString::setApplicationDomain(dolphinTranslationDomain);
 

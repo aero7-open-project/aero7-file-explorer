@@ -280,6 +280,11 @@ install(FILES dolphinpartactions.desktop DESTINATION "${KDE_INSTALL_DATADIR}/dol
 
 add_library(dolphinstatic STATIC)
 
+set(UI_FILES
+    dolphinwindowheader.ui
+)
+qt6_wrap_ui(GENERATED_UI_HEADERS ${UI_FILES})
+
 target_sources(dolphinstatic PRIVATE
     admin/bar.cpp
     admin/workerintegration.cpp
@@ -288,6 +293,7 @@ target_sources(dolphinstatic PRIVATE
     dolphinbookmarkhandler.cpp
     dolphindockwidget.cpp
     dolphinmainwindow.cpp
+    dolphinwindowheader.cpp
     dolphinviewcontainer.cpp
     dolphincontextmenu.cpp
     dolphinnavigatorswidgetaction.cpp
@@ -418,6 +424,8 @@ target_sources(dolphinstatic PRIVATE
     views/zoomlevelinfo.h
     dolphindebug.h
     global.h
+
+    ${GENERATED_UI_HEADERS}
 )
 
 if(HAVE_BALOO)
@@ -487,6 +495,7 @@ target_link_libraries(dolphinstatic
     KF6::DBusAddons
     KF6::Notifications
     KF6::BookmarksWidgets
+    AeroQt
 )
 
 if(HAVE_PACKAGEKIT)

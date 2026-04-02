@@ -21,6 +21,7 @@
 #include "dolphintabpage.h"
 #include "dolphinurlnavigatorscontroller.h"
 #include "dolphinviewcontainer.h"
+#include "dolphinwindowheader.h"
 #include "global.h"
 #include "middleclickactioneventfilter.h"
 #include "panels/folders/folderspanel.h"
@@ -74,6 +75,9 @@
 #include <KWindowSystem>
 #include <KXMLGUIFactory>
 
+#include <AeroQt/insetwindow.h>
+#include <AeroQt/util/props.h>
+
 #include <kwidgetsaddons_version.h>
 
 #include <QApplication>
@@ -118,6 +122,7 @@ DolphinMainWindow::DolphinMainWindow()
     , m_newFileMenu(nullptr)
     , m_tabWidget(nullptr)
     , m_activeViewContainer(nullptr)
+    , m_winHeader(nullptr)
     , m_actionHandler(nullptr)
     , m_remoteEncoding(nullptr)
     , m_settingsDialog()
@@ -269,6 +274,9 @@ DolphinMainWindow::DolphinMainWindow()
     });
     connect(GeneralSettings::self(), &GeneralSettings::splitViewChanged, this, &DolphinMainWindow::slotSplitViewChanged);
     connect(GeneralSettings::self(), &GeneralSettings::tabBarChanged, this, &DolphinMainWindow::slotTabBarChanged);
+
+    setupWindowHeader();
+    Aero::makeInsetWindow(this, this->takeCentralWidget(), m_winHeader, nullptr);
 }
 
 DolphinMainWindow::~DolphinMainWindow()
@@ -441,6 +449,10 @@ void DolphinMainWindow::updateHistory()
         forwardAction->setWhatsThis(xi18nc("@info:whatsthis go forward", "This undoes a <interface>Go|Back</interface> action."));
         forwardAction->setEnabled(index > 0);
     }
+
+    m_winHeader->ui->navs->menuButton()->setEnabled(
+        urlNavigator->historySize() > 0
+    );
 }
 
 void DolphinMainWindow::updateFilterBarAction(bool show)
@@ -2577,6 +2589,27 @@ void DolphinMainWindow::setupDockWidgets()
     connect(panelsMenu->menu(), &QMenu::aboutToShow, this, [actionShowAllPlaces] {
         actionShowAllPlaces->setEnabled(DolphinPlacesModelSingleton::instance().placesModel()->hiddenCount());
     });
+}
+
+void DolphinMainWindow::setupWindowHeader()
+{
+    m_winHeader = new DolphinWindowHeader();
+    auto d = m_winHeader->ui;
+
+    /* Nav buttons */
+    bind_prop(m_backAction, "enabled", d->navs->back(), "enabled", &QAction::enabledChanged, true);
+    bind_prop(m_forwardAction, "enabled", d->navs->forward(), "enabled", &QAction::enabledChanged, true);
+    connect(d->navs->back(), &QAbstractButton::clicked, m_backAction, &QAction::trigger);
+    connect(d->navs->forward(), &QAbstractButton::clicked, m_forwardAction, &QAction::trigger);
+
+    /* Nav menu */
+    // for (int i = urlNavigator->historyIndex() + 1; i < urlNavigator->historySize() && entries < MaxNumberOfNavigationentries; ++i, ++entries) {
+    //     QAction *action = urlNavigatorHistoryAction(urlNavigator, i, menu);
+    //     menu->addAction(action);
+    // }
+    // Enabling done in ::updateHistory()
+    QMenu *menu = m_backAction->popupMenu();
+    d->navs->setMenu(menu);
 }
 
 void DolphinMainWindow::setupFileItemActions()

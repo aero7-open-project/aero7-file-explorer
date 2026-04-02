@@ -40,6 +40,7 @@ class DolphinSettingsDialog;
 class DolphinViewContainer;
 class DolphinRemoteEncoding;
 class DolphinTabWidget;
+class DolphinWindowHeader;
 class KFileItem;
 class KFileItemList;
 class KJob;
@@ -697,6 +698,11 @@ private:
     void setupDockWidgets();
 
     /**
+     * Sets up the header, ie. the transparent part of the window.
+     */
+    void setupWindowHeader();
+
+    /**
      * Initializes or re-initializes the KFileItemActions instance.
      */
     void setupFileItemActions();
@@ -776,6 +782,7 @@ private:
     KNewFileMenu *m_newFileMenu;
     DolphinTabWidget *m_tabWidget;
     DolphinViewContainer *m_activeViewContainer;
+    DolphinWindowHeader *m_winHeader;
 
     DolphinViewActionHandler *m_actionHandler;
     DolphinRemoteEncoding *m_remoteEncoding;
