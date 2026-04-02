@@ -36,6 +36,7 @@ namespace Search
 class Bar;
 }
 class DolphinStatusBar;
+class DolphinMainWindow;
 class KFileItemList;
 namespace SelectionMode
 {
@@ -62,6 +63,7 @@ bool isSearchUrl(const QUrl &url);
 class DolphinViewContainer : public QWidget
 {
     Q_OBJECT
+    friend class DolphinMainWindow;
 
 public:
     DolphinViewContainer(const QUrl &url, QWidget *parent);

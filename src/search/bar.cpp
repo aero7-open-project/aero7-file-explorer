@@ -130,14 +130,16 @@ Bar::Bar(const std::shared_ptr<const DolphinQuery> &dolphinQuery, QWidget *paren
     });
 
     // Apply layout for the location buttons and chips row
-    m_secondRowLayout = new BarSecondRowFlowLayout{nullptr};
+    m_secondRowLayout = new QHBoxLayout{nullptr};
     m_secondRowLayout->setSpacing(Dolphin::LAYOUT_SPACING_SMALL);
+/*
     connect(m_secondRowLayout, &BarSecondRowFlowLayout::heightHintChanged, this, [this]() {
         if (isEnabled()) {
-            AnimatedHeightWidget::setVisible(true, WithAnimation);
+            // AnimatedHeightWidget::setVisible(true, WithAnimation);
         }
         // If this Search::Bar is not enabled we can safely assume that this widget is currently in an animation to hide itself and we do nothing.
     });
+*/
     m_secondRowLayout->addWidget(m_fromHereButton);
     m_secondRowLayout->addWidget(m_everywhereButton);
 
@@ -163,6 +165,14 @@ Bar::Bar(const std::shared_ptr<const DolphinQuery> &dolphinQuery, QWidget *paren
     connect(m_startSearchTimer, &QTimer::timeout, this, &Bar::commitCurrentConfiguration);
 
     updateStateToMatch(dolphinQuery);
+
+    // Vandalize this search bar (its invisible anyway) and move some widgets into the popup, which does still get shown, albeit from the WindowHeader.
+    Q_EMIT m_popup->aboutToShow();  // Some internal widgets dont init until this
+
+    auto hl = new QHBoxLayout;
+    m_popup->m_verticalMainLayout->insertLayout(0, hl);
+    hl->addWidget(m_fromHereButton);
+    hl->addWidget(m_everywhereButton);
 }
 
 QString Bar::text() const
@@ -198,7 +208,7 @@ void Bar::setVisible(bool visible, Animated animated, HideBehavior hideBehavior)
             Q_EMIT focusViewRequest();
         }
     }
-    AnimatedHeightWidget::setVisible(visible, animated);
+    // AnimatedHeightWidget::setVisible(visible, animated);
     Q_EMIT visibilityChanged(visible);
 }
 

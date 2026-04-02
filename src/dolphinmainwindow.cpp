@@ -28,6 +28,7 @@
 #include "panels/places/placespanel.h"
 #include "panels/terminal/terminalpanel.h"
 #include "search/dolphinquery.h"
+#include "search/bar.h"
 #include "selectionmode/actiontexthelper.h"
 #if KIO_VERSION >= QT_VERSION_CHECK(6, 24, 0)
 #include "servicemenushortcutmanager.h"
@@ -77,6 +78,7 @@
 
 #include <AeroQt/insetwindow.h>
 #include <AeroQt/util/props.h>
+#include <AeroQt/util/objecteventlistener.h>
 
 #include <kwidgetsaddons_version.h>
 
@@ -2603,13 +2605,65 @@ void DolphinMainWindow::setupWindowHeader()
     connect(d->navs->forward(), &QAbstractButton::clicked, m_forwardAction, &QAction::trigger);
 
     /* Nav menu */
-    // for (int i = urlNavigator->historyIndex() + 1; i < urlNavigator->historySize() && entries < MaxNumberOfNavigationentries; ++i, ++entries) {
-    //     QAction *action = urlNavigatorHistoryAction(urlNavigator, i, menu);
-    //     menu->addAction(action);
-    // }
+
     // Enabling done in ::updateHistory()
     QMenu *menu = m_backAction->popupMenu();
     d->navs->setMenu(menu);
+
+    /* Search bar */
+    QList<QMetaObject::Connection> conns;
+    QAction *lastSavedSearchAction = nullptr;
+    connect(this, &DolphinMainWindow::urlChanged, [=]() mutable {    // ::urlChanged() is a proxy signal for the active view having changed. That doesn't have a notifier signal of its own.
+        for (auto c: conns)
+            QObject::disconnect(c);
+        conns.clear();
+
+        /* Upon active view changed */
+
+        d->searchBar->setText(activeViewContainer()->m_searchBar->m_searchTermEditor->text());
+
+        conns += (bind_prop(
+            d->searchBar, "text",
+            activeViewContainer()->m_searchBar->m_searchTermEditor, "text",
+            &QLineEdit::textChanged
+        ));
+        conns += (connect(
+            d->searchBar, &QLineEdit::textChanged,
+            activeViewContainer()->m_searchBar, &Search::Bar::slotSearchTermEdited
+        ));
+
+        d->actSearchOpts->setMenu(
+            (QObject *) activeViewContainer()->m_searchBar->m_popup
+        );
+
+        // Also, add that active search's 'save search' action
+        d->searchBar->removeAction(lastSavedSearchAction);
+
+        lastSavedSearchAction = activeViewContainer()->m_searchBar->m_saveSearchAction;
+        d->searchBar->addAction(lastSavedSearchAction, QLineEdit::TrailingPosition);
+
+        // conns += bind_prop(      // FIXME
+        //     lastSavedSearchAction, "enabled",
+        //     lastSavedSearchAction, "visible",
+        //     &QAction::enabledChanged, true
+        // );
+    });
+
+    connect(d->actSearchOpts, &QAction::triggered, [=]() {
+        int iconWidth = 16;
+        QRect rect = d->searchBar->contentsRect();
+                QPoint pos = d->searchBar->mapToGlobal(
+            QPoint(rect.right() - iconWidth, rect.bottom())
+        );
+
+        d->actSearchOpts->menu()->exec(pos);
+    });
+
+    onEvent(d->searchBar, QEvent::KeyPress, [=](QEvent *_event) {
+        if (static_cast<QKeyEvent *>(_event)->key() == Qt::Key_Escape) {
+            d->searchBar->setText("");
+        }
+    });
 }
 
 void DolphinMainWindow::setupFileItemActions()

@@ -66,13 +66,13 @@ QWidget *Popup::init()
                                         Dolphin::VERTICAL_SPACER_HEIGHT,
                                         Dolphin::VERTICAL_SPACER_HEIGHT, // Using the same value for every spacing in this containerWidget looks nice.
                                         Dolphin::VERTICAL_SPACER_HEIGHT);
-    auto verticalMainLayout = new QVBoxLayout{containerWidget};
-    verticalMainLayout->setSpacing((2 * Dolphin::VERTICAL_SPACER_HEIGHT) / 3); // A bit less spacing between rows than when adding an explicit spacer.
+    m_verticalMainLayout = new QVBoxLayout{containerWidget};
+    m_verticalMainLayout->setSpacing((2 * Dolphin::VERTICAL_SPACER_HEIGHT) / 3); // A bit less spacing between rows than when adding an explicit spacer.
 
     /// Add UI to switch between only searching in file names or also in contents.
     auto searchInLabel = new QLabel{i18nc("@title:group", "Search in:"), containerWidget};
     searchInLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByKeyboard);
-    verticalMainLayout->addWidget(searchInLabel);
+    m_verticalMainLayout->addWidget(searchInLabel);
 
     m_searchInFileNamesRadioButton = new QRadioButton{i18nc("@option:radio Search in:", "File names"), containerWidget};
     connect(m_searchInFileNamesRadioButton, &QAbstractButton::clicked, this, [this]() {
@@ -85,7 +85,7 @@ QWidget *Popup::init()
         searchConfigurationCopy.setSearchThrough(SearchThrough::FileNames);
         Q_EMIT configurationChanged(searchConfigurationCopy);
     });
-    verticalMainLayout->addWidget(m_searchInFileNamesRadioButton);
+    m_verticalMainLayout->addWidget(m_searchInFileNamesRadioButton);
 
     m_searchInFileContentsRadioButton = new QRadioButton{containerWidget};
     connect(m_searchInFileContentsRadioButton, &QAbstractButton::clicked, this, [this]() {
@@ -98,7 +98,7 @@ QWidget *Popup::init()
         searchConfigurationCopy.setSearchThrough(SearchThrough::FileContents);
         Q_EMIT configurationChanged(searchConfigurationCopy);
     });
-    verticalMainLayout->addWidget(m_searchInFileContentsRadioButton);
+    m_verticalMainLayout->addWidget(m_searchInFileContentsRadioButton);
 
     auto searchInButtonGroup = new QButtonGroup{this};
     searchInButtonGroup->addButton(m_searchInFileNamesRadioButton);
@@ -107,11 +107,11 @@ QWidget *Popup::init()
     /// Add UI to switch between search tools.
     // When we build without Baloo, there is only one search tool available, so we skip adding the UI to switch.
 #if HAVE_BALOO
-    verticalMainLayout->addSpacing(Dolphin::VERTICAL_SPACER_HEIGHT);
+    m_verticalMainLayout->addSpacing(Dolphin::VERTICAL_SPACER_HEIGHT);
 
     auto searchUsingLabel = new QLabel{i18nc("@title:group", "Search using:"), containerWidget};
     searchUsingLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByKeyboard);
-    verticalMainLayout->addWidget(searchUsingLabel);
+    m_verticalMainLayout->addWidget(searchUsingLabel);
 
     /// Initialize the Filenamesearch row.
     m_filenamesearchRadioButton = new QRadioButton{filenamesearchUiName(), containerWidget};
@@ -144,7 +144,7 @@ QWidget *Popup::init()
     filenamesearchRowLayout->addWidget(m_filenamesearchRadioButton);
     filenamesearchRowLayout->addWidget(m_filenamesearchContextualHelpButton);
     filenamesearchRowLayout->addStretch(); // for left-alignment
-    verticalMainLayout->addLayout(filenamesearchRowLayout);
+    m_verticalMainLayout->addLayout(filenamesearchRowLayout);
 
     /// Initialize the Baloo row.
     m_balooRadioButton = new QRadioButton{balooUiName(), containerWidget};
@@ -188,13 +188,13 @@ QWidget *Popup::init()
     balooRowLayout->addWidget(m_balooContextualHelpButton);
     balooRowLayout->addWidget(balooSettingsButton);
     balooRowLayout->addStretch(); // for left-alignment
-    verticalMainLayout->addLayout(balooRowLayout);
+    m_verticalMainLayout->addLayout(balooRowLayout);
 
     auto searchUsingButtonGroup = new QButtonGroup{this};
     searchUsingButtonGroup->addButton(m_filenamesearchRadioButton);
     searchUsingButtonGroup->addButton(m_balooRadioButton);
 
-    verticalMainLayout->addSpacing(Dolphin::VERTICAL_SPACER_HEIGHT);
+    m_verticalMainLayout->addSpacing(Dolphin::VERTICAL_SPACER_HEIGHT);
 
     /// Add extra search filters like date, tags, rating, etc.
     m_selectorsLayoutWidget = new QWidget{containerWidget};
@@ -203,7 +203,7 @@ QWidget *Popup::init()
     }
     auto selectorsLayout = new QGridLayout{m_selectorsLayoutWidget};
     selectorsLayout->setContentsMargins(0, 0, 0, 0);
-    selectorsLayout->setSpacing(verticalMainLayout->spacing());
+    selectorsLayout->setSpacing(m_verticalMainLayout->spacing());
 
     auto typeSelectorTitle = new QLabel{i18nc("@title:group for filtering files based on their type", "File Type:"), containerWidget};
     typeSelectorTitle->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByKeyboard);
@@ -239,23 +239,23 @@ QWidget *Popup::init()
     connect(m_tagsSelector, &TagsSelector::configurationChanged, this, &Popup::configurationChanged);
     selectorsLayout->addWidget(m_tagsSelector, 4, 1);
 
-    verticalMainLayout->addWidget(m_selectorsLayoutWidget);
+    m_verticalMainLayout->addWidget(m_selectorsLayoutWidget);
 #endif // HAVE_BALOO
 
     /**
      * Dolphin cannot provide every advanced search workflow, so here at the end we need to push users to more dedicated search tools if what Dolphin provides
      * turns out to be insufficient.
      */
-    verticalMainLayout->addSpacing(Dolphin::VERTICAL_SPACER_HEIGHT);
+    m_verticalMainLayout->addSpacing(Dolphin::VERTICAL_SPACER_HEIGHT);
 
     auto kfindLabel = new QLabel{i18nc("@label above 'Install KFind'/'Open KFind' button", "For more advanced searches:"), containerWidget};
     kfindLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByKeyboard);
-    verticalMainLayout->addWidget(kfindLabel);
+    m_verticalMainLayout->addWidget(kfindLabel);
 
     m_kFindButton = new QToolButton{containerWidget};
     m_kFindButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     connect(m_kFindButton, &QToolButton::clicked, this, &Popup::slotKFindButtonClicked);
-    verticalMainLayout->addWidget(m_kFindButton);
+    m_verticalMainLayout->addWidget(m_kFindButton);
 
     return containerWidget;
 }

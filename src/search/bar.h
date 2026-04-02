@@ -17,6 +17,7 @@
 #include <QUrl>
 
 class DolphinSearchBarTest;
+class DolphinMainWindow;
 class QHBoxLayout;
 class QLineEdit;
 class QToolButton;
@@ -200,7 +201,7 @@ private:
     QAction *m_saveSearchAction = nullptr;
     /// The main popup of this bar that allows configuring most search parameters.
     Popup *m_popup = nullptr;
-    BarSecondRowFlowLayout *m_secondRowLayout = nullptr;
+    QHBoxLayout *m_secondRowLayout = nullptr;
     QToolButton *m_fromHereButton = nullptr;
     QToolButton *m_everywhereButton = nullptr;
     Chip<FileTypeSelector> *m_fileTypeSelectorChip = nullptr;
@@ -212,6 +213,7 @@ private:
     QTimer *m_startSearchTimer = nullptr;
 
     friend DolphinSearchBarTest;
+    friend DolphinMainWindow;
 };
 
 }

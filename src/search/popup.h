@@ -19,6 +19,7 @@
 class KContextualHelpButton;
 class QRadioButton;
 class QToolButton;
+class QVBoxLayout;
 
 namespace Search
 {
@@ -26,6 +27,7 @@ class DateSelector;
 class FileTypeSelector;
 class MinimumRatingSelector;
 class TagsSelector;
+class Bar;
 
 /** @returns the localized name for the Filenamesearch search tool for use in user interfaces. */
 QString filenamesearchUiName();
@@ -39,6 +41,7 @@ QString balooUiName();
 class Popup : public WidgetMenu, public UpdatableStateInterface
 {
     Q_OBJECT
+    friend class Bar;
 
 public:
     explicit Popup(std::shared_ptr<const DolphinQuery> dolphinQuery, QWidget *parent = nullptr);
@@ -74,6 +77,7 @@ private Q_SLOTS:
     void slotKFindButtonClicked();
 
 private:
+    QVBoxLayout *m_verticalMainLayout = nullptr;
     QRadioButton *m_searchInFileNamesRadioButton = nullptr;
     QRadioButton *m_searchInFileContentsRadioButton = nullptr;
     QRadioButton *m_filenamesearchRadioButton = nullptr;

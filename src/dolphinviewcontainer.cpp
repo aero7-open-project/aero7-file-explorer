@@ -214,6 +214,10 @@ DolphinViewContainer::DolphinViewContainer(const QUrl &url, QWidget *parent)
     // Update the view with the current state of the filter bar (from the state config)
     m_view->setFilterMode(m_filterBar->filterMode());
     m_view->setFilterCaseSensitive(m_filterBar->isCaseSensitive());
+  
+    // Gotta do this so that it's initialized and we can remote control it from the DolphinWindowHeader search bar
+    setSearchBarVisible(true);
+    static_cast<QWidget *>(m_searchBar)->setVisible(false);
 }
 
 DolphinViewContainer::~DolphinViewContainer() = default;
@@ -389,7 +393,7 @@ void DolphinViewContainer::setSearchBarVisible(bool visible)
 
 bool DolphinViewContainer::isSearchBarVisible() const
 {
-    return m_searchBar && m_searchBar->isVisible() && m_searchBar->isEnabled();
+    return m_searchBar && /*m_searchBar->isVisible() &&*/ m_searchBar->isEnabled();
 }
 
 void DolphinViewContainer::setFocusToSearchBar()
