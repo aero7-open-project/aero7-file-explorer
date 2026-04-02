@@ -783,6 +783,7 @@ private:
     DolphinTabWidget *m_tabWidget;
     DolphinViewContainer *m_activeViewContainer;
     DolphinWindowHeader *m_winHeader;
+    DolphinNavigatorsWidgetAction *m_navigatorsWidgetAction;
 
     DolphinViewActionHandler *m_actionHandler;
     DolphinRemoteEncoding *m_remoteEncoding;

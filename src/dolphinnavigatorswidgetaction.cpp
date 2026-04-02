@@ -120,19 +120,19 @@ bool DolphinNavigatorsWidgetAction::isInToolbar() const
     return qobject_cast<QToolBar *>(m_splitter->parentWidget());
 }
 
-DolphinUrlNavigator *DolphinNavigatorsWidgetAction::primaryUrlNavigator() const
+DolphinUrlNavigator *DolphinNavigatorsWidgetAction::primaryUrlNavigator()
 {
     Q_ASSERT(m_splitter);
-    return m_splitter->widget(0)->findChild<DolphinUrlNavigator *>();
+    return m_primaryUrlNavigator ? m_primaryUrlNavigator : (m_primaryUrlNavigator = m_splitter->widget(0)->findChild<DolphinUrlNavigator *>());
 }
 
-DolphinUrlNavigator *DolphinNavigatorsWidgetAction::secondaryUrlNavigator() const
+DolphinUrlNavigator *DolphinNavigatorsWidgetAction::secondaryUrlNavigator()
 {
     Q_ASSERT(m_splitter);
     if (m_splitter->count() < 2) {
         return nullptr;
     }
-    return m_splitter->widget(1)->findChild<DolphinUrlNavigator *>();
+    return m_secondaryUrlNavigator ? m_secondaryUrlNavigator : (m_secondaryUrlNavigator = m_splitter->widget(1)->findChild<DolphinUrlNavigator *>());
 }
 
 void DolphinNavigatorsWidgetAction::setSecondaryNavigatorVisible(bool visible)
@@ -191,7 +191,7 @@ QWidget *DolphinNavigatorsWidgetAction::createWidget(QWidget *parent)
 
 void DolphinNavigatorsWidgetAction::deleteWidget(QWidget *widget)
 {
-    Q_UNUSED(widget)
+    Q_UNUSED(widget);
     m_splitter->setParent(nullptr);
 }
 

@@ -14,6 +14,7 @@
 #include <QSplitter>
 #include <QTimer>
 #include <QWidgetAction>
+#include <QHBoxLayout>
 
 #include <memory>
 
@@ -72,11 +73,48 @@ public:
     /**
      * @return the primary UrlNavigator.
      */
-    DolphinUrlNavigator *primaryUrlNavigator() const;
+    DolphinUrlNavigator *primaryUrlNavigator();
+    DolphinUrlNavigator *m_primaryUrlNavigator = nullptr;   // We cache the result because we actually steal it afterwards so the original method of computing it wouldnt work anymore.
+    DolphinUrlNavigator *stealPrimaryUrlNavigator() {
+        auto w = primaryUrlNavigator();
+
+        QWidget *parent = w->parentWidget();
+        QHBoxLayout *layout = static_cast<QHBoxLayout *>(parent->layout());
+
+        if (!layout)
+            return nullptr;
+
+        // Get index in layout
+        int index = layout->indexOf(w);
+        if (index < 0)
+            return nullptr;
+
+        // Remove the widget from layout
+        QLayoutItem *item = layout->takeAt(index);
+
+        // Create dummy placeholder
+        QWidget *dummy = new QWidget(parent);
+
+        // Optional: preserve size behavior
+        dummy->setSizePolicy(w->sizePolicy());
+        dummy->setMinimumSize(w->minimumSize());
+        dummy->setMaximumSize(w->maximumSize());
+
+        // Insert dummy at same position
+        layout->insertWidget(index, dummy);
+
+        // Fully detach original widget
+        w->setParent(nullptr);
+
+        delete item;
+        return w;
+    }
+
     /**
      * @return the secondary UrlNavigator and nullptr if it doesn't exist.
      */
-    DolphinUrlNavigator *secondaryUrlNavigator() const;
+    DolphinUrlNavigator *secondaryUrlNavigator();
+    DolphinUrlNavigator *m_secondaryUrlNavigator = nullptr;
 
     /**
      * Change the visibility of the secondary UrlNavigator including spacing.

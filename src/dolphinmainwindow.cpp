@@ -178,9 +178,9 @@ DolphinMainWindow::DolphinMainWindow()
 
     setAcceptDrops(true);
 
-    auto *navigatorsWidgetAction = new DolphinNavigatorsWidgetAction(this);
-    actionCollection()->addAction(QStringLiteral("url_navigators"), navigatorsWidgetAction);
-    m_tabWidget = new DolphinTabWidget(navigatorsWidgetAction, this);
+    m_navigatorsWidgetAction = new DolphinNavigatorsWidgetAction(this);
+    actionCollection()->addAction(QStringLiteral("url_navigators"), m_navigatorsWidgetAction);
+    m_tabWidget = new DolphinTabWidget(m_navigatorsWidgetAction, this);
     m_tabWidget->setObjectName("tabWidget");
     connect(m_tabWidget, &DolphinTabWidget::activeViewChanged, this, &DolphinMainWindow::activeViewChanged);
     connect(m_tabWidget, &DolphinTabWidget::tabCountChanged, this, &DolphinMainWindow::tabCountChanged);
@@ -2664,6 +2664,12 @@ void DolphinMainWindow::setupWindowHeader()
             d->searchBar->setText("");
         }
     });
+
+    /* Navigator(s) */
+    d->primaryNavHole->layout()->addWidget(
+        m_navigatorsWidgetAction->stealPrimaryUrlNavigator()
+        // m_navigatorsWidgetAction->defaultWidget()
+    );
 }
 
 void DolphinMainWindow::setupFileItemActions()
