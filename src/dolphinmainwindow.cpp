@@ -99,6 +99,7 @@
 #include <QToolButton>
 #include <QtConcurrentRun>
 #include <dolphindebug.h>
+#include <QFile>
 
 #include <algorithm>
 
@@ -149,6 +150,8 @@ DolphinMainWindow::DolphinMainWindow()
 
 #ifndef Q_OS_WIN
     setWindowFlags(Qt::WindowContextHelpButtonHint);
+    setAttribute(Qt::WA_TranslucentBackground, true);
+    setAttribute(Qt::WA_NoSystemBackground, true);
 #endif
     setComponentName(QStringLiteral("dolphin"), QGuiApplication::applicationDisplayName());
     setObjectName(QStringLiteral("Dolphin#"));
@@ -2640,13 +2643,17 @@ void DolphinMainWindow::setupWindowHeader()
         d->searchBar->removeAction(lastSavedSearchAction);
 
         lastSavedSearchAction = activeViewContainer()->m_searchBar->m_saveSearchAction;
-        d->searchBar->addAction(lastSavedSearchAction, QLineEdit::TrailingPosition);
 
-        // conns += bind_prop(      // FIXME
-        //     lastSavedSearchAction, "enabled",
-        //     lastSavedSearchAction, "visible",
-        //     &QAction::enabledChanged, true
-        // );
+        d->searchBar->setContextMenuPolicy(Qt::CustomContextMenu);
+        conns += QObject::connect(d->searchBar, &QWidget::customContextMenuRequested, [=](const QPoint& pos) {
+            auto *menu = d->searchBar->createStandardContextMenu();
+
+            menu->addSeparator();
+            menu->addAction(lastSavedSearchAction);
+
+            menu->exec(d->searchBar->mapToGlobal(pos));
+            delete menu;
+        });
     });
 
     connect(d->actSearchOpts, &QAction::triggered, [=]() {
@@ -2668,8 +2675,46 @@ void DolphinMainWindow::setupWindowHeader()
     /* Navigator(s) */
     d->primaryNavHole->layout()->addWidget(
         m_navigatorsWidgetAction->stealPrimaryUrlNavigator()
-        // m_navigatorsWidgetAction->defaultWidget()
     );
+
+    d->separator->setVisible(false);
+
+    connect(m_navigatorsWidgetAction, &DolphinNavigatorsWidgetAction::secondaryUrlNavigatorChanged, [=]() {
+        if (m_navigatorsWidgetAction->secondaryUrlNavigator() != nullptr)
+        {
+            d->separator->setVisible(true);
+            d->secondaryNavHole->setVisible(true);
+
+            d->secondaryNavHole->layout()->addWidget(
+                m_navigatorsWidgetAction->stealSecondaryUrlNavigator()
+            );
+
+            // Separator visibility mirrors that of the second navigator
+            onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Show, [=](QEvent *) {
+                d->separator->show();
+            });
+            onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Hide, [=](QEvent *) {
+                d->separator->hide();
+            });
+        }
+        else
+        {
+            d->separator->setVisible(false);
+            d->secondaryNavHole->setVisible(false);
+
+            if (auto layout = d->secondaryNavHole->layout()) {
+                for (QLayoutItem* item; (item = layout->takeAt(0)) != nullptr;) {
+                    if (QWidget* child = item->widget()) {
+                        delete child;  // deletes the widget
+                    }
+                    delete item; // deletes the layout item
+                }
+            }
+        }
+    });
+    // d->primaryNavHole->layout()->addWidget(
+    //     m_navigatorsWidgetAction->stealPrimaryUrlNavigator()
+    // );
 }
 
 void DolphinMainWindow::setupFileItemActions()

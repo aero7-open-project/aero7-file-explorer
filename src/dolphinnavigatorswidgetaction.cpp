@@ -107,6 +107,8 @@ void DolphinNavigatorsWidgetAction::createSecondaryUrlNavigator()
     secondaryUrlNavigator()->setBackgroundEnabled(primaryUrlNavigator()->isBackgroundEnabled());
 #endif
     updateText();
+
+    Q_EMIT secondaryUrlNavigatorChanged();
 }
 
 void DolphinNavigatorsWidgetAction::followViewContainersGeometry(QWidget *primaryViewContainer, QWidget *secondaryViewContainer)
@@ -156,6 +158,8 @@ void DolphinNavigatorsWidgetAction::setSecondaryNavigatorVisible(bool visible)
     }
 #endif
     updateText();
+
+    // Q_EMIT secondaryUrlNavigatorChanged();
 }
 
 void DolphinNavigatorsWidgetAction::setBackgroundEnabled(bool enabled)

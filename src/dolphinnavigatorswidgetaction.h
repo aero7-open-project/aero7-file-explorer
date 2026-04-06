@@ -16,10 +16,51 @@
 #include <QWidgetAction>
 #include <QHBoxLayout>
 
+#include <AeroQt/util/objecteventlistener.h>
+#include <AeroQt/util/props.h>
+
 #include <memory>
 
 class KXmlGuiWindow;
 class QPushButton;
+
+inline DolphinUrlNavigator *replaceWithDummy(DolphinUrlNavigator *w, QWidget **_dummy = nullptr)
+{
+    QWidget *parent = w->parentWidget();
+    QHBoxLayout *layout = static_cast<QHBoxLayout *>(parent->layout());
+
+    if (!layout)
+        return nullptr;
+
+    // Get index in layout
+    int index = layout->indexOf(w);
+    if (index < 0)
+        return nullptr;
+
+    // Remove the widget from layout
+    QLayoutItem *item = layout->takeAt(index);
+
+    // Create dummy placeholder
+    QWidget *dummy = new QWidget(parent);
+
+    if (_dummy != nullptr)
+        *_dummy = dummy;
+
+    // Optional: preserve size behavior
+    dummy->setSizePolicy(w->sizePolicy());
+    dummy->setMinimumSize(w->minimumSize());
+    dummy->setMaximumSize(w->maximumSize());
+
+    // Insert dummy at same position
+    layout->insertWidget(index, dummy);
+
+    // Fully detach original widget
+    w->setParent(nullptr);
+
+    delete item;
+
+    return w;
+}
 
 /**
  * @brief QWidgetAction that allows to use DolphinUrlNavigators in a toolbar.
@@ -76,38 +117,7 @@ public:
     DolphinUrlNavigator *primaryUrlNavigator();
     DolphinUrlNavigator *m_primaryUrlNavigator = nullptr;   // We cache the result because we actually steal it afterwards so the original method of computing it wouldnt work anymore.
     DolphinUrlNavigator *stealPrimaryUrlNavigator() {
-        auto w = primaryUrlNavigator();
-
-        QWidget *parent = w->parentWidget();
-        QHBoxLayout *layout = static_cast<QHBoxLayout *>(parent->layout());
-
-        if (!layout)
-            return nullptr;
-
-        // Get index in layout
-        int index = layout->indexOf(w);
-        if (index < 0)
-            return nullptr;
-
-        // Remove the widget from layout
-        QLayoutItem *item = layout->takeAt(index);
-
-        // Create dummy placeholder
-        QWidget *dummy = new QWidget(parent);
-
-        // Optional: preserve size behavior
-        dummy->setSizePolicy(w->sizePolicy());
-        dummy->setMinimumSize(w->minimumSize());
-        dummy->setMaximumSize(w->maximumSize());
-
-        // Insert dummy at same position
-        layout->insertWidget(index, dummy);
-
-        // Fully detach original widget
-        w->setParent(nullptr);
-
-        delete item;
-        return w;
+        return replaceWithDummy(primaryUrlNavigator());
     }
 
     /**
@@ -115,6 +125,18 @@ public:
      */
     DolphinUrlNavigator *secondaryUrlNavigator();
     DolphinUrlNavigator *m_secondaryUrlNavigator = nullptr;
+    DolphinUrlNavigator *stealSecondaryUrlNavigator() {     // Only call once upon each secondaryUrlNavigatorChanged
+        QWidget *dummy;
+        auto *secNav = replaceWithDummy(secondaryUrlNavigator(), &dummy);
+        onEvent(dummy, QEvent::Show, [=](QEvent *) {
+            secNav->show();
+        });
+        onEvent(dummy, QEvent::Hide, [=](QEvent *) {
+            secNav->hide();
+        });
+
+        return secNav;
+    }
 
     /**
      * Change the visibility of the secondary UrlNavigator including spacing.
@@ -129,6 +151,9 @@ public:
      * @param enabled True for showing background cosmetic, false for hiding it.
      */
     void setBackgroundEnabled(bool enabled);
+
+Q_SIGNALS:
+    void secondaryUrlNavigatorChanged();
 
 protected:
     /**

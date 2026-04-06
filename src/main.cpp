@@ -26,6 +26,7 @@
 #include <KIconTheme>
 #include <KLocalizedString>
 #include <KWindowSystem>
+
 #include <AeroQt/stylesheet.h>
 
 #define HAVE_STYLE_MANAGER __has_include(<KStyleManager>)
@@ -90,6 +91,24 @@ int main(int argc, char **argv)
 #endif
 #endif
     Aero::registerStylesheet(&app);
+
+    QString qss = R"(
+        *[_Aero_transpbg="true"] DolphinUrlNavigator KUrlComboBox
+        {
+            border-image: url(:/AeroQt/null.png)
+        }
+
+        *[_Aero_transpbg="true"] DolphinUrlNavigator
+        {
+            border-image: url(:/AeroQt/transpbg/entry/normal.png) 4 4 4 4 repeat;
+            border-width: 4px;
+        }
+        *[_Aero_transpbg="true"] DolphinUrlNavigator:hover
+        {
+            border-image: url(:/AeroQt/transpbg/entry/hover.png) 4 4 4 4 repeat;
+        }
+    )";
+    app.setStyleSheet(app.styleSheet() + qss);
 
     KLocalizedString::setApplicationDomain(dolphinTranslationDomain);
 

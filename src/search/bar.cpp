@@ -60,7 +60,8 @@ Bar::Bar(const std::shared_ptr<const DolphinQuery> &dolphinQuery, QWidget *paren
     // Add "Save search" button inside search box
     m_saveSearchAction = new QAction(this);
     m_saveSearchAction->setIcon(QIcon::fromTheme(QStringLiteral("document-save-symbolic")));
-    m_saveSearchAction->setText(i18nc("action:button", "Save this search to quickly access it again in the future"));
+    m_saveSearchAction->setText(i18nc("action:button", "Save search"));
+    m_saveSearchAction->setToolTip(i18nc("action:button", "Save this search to quickly access it again in the future"));
     m_searchTermEditor->addAction(m_saveSearchAction, QLineEdit::TrailingPosition);
     connect(m_saveSearchAction, &QAction::triggered, this, &Bar::slotSaveSearch);
 
