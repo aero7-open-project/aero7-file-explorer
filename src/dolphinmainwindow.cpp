@@ -281,7 +281,7 @@ DolphinMainWindow::DolphinMainWindow()
     connect(GeneralSettings::self(), &GeneralSettings::tabBarChanged, this, &DolphinMainWindow::slotTabBarChanged);
 
     setupWindowHeader();
-    Aero::makeInsetWindow(this, this->takeCentralWidget(), m_winHeader, nullptr);
+    Aero::makeInsetWindow(this, nullptr, m_winHeader, nullptr);
 }
 
 DolphinMainWindow::~DolphinMainWindow()
@@ -1793,6 +1793,8 @@ void DolphinMainWindow::setViewsToHomeIfMountPathOpen(const QString &mountPath)
 void DolphinMainWindow::setupActions()
 {
     auto hamburgerMenuAction = KStandardAction::hamburgerMenu(nullptr, nullptr, actionCollection());
+    hamburgerMenuAction->setText(i18nc("@action:inmenu", "&Menu"));
+    // hamburgerMenuAction->setIcon(QIcon());
 
     // setup 'File' menu
     m_newFileMenu = new DolphinNewFileMenu(nullptr, nullptr, this);
@@ -2676,6 +2678,7 @@ void DolphinMainWindow::setupWindowHeader()
     d->primaryNavHole->layout()->addWidget(
         m_navigatorsWidgetAction->stealPrimaryUrlNavigator()
     );
+    m_navigatorsWidgetAction->followViewContainersGeometry(d->primaryNavHole);  // It needs to set internal nonsense that isn't relevant any more like `m_primaryViewContainer`
 
     d->separator->setVisible(false);
 
@@ -2695,6 +2698,8 @@ void DolphinMainWindow::setupWindowHeader()
             });
             onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Hide, [=](QEvent *) {
                 d->separator->hide();
+                d->separator->parentWidget()->layout()->invalidate();
+                d->separator->parentWidget()->layout()->activate();
             });
         }
         else
@@ -2712,9 +2717,6 @@ void DolphinMainWindow::setupWindowHeader()
             }
         }
     });
-    // d->primaryNavHole->layout()->addWidget(
-    //     m_navigatorsWidgetAction->stealPrimaryUrlNavigator()
-    // );
 }
 
 void DolphinMainWindow::setupFileItemActions()

@@ -82,14 +82,13 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
     // This action doesn't appear in the GUI, it's for the shortcut only.
     // KNewFileMenu takes care of the GUI stuff.
     QAction *newDirAction = m_actionCollection->addAction(QStringLiteral("create_dir"));
-    newDirAction->setText(i18nc("@action", "Create Folder…"));
+    newDirAction->setText(i18nc("@action", "New folder"));
     m_actionCollection->setDefaultShortcuts(newDirAction, KStandardShortcut::createFolder());
-    newDirAction->setIcon(QIcon::fromTheme(QStringLiteral("folder-new")));
     newDirAction->setEnabled(false); // Will be enabled in slotWriteStateChanged(bool) if the current URL is writable
     connect(newDirAction, &QAction::triggered, this, &DolphinViewActionHandler::createDirectoryTriggered);
 
     QAction *newFileAction = m_actionCollection->addAction(QStringLiteral("create_file"));
-    newFileAction->setText(i18nc("@action", "Create File…"));
+    newFileAction->setText(i18nc("@action", "New file"));
     newFileAction->setIcon(QIcon::fromTheme(QStringLiteral("document-new")));
     newFileAction->setEnabled(false); // Will be enabled in slotWriteStateChanged(bool) if the current URL is writable
     connect(newFileAction, &QAction::triggered, this, &DolphinViewActionHandler::createFileTriggered);

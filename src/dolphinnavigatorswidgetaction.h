@@ -133,6 +133,8 @@ public:
         });
         onEvent(dummy, QEvent::Hide, [=](QEvent *) {
             secNav->hide();
+            secNav->parentWidget()->layout()->invalidate();
+            secNav->parentWidget()->layout()->activate();
         });
 
         return secNav;

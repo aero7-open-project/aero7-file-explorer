@@ -1,3 +1,11 @@
+# Aero fork
+
+Just like with the other Aero-ified apps, this is effectively just a patch on the upstream version. Try to change as little of the original code as possible, don't worry about making some variables etc. redundant; we want as few `deletes` in the diff as possible.
+
+When a new version of Dolphin comes out, we `rebase` this fork onto it and hopefully it works.
+
+---
+
 # Dolphin
 
 Dolphin is KDE's file manager that lets you navigate and browse the contents of your hard drives, USB sticks, SD cards, and more. Creating, moving, or deleting files and folders is simple and fast. See more information [on Dolphin's homepage](https://apps.kde.org/dolphin/).

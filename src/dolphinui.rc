@@ -106,14 +106,12 @@
     </State>
     <ToolBar noMerge="1" name="mainToolBar" >
         <text context="@title:menu">Main Toolbar</text>
-        <Action name="go_back" />
-        <Action name="go_forward" />
-        <Action name="view_settings" />
-        <Action name="url_navigators" />
+        <Action name="hamburger_menu" />
+        <Action name="create_dir" />
+        <Action name="url_navigators" />    <!-- in Aero this is just empty space where folder-related buttons occasionaly pop up -->
+        <Action name="view_mode" />
         <Action name="split_view" />
         <Action name="split_stash" />
-        <Action name="toggle_search" />
-        <Action name="hamburger_menu" />
     </ToolBar>
     <ActionProperties scheme="Default">
         <Action priority="0" name="go_back"/>
