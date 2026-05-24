@@ -1,5 +1,9 @@
 # Aero fork
 
+You need to install the [libAeroQt library](https://gitgud.io/atmk/libaero-qt) first before building this fork.
+
+![](https://gitgud.io/-/project/48090/uploads/791d2dff6e5f2310abe0b4370e17b407/Screenshot_20260524_204617.png)
+
 Just like with the other Aero-ified apps, this is effectively just a patch on the upstream version. Try to change as little of the original code as possible, don't worry about making some variables etc. redundant; we want as few `deletes` in the diff as possible.
 
 When a new version of Dolphin comes out, we `rebase` this fork onto it and hopefully it works.
