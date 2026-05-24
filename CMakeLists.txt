@@ -99,7 +99,7 @@ if(KF6UserFeedback_FOUND)
     set(HAVE_KUSERFEEDBACK TRUE)
 endif()
 
-find_package(AeroQt)
+find_package(AeroQt REQUIRED)
 
 find_package(KF6 ${KF6_MIN_VERSION} OPTIONAL_COMPONENTS
     DocTools
