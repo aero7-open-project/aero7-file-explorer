@@ -52,6 +52,7 @@
 #include <KDialogJobUiDelegate>
 #include <KDualAction>
 #include <KFileItemListProperties>
+#include <KHelpMenu>
 #include <KIO/CommandLauncherJob>
 #include <KIO/JobUiDelegateFactory>
 #include <KIO/OpenFileManagerWindowJob>
@@ -258,6 +259,15 @@ DolphinMainWindow::DolphinMainWindow()
     if (GeneralSettings::version() < 201 && !toolBar()->actions().contains(hamburgerMenu)) {
         addHamburgerMenuToToolbar();
     }
+
+    // Unfortunately we can't attach the help QMenu to the help_menu QAction because it is created by in setupGUI(), which is only called _after_ setupActions(). Hence we have to connect it here, post-hoc.
+    qobject_cast<QToolButton *>(
+        qobject_cast<QWidgetAction *>(
+            actionCollection()->action(QStringLiteral("help_menu"))
+        )->defaultWidget()
+    )->setMenu(
+        this->findChild<KHelpMenu *>(QString(), Qt::FindDirectChildrenOnly)->menu()
+    );
 
     updateAllowedToolbarAreas();
     updateNavigatorsBackground();
@@ -2329,6 +2339,24 @@ void DolphinMainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("window_color_sheme"), windowColorSchemeMenu);
 
     m_recentFiles = new KRecentFilesAction(this);
+
+    // Help icon for toolbar
+    auto *helpMenuAction = new QWidgetAction(nullptr);
+    actionCollection()->addAction(QStringLiteral("help_menu"), helpMenuAction);
+    helpMenuAction->setToolTip(i18nc("@action:inmenu Help", "Help"));
+    helpMenuAction->setText(i18nc("@action:inmenu Help", "Help"));
+    helpMenuAction->setIconText(QString());
+    helpMenuAction->setIcon(QIcon::fromTheme(QStringLiteral("browser-help")));
+
+    auto *tb = new QToolButton();
+    tb->setDefaultAction(helpMenuAction);
+    tb->setPopupMode(QToolButton::InstantPopup);
+
+    helpMenuAction->setDefaultWidget(tb);
+    // helpMenuAction->setMenu(this->findChild<QMenu *>("help", Qt::FindDirectChildrenOnly));
+    // connect(helpMenuAction, &QAction::triggered, [=]() {
+    //     this->findChild<KHelpMenu *>(QString(), Qt::FindDirectChildrenOnly)->menu()->popup(QPoint(), helpMenuAction);
+    // });
 }
 
 void DolphinMainWindow::setupDockWidgets()
@@ -2679,6 +2707,7 @@ void DolphinMainWindow::setupWindowHeader()
         m_navigatorsWidgetAction->stealPrimaryUrlNavigator()
     );
     m_navigatorsWidgetAction->followViewContainersGeometry(d->primaryNavHole);  // It needs to set internal nonsense that isn't relevant any more like `m_primaryViewContainer`
+    m_navigatorsWidgetAction->primaryUrlNavigator()->setFixedHeight(26);
 
     d->separator->setVisible(false);
 
@@ -2691,6 +2720,7 @@ void DolphinMainWindow::setupWindowHeader()
             d->secondaryNavHole->layout()->addWidget(
                 m_navigatorsWidgetAction->stealSecondaryUrlNavigator()
             );
+            m_navigatorsWidgetAction->secondaryUrlNavigator()->setFixedHeight(26);
 
             // Separator visibility mirrors that of the second navigator
             onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Show, [=](QEvent *) {
@@ -3019,7 +3049,7 @@ void DolphinMainWindow::updateSplitActions()
             m_splitViewAction->addAction(popoutSplitAction);
         }
     } else {
-        m_splitViewAction->setText(i18nc("@action:intoolbar Split view", "Split"));
+        m_splitViewAction->setText(QString()/*i18nc("@action:intoolbar Split view", "Split")*/);      // Don't clutter the toolbar, icons only like in W7
         m_splitViewMenuAction->setText(m_splitViewAction->text());
         m_splitViewAction->setToolTip(i18nc("@info", "Split view"));
         m_splitViewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-split-left-right")));

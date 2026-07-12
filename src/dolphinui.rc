@@ -111,7 +111,8 @@
         <Action name="url_navigators" />    <!-- in Aero this is just empty space where folder-related buttons occasionaly pop up -->
         <Action name="view_mode" />
         <Action name="split_view" />
-        <Action name="split_stash" />
+<!--        <Action name="split_stash" /> Idk what this is for -->
+        <Action name="help_menu" />
     </ToolBar>
     <ActionProperties scheme="Default">
         <Action priority="0" name="go_back"/>
