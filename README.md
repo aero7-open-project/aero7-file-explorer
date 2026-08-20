@@ -1,9 +1,10 @@
 # Aero7 File Explorer
 
 Aero7 File Explorer is the Aero7 desktop's complete Windows 7-style file
-manager. It is a standalone Aero7 application with its own executable, desktop
-identity, shell integration, navigation chrome, library model, Computer view,
-details layout, dialogs, and file-management experience.
+manager and a maintained fork of KDE Dolphin. It is a standalone Aero7 product
+with its own executable, desktop identity, shell integration, navigation
+chrome, library model, Computer view, details layout, dialogs, and
+file-management experience.
 
 The installed application identity is:
 
@@ -14,13 +15,12 @@ The installed application identity is:
   distribution package)
 
 Builds require the Aero7 Qt library plus the KDE Frameworks and Qt 6
-dependencies listed by CMake. See
-[AERO7_ARCHITECTURE.md](AERO7_ARCHITECTURE.md) for the application boundary,
-upstream heritage, and compatibility policy.
+dependencies listed by CMake. See [AERO7_FORK.md](AERO7_FORK.md) for the
+application boundary, upstream heritage, and compatibility policy.
 
-The codebase retains portions of KDE Dolphin under their original free-software
-licenses. Those internals are maintained as implementation heritage; they do
-not define the application's product identity or visible user experience.
+The fork retains KDE Dolphin code under its original free-software licenses.
+Upstream internals are maintained where practical, while the Aero7 application
+identity and user experience remain independently owned and developed.
 
 ---
 
