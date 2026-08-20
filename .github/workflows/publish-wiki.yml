@@ -1,0 +1,62 @@
+name: Publish GitHub Wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "wiki/**"
+      - ".github/workflows/publish-wiki.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aero7-file-explorer-wiki
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out documentation source
+        uses: actions/checkout@v7
+
+      - name: Publish wiki pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          wiki_url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+          wiki_enabled="$(gh api "repos/${GITHUB_REPOSITORY}" --jq .has_wiki)"
+          if [[ "$wiki_enabled" != "true" ]]; then
+            echo "GitHub Wiki is disabled for ${GITHUB_REPOSITORY}." >&2
+            exit 1
+          fi
+
+          probe_error="$(mktemp)"
+          if git ls-remote "$wiki_url" >/dev/null 2>"$probe_error"; then
+            :
+          elif [[ "$(wc -l <"$probe_error")" -eq 2 ]] \
+              && grep -Fqx 'remote: Repository not found.' "$probe_error" \
+              && grep -Fq "${GITHUB_REPOSITORY}.wiki.git" "$probe_error" \
+              && grep -Fq 'not found' "$probe_error"; then
+            echo "GitHub Wiki has no first page yet; keeping versioned wiki source in the repository."
+            exit 0
+          else
+            echo "GitHub Wiki accessibility check failed." >&2
+            exit 1
+          fi
+
+          git clone "$wiki_url" published-wiki
+          rsync -a --delete --exclude=.git wiki/ published-wiki/
+          cd published-wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          if git diff --cached --quiet; then
+            echo "Wiki is already up to date."
+            exit 0
+          fi
+          git commit -m "Publish wiki from ${GITHUB_SHA}"
+          git push origin HEAD:master

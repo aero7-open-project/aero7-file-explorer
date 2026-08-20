@@ -1,0 +1,1 @@
+Aero7 File Explorer documentation · [Source](https://github.com/aero7-open-project/aero7-file-explorer) · [Issues](https://github.com/aero7-open-project/aero7-file-explorer/issues) · [KDE Dolphin upstream](https://github.com/KDE/dolphin) · [Aero7 website](https://aero7.miku-dayo.com/)
