@@ -629,6 +629,17 @@ QString KFileItemModel::roleDescription(const QByteArray &role) const
         }
     }
 
+    // Match the Windows 7 Recycle Bin vocabulary without changing the same
+    // roles in ordinary Explorer folders and search results.
+    if (directory().scheme() == QLatin1String("trash")) {
+        if (role == QByteArrayLiteral("path"))
+            return QStringLiteral("Original Location");
+        if (role == QByteArrayLiteral("deletiontime"))
+            return QStringLiteral("Date Deleted");
+        if (role == QByteArrayLiteral("type"))
+            return QStringLiteral("Item Type");
+    }
+
     return description.value(role);
 }
 
@@ -2250,6 +2261,18 @@ QHash<QByteArray, QVariant> KFileItemModel::retrieveData(const KFileItem &item, 
 
         const int index = path.lastIndexOf(item.text());
         path = path.mid(0, index - 1);
+        if (item.url().scheme() == QLatin1String("trash")) {
+            const QString homePath = QDir::cleanPath(QDir::homePath());
+            const QString cleanPath = QDir::cleanPath(path);
+            if (cleanPath == homePath || cleanPath.startsWith(homePath + QLatin1Char('/'))) {
+                const QString userName = QFileInfo(homePath).fileName();
+                QString relative = QDir(homePath).relativeFilePath(cleanPath);
+                relative.replace(QLatin1Char('/'), QLatin1Char('\\'));
+                path = QStringLiteral("C:\\Users\\%1").arg(userName);
+                if (relative != QLatin1String("."))
+                    path += QLatin1Char('\\') + relative;
+            }
+        }
         data.insert(sharedValue("path"), path);
     }
 
@@ -3063,7 +3086,7 @@ const KFileItemModel::RoleInfoMap *KFileItemModel::rolesInfoMap(int &count)
         { nullptr,               NoRole,                  KLazyLocalizedString(),                    KLazyLocalizedString(),        KLazyLocalizedString(),                    false,           false },
         { "text",                NameRole,                kli18nc("@label", "Name"),                 KLazyLocalizedString(),        KLazyLocalizedString(),                    false,           false },
         { "size",                SizeRole,                kli18nc("@label", "Size"),                 KLazyLocalizedString(),        KLazyLocalizedString(),                    false,           false },
-        { "modificationtime",    ModificationTimeRole,    kli18nc("@label", "Modified"),             KLazyLocalizedString(),        kli18nc("@tooltip", "The date format can be selected in settings."),                    false,           false },
+        { "modificationtime",    ModificationTimeRole,    kli18nc("@label", "Date modified"),        KLazyLocalizedString(),        kli18nc("@tooltip", "The date format can be selected in settings."),                    false,           false },
         { "creationtime",        CreationTimeRole,        kli18nc("@label", "Created"),              KLazyLocalizedString(),        kli18nc("@tooltip", "The date format can be selected in settings."),                    false,           false },
         { "accesstime",          AccessTimeRole,          kli18nc("@label", "Accessed"),             KLazyLocalizedString(),        kli18nc("@tooltip", "The date format can be selected in settings."),                    false,           false },
         { "type",                TypeRole,                kli18nc("@label", "Type"),                 KLazyLocalizedString(),        KLazyLocalizedString(),                    false,           false },

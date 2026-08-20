@@ -16,6 +16,8 @@
 #include "dolphinplacesmodelsingleton.h"
 #include "settings/dolphinsettingsdialog.h"
 #include "views/draganddrophelper.h"
+#include "aero7properties.h"
+#include "aero7libraries.h"
 
 #include <KFilePlacesModel>
 #include <KIO/DropJob>
@@ -24,8 +26,12 @@
 #include <KProtocolManager>
 
 #include <QIcon>
+#include <QContextMenuEvent>
+#include <QFileInfo>
 #include <QMenu>
 #include <QMimeData>
+#include <QMouseEvent>
+#include <QPainter>
 #include <QShowEvent>
 
 #include <Solid/StorageAccess>
@@ -69,6 +75,21 @@ PlacesPanel::PlacesPanel(QWidget *parent)
     });
 
     readSettings();
+    setIconSize(QSize(16, 16));
+    setSpacing(0);
+    setStyleSheet(QStringLiteral(R"(
+        KFilePlacesView::item {
+            min-height: 20px;
+            padding: 0;
+        }
+        KFilePlacesView::item:selected {
+            color: #111111;
+            background: #dcecf9;
+            border: 1px solid #7da2ce;
+        }
+    )"));
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     // Set the model here so that it's loaded in time for the sizeHint to properly apply (setting it upon showEvent is too late)
     auto *placesModel = DolphinPlacesModelSingleton::instance().placesModel();
@@ -89,7 +110,46 @@ PlacesPanel::~PlacesPanel() = default;
 
 void PlacesPanel::setUrl(const QUrl &url)
 {
-    KFilePlacesView::setUrl(url);
+    QUrl navigationUrl = url;
+    if (url.isLocalFile()) {
+        const QString candidate = QDir::cleanPath(QFileInfo(url.toLocalFile()).absoluteFilePath());
+        bool matchedVisiblePlace = false;
+        const auto *placesModel = DolphinPlacesModelSingleton::instance().placesModel();
+        for (int row = 0; row < placesModel->rowCount(); ++row) {
+            const QModelIndex index = placesModel->index(row, 0);
+            if (placesModel->isHidden(index))
+                continue;
+            const QUrl placeUrl = placesModel->url(index);
+            if (!placeUrl.isLocalFile())
+                continue;
+            const QString placePath = QDir::cleanPath(placeUrl.toLocalFile());
+            if (candidate == placePath || candidate.startsWith(placePath + QDir::separator())) {
+                navigationUrl = placeUrl;
+                matchedVisiblePlace = true;
+                break;
+            }
+        }
+        if (!matchedVisiblePlace) {
+            for (const Aero7Library &library : Aero7Libraries::instance().libraries()) {
+                for (const QString &location : library.locations) {
+                    const QString root = QDir::cleanPath(QFileInfo(location).absoluteFilePath());
+                    if (candidate == root || candidate.startsWith(root + QDir::separator())) {
+                        navigationUrl = QUrl::fromLocalFile(
+                            Aero7Libraries::instance().materializedPath(library.id));
+                        matchedVisiblePlace = true;
+                        break;
+                    }
+                }
+                if (matchedVisiblePlace)
+                    break;
+            }
+        }
+        // KFilePlacesView otherwise keeps its closest hidden device row visible
+        // for ordinary folders, leaving an empty KDE device-section heading.
+        if (!matchedVisiblePlace)
+            navigationUrl = QUrl();
+    }
+    KFilePlacesView::setUrl(navigationUrl);
 }
 
 QList<QAction *> PlacesPanel::customContextMenuActions() const
@@ -158,14 +218,178 @@ void PlacesPanel::dragMoveEvent(QDragMoveEvent *event)
     KFilePlacesView::dragMoveEvent(event);
 }
 
+QModelIndex PlacesPanel::aero7IndexForName(const QString &name) const
+{
+    if (!model())
+        return {};
+    const auto *placesModel = static_cast<const KFilePlacesModel *>(model());
+    for (int row = 0; row < model()->rowCount(); ++row) {
+        const QModelIndex index = model()->index(row, 0);
+        // KFilePlacesModel retains hidden KDE defaults such as ~/Documents
+        // alongside Aero7's visible materialized Library entries.  The custom
+        // Windows 7 renderer addresses rows by their display name, so choosing
+        // the first matching row could silently activate the hidden KDE place
+        // and expose "aero > Documents" instead of "Libraries > Documents".
+        // Only rows that the Aero7 model deliberately exposes may back a
+        // painted navigation item.
+        if (!index.isValid() || placesModel->isHidden(index))
+            continue;
+        if (index.data(Qt::DisplayRole).toString() == name)
+            return index;
+    }
+    return {};
+}
+
+QModelIndex PlacesPanel::aero7IndexAt(const QPoint &position) const
+{
+    for (const Aero7NavigationHit &hit : m_aero7NavigationHits) {
+        if (hit.rect.contains(position))
+            return hit.index;
+    }
+    return {};
+}
+
+void PlacesPanel::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event)
+    QPainter painter(viewport());
+    painter.fillRect(viewport()->rect(), palette().base());
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    m_aero7NavigationHits.clear();
+
+    const QModelIndex selected = currentIndex();
+    const int width = viewport()->width();
+    const int rowHeight = 21;
+    const int groupHeight = 21;
+    const int iconSize = 16;
+    int y = 7;
+
+    const auto drawSelection = [&](const QRect &rect, bool active) {
+        if (!active)
+            return;
+        QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
+        gradient.setColorAt(0.0, QColor(QStringLiteral("#edf7ff")));
+        gradient.setColorAt(1.0, QColor(QStringLiteral("#d6eafb")));
+        painter.setPen(QColor(QStringLiteral("#7da2ce")));
+        painter.setBrush(gradient);
+        painter.drawRect(rect.adjusted(0, 0, -1, -1));
+    };
+
+    const auto drawItem = [&](const QString &name, int itemY, bool showDisclosure) {
+        const QModelIndex index = aero7IndexForName(name);
+        if (!index.isValid())
+            return;
+        const QRect hitRect(1, itemY, qMax(0, width - 2), rowHeight);
+        drawSelection(hitRect, selected == index);
+        const int iconX = 29;
+        if (showDisclosure) {
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(QColor(QStringLiteral("#8293a4")));
+            painter.drawPolygon(QPolygon({QPoint(19, itemY + 7), QPoint(19, itemY + 13),
+                                           QPoint(23, itemY + 10)}));
+        }
+        const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+        icon.paint(&painter, QRect(iconX, itemY + 2, iconSize, iconSize), Qt::AlignCenter,
+                   selected == index ? QIcon::Selected : QIcon::Normal);
+        painter.setPen(QColor(QStringLiteral("#111111")));
+        painter.drawText(QRect(iconX + 21, itemY, width - iconX - 24, rowHeight),
+                         Qt::AlignVCenter | Qt::AlignLeft, name);
+        m_aero7NavigationHits.append({hitRect, index});
+    };
+
+    const auto drawGroup = [&](const QString &name, const QString &iconName,
+                               const QStringList &children, bool clickable,
+                               bool childDisclosures) {
+        const QModelIndex groupIndex = clickable ? aero7IndexForName(name) : QModelIndex();
+        const QRect groupRect(1, y, qMax(0, width - 2), groupHeight);
+        drawSelection(groupRect, groupIndex.isValid() && selected == groupIndex);
+
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(QStringLiteral("#66798d")));
+        const QPolygon triangle = children.isEmpty()
+            ? QPolygon({QPoint(11, y + 7), QPoint(11, y + 13), QPoint(15, y + 10)})
+            : QPolygon({QPoint(10, y + 9), QPoint(16, y + 9), QPoint(13, y + 13)});
+        painter.drawPolygon(triangle);
+        QIcon::fromTheme(iconName).paint(&painter, QRect(20, y + 2, iconSize, iconSize));
+        painter.setPen(QColor(QStringLiteral("#274b72")));
+        painter.drawText(QRect(41, y, width - 44, groupHeight),
+                         Qt::AlignVCenter | Qt::AlignLeft, name);
+        if (groupIndex.isValid())
+            m_aero7NavigationHits.append({groupRect, groupIndex});
+
+        y += groupHeight + 2;
+        for (const QString &child : children) {
+            drawItem(child, y, childDisclosures);
+            y += rowHeight;
+        }
+    };
+
+    drawGroup(QStringLiteral("Favorites"), QStringLiteral("favorites"),
+              {QStringLiteral("Recent Places"), QStringLiteral("Desktop"),
+               QStringLiteral("Downloads")}, false, false);
+    y += 20;
+    drawGroup(QStringLiteral("Libraries"), QStringLiteral("folder-library"),
+              {QStringLiteral("Documents"), QStringLiteral("Music"),
+               QStringLiteral("New Library"), QStringLiteral("Pictures"),
+               QStringLiteral("Videos")}, false, true);
+    y += 20;
+    drawGroup(QStringLiteral("Computer"), QStringLiteral("computer"),
+              {QStringLiteral("Local Disk (C:)"), QStringLiteral("CD Drive (D:)")}, true, true);
+    y += 20;
+    drawGroup(QStringLiteral("Network"), QStringLiteral("network-workgroup"), {}, true, false);
+}
+
+void PlacesPanel::mousePressEvent(QMouseEvent *event)
+{
+    const QModelIndex index = aero7IndexAt(event->position().toPoint());
+    if (event->button() == Qt::LeftButton && index.isValid()) {
+        setCurrentIndex(index);
+        viewport()->update();
+        Q_EMIT placeActivated(index.data(KFilePlacesModel::UrlRole).toUrl());
+        event->accept();
+        return;
+    }
+    if (event->button() == Qt::RightButton) {
+        event->accept();
+        return;
+    }
+    KFilePlacesView::mousePressEvent(event);
+}
+
+void PlacesPanel::contextMenuEvent(QContextMenuEvent *event)
+{
+    const QModelIndex index = aero7IndexAt(event->pos());
+    if (!index.isValid()) {
+        event->accept();
+        return;
+    }
+
+    const QUrl url = index.data(KFilePlacesModel::UrlRole).toUrl();
+    QMenu menu(this);
+    QAction *open = menu.addAction(QIcon::fromTheme(QStringLiteral("document-open-folder")),
+                                   QStringLiteral("Open"));
+    connect(open, &QAction::triggered, this, [this, url]() { Q_EMIT placeActivated(url); });
+    QAction *newWindow = menu.addAction(QIcon::fromTheme(QStringLiteral("window-new")),
+                                       QStringLiteral("Open in new window"));
+    connect(newWindow, &QAction::triggered, this, [this, url]() { Q_EMIT newWindowRequested(url); });
+
+    if (url.isLocalFile()) {
+        const QString id = Aero7Libraries::instance().libraryIdForPath(url.toLocalFile());
+        if (!id.isEmpty()) {
+            menu.addSeparator();
+            QAction *properties = menu.addAction(QIcon::fromTheme(QStringLiteral("document-properties")),
+                                                 QStringLiteral("Properties"));
+            connect(properties, &QAction::triggered, this,
+                    [this, id]() { Aero7Properties::showLibrary(id, this); });
+        }
+    }
+    menu.exec(event->globalPos());
+    event->accept();
+}
+
 void PlacesPanel::slotConfigureTrash()
 {
-    const QUrl url = currentIndex().data(KFilePlacesModel::UrlRole).toUrl();
-
-    DolphinSettingsDialog *settingsDialog = new DolphinSettingsDialog(url, this);
-    settingsDialog->setCurrentPage(settingsDialog->trashSettings);
-    settingsDialog->setAttribute(Qt::WA_DeleteOnClose);
-    settingsDialog->show();
+    Aero7Properties::showTrash(this);
 }
 
 void PlacesPanel::slotUrlsDropped(const QUrl &dest, QDropEvent *event, QWidget *parent)
@@ -182,14 +406,25 @@ void PlacesPanel::slotUrlsDropped(const QUrl &dest, QDropEvent *event, QWidget *
 
 void PlacesPanel::slotContextMenuAboutToShow(const QModelIndex &index, QMenu *menu)
 {
-    Q_UNUSED(menu);
-
     auto *placesModel = static_cast<KFilePlacesModel *>(model());
     const QUrl url = placesModel->url(index);
     const Solid::Device device = placesModel->deviceForIndex(index);
 
     m_configureTrashAction->setVisible(url.scheme() == QLatin1String("trash"));
     m_openInSplitView->setVisible(url.isValid());
+
+    if (url.isLocalFile()) {
+        const QString id = Aero7Libraries::instance().libraryIdForPath(url.toLocalFile());
+        if (!id.isEmpty()
+            && QDir::cleanPath(url.toLocalFile())
+                == QDir::cleanPath(Aero7Libraries::instance().materializedPath(id))) {
+            menu->addSeparator();
+            QAction *properties = menu->addAction(QIcon::fromTheme(QStringLiteral("document-properties")),
+                                                  QStringLiteral("Properties"));
+            connect(properties, &QAction::triggered, this,
+                    [this, id]() { Aero7Properties::showLibrary(id, this); });
+        }
+    }
 
     // show customContextMenuActions only on the view's context menu
     if (!url.isValid() && !device.isValid()) {

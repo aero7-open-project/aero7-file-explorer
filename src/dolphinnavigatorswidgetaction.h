@@ -16,8 +16,7 @@
 #include <QWidgetAction>
 #include <QHBoxLayout>
 
-#include <AeroQt/util/objecteventlistener.h>
-#include <AeroQt/util/props.h>
+#include <Aero7Qt/eventlistener.h>
 
 #include <memory>
 
@@ -126,12 +125,12 @@ public:
     DolphinUrlNavigator *secondaryUrlNavigator();
     DolphinUrlNavigator *m_secondaryUrlNavigator = nullptr;
     DolphinUrlNavigator *stealSecondaryUrlNavigator() {     // Only call once upon each secondaryUrlNavigatorChanged
-        QWidget *dummy;
+        QWidget *dummy = nullptr;
         auto *secNav = replaceWithDummy(secondaryUrlNavigator(), &dummy);
-        onEvent(dummy, QEvent::Show, [=](QEvent *) {
+        Aero7::onEvent(dummy, QEvent::Show, [=](QEvent *) {
             secNav->show();
         });
-        onEvent(dummy, QEvent::Hide, [=](QEvent *) {
+        Aero7::onEvent(dummy, QEvent::Hide, [=](QEvent *) {
             secNav->hide();
             secNav->parentWidget()->layout()->invalidate();
             secNav->parentWidget()->layout()->activate();

@@ -23,7 +23,7 @@
 #include <KFileItemListProperties>
 #include <KLocalizedString>
 #include <KNewFileMenu>
-#include <KPropertiesDialog>
+#include "aero7properties.h"
 #include <KProtocolManager>
 
 #include <QActionGroup>
@@ -811,19 +811,12 @@ void DolphinViewActionHandler::slotDuplicate()
 
 void DolphinViewActionHandler::slotProperties()
 {
-    KPropertiesDialog *dialog = nullptr;
     const KFileItemList list = m_currentView->selectedItems();
     if (list.isEmpty()) {
-        const QUrl url = m_currentView->url();
-        dialog = new KPropertiesDialog(url, m_currentView);
+        Aero7Properties::show({m_currentView->url()}, m_currentView);
     } else {
-        dialog = new KPropertiesDialog(list, m_currentView);
+        Aero7Properties::show(list.urlList(), m_currentView);
     }
-
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-    dialog->show();
-    dialog->raise();
-    dialog->activateWindow();
 }
 
 void DolphinViewActionHandler::slotCopyPath()

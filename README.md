@@ -1,14 +1,25 @@
-# Aero fork
+# Aero7 File Explorer
 
-You need to install the [libAeroQt library](https://gitgud.io/atmk/libaero-qt) first before building this fork.
+Aero7 File Explorer is the Aero7 desktop's independent Windows 7-style file
+manager. It is derived from KDE Dolphin and retains Dolphin's mature file I/O
+backend while replacing the visible application identity, shell integration,
+navigation chrome, library model, Computer view, details layout, dialogs, and
+common file-management interactions with Aero7-owned behavior.
 
-To get the info panel on the right, you also need the `baloo-widgets kf6-kio baloo` Arch packages.
+The installed application identity is:
 
-![](https://gitgud.io/-/project/48090/uploads/791d2dff6e5f2310abe0b4370e17b407/Screenshot_20260524_204617.png)
+- executable: `aero7-file-explorer`
+- desktop id: `org.aero7.FileExplorer`
+- visible name: `File Explorer`
+- compatibility commands: `dolphin` and `aero7-dolphin` (provided by the
+  distribution package)
 
-Just like with the other Aero-ified apps, this is effectively just a patch on the upstream version. Try to change as little of the original code as possible, don't worry about making some variables etc. redundant; we want as few `deletes` in the diff as possible.
+Builds require the Aero7 Qt library plus the KDE Frameworks and Qt 6
+dependencies listed by CMake. See [AERO7_FORK.md](AERO7_FORK.md) for the fork
+boundary and compatibility policy.
 
-When a new version of Dolphin comes out, we `rebase` this fork onto it and hopefully it works.
+When a new Dolphin version is adopted, the fork is rebased while preserving
+the Aero7 shell contract and keeping upstream internals intact where practical.
 
 ---
 

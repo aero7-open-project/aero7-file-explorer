@@ -30,6 +30,7 @@
 #include <QLabel>
 #include <QMenu>
 #include <QRadioButton>
+#include <QProcess>
 #include <QStandardPaths>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -168,19 +169,9 @@ QWidget *Popup::init()
     balooSettingsButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
     balooSettingsButton->setAutoRaise(true);
     balooSettingsButton->setFixedHeight(m_balooRadioButton->sizeHint().height());
-    connect(balooSettingsButton, &QToolButton::clicked, this, [containerWidget] {
-        // Code taken from KCMLauncher::openSystemSettings() in the KCMUtil KDE framework.
-        constexpr auto systemSettings = "systemsettings";
-        KIO::CommandLauncherJob *openBalooSettingsJob;
-        // Open in System Settings if it's available
-        if (KService::serviceByDesktopName(systemSettings)) {
-            openBalooSettingsJob = new KIO::CommandLauncherJob(systemSettings, {"kcm_baloofile"}, containerWidget);
-            openBalooSettingsJob->setDesktopName(systemSettings);
-        } else {
-            openBalooSettingsJob = new KIO::CommandLauncherJob(QStringLiteral("kcmshell6"), {"kcm_baloofile"}, containerWidget);
-        }
-        openBalooSettingsJob->setUiDelegate(new KDialogJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, containerWidget));
-        openBalooSettingsJob->start();
+    connect(balooSettingsButton, &QToolButton::clicked, this, [] {
+        QProcess::startDetached(QStringLiteral("control"),
+                                {QStringLiteral("--page"), QStringLiteral("folder-options")});
     });
 
     auto balooRowLayout = new QHBoxLayout;

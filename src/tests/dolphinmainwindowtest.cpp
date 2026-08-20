@@ -10,13 +10,17 @@
 #include "dolphintabpage.h"
 #include "dolphintabwidget.h"
 #include "dolphinviewcontainer.h"
+#include "dolphinwindowheader.h"
+#include "aero7libraries.h"
 #include "kitemviews/kfileitemmodel.h"
 #include "kitemviews/kfileitemmodelrolesupdater.h"
 #include "kitemviews/kitemlistcontainer.h"
 #include "kitemviews/kitemlistcontroller.h"
+#include "kitemviews/kitemlistheader.h"
 #include "kitemviews/kitemlistselectionmanager.h"
 #include "kitemviews/kitemlistwidget.h"
 #include "settings/viewmodes/viewmodesettings.h"
+#include "panels/places/placespanel.h"
 #include "testdir.h"
 #include "views/dolphinitemlistview.h"
 #include "views/viewproperties.h"
@@ -30,12 +34,17 @@
 #include <QAccessible>
 #include <QApplication>
 #include <QDomDocument>
+#include <QDockWidget>
 #include <QFileSystemWatcher>
+#include <QImage>
+#include <QLabel>
 #include <QKeySequence>
 #include <QScopedPointer>
 #include <QSignalSpy>
 #include <QStandardPaths>
 #include <QTest>
+#include <QToolBar>
+#include <QToolButton>
 
 #include <set>
 #include <unordered_set>
@@ -61,6 +70,9 @@ private Q_SLOTS:
     void testWindowTitle_data();
     void testWindowTitle();
     void testFocusLocationBar();
+    void testAero7ExplorerChromeContract();
+    void testAero7LibraryPlaceActivation();
+    void testAero7WindowFitsAvailableScreen();
     void testFocusPlacesPanel();
     void testPlacesPanelWidthResistance();
     void testGoActions();
@@ -495,24 +507,137 @@ void DolphinMainWindowTest::testFocusLocationBar()
 
     QAction *replaceLocationAction = m_mainWindow->actionCollection()->action(QStringLiteral("replace_location"));
     replaceLocationAction->trigger();
-    QVERIFY(m_mainWindow->activeViewContainer()->urlNavigator()->isAncestorOf(QApplication::focusWidget()));
-    replaceLocationAction->trigger();
+    QVERIFY(!m_mainWindow->activeViewContainer()->urlNavigator()->isUrlEditable());
     QVERIFY(m_mainWindow->activeViewContainer()->view()->hasFocus());
 
     QAction *editableLocationAction = m_mainWindow->actionCollection()->action(QStringLiteral("editable_location"));
     editableLocationAction->trigger();
-    QVERIFY(m_mainWindow->activeViewContainer()->urlNavigator()->isAncestorOf(QApplication::focusWidget()));
-    QVERIFY(m_mainWindow->activeViewContainer()->urlNavigator()->isUrlEditable());
-    editableLocationAction->trigger();
     QVERIFY(!m_mainWindow->activeViewContainer()->urlNavigator()->isUrlEditable());
-
-    replaceLocationAction->trigger();
-    QVERIFY(m_mainWindow->activeViewContainer()->urlNavigator()->isAncestorOf(QApplication::focusWidget()));
-
-    // Pressing Escape multiple times should eventually move the focus back to the active view.
-    QTest::keyClick(QApplication::focusWidget(), Qt::Key_Escape); // Focus might not go the view yet because it toggles the editable state of the location bar.
-    QTest::keyClick(QApplication::focusWidget(), Qt::Key_Escape);
     QVERIFY(m_mainWindow->activeViewContainer()->view()->hasFocus());
+}
+
+void DolphinMainWindowTest::testAero7ExplorerChromeContract()
+{
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+
+    QCOMPARE(m_mainWindow->m_winHeader->height(), 65);
+    QToolBar *chrome = m_mainWindow->findChild<QToolBar *>(
+        QStringLiteral("aero7ExplorerChrome"));
+    QVERIFY(chrome);
+    QCOMPARE(chrome->height(), 65);
+
+    QToolButton *history = m_mainWindow->findChild<QToolButton *>(
+        QStringLiteral("aero7AddressHistoryButton"));
+    QToolButton *refresh = m_mainWindow->findChild<QToolButton *>(
+        QStringLiteral("aero7RefreshButton"));
+    QLabel *searchIcon = m_mainWindow->findChild<QLabel *>(
+        QStringLiteral("aero7SearchIcon"));
+    QVERIFY(history && history->isVisible());
+    QVERIFY(refresh && refresh->isVisible());
+    QVERIFY(searchIcon && !searchIcon->pixmap().isNull());
+    QCOMPARE(history->size(), QSize(20, 21));
+    QCOMPARE(refresh->size(), QSize(24, 21));
+
+    DolphinView *view = m_mainWindow->activeViewContainer()->view();
+    KItemListView *itemListView = view->m_container->controller()->view();
+    QTRY_VERIFY(itemListView->isHeaderVisible());
+    KItemListHeader *header = itemListView->header();
+    const auto verifyNormalFolderHeader = [header]() {
+        QCOMPARE(header->leftPadding(), 10.0);
+        QCOMPARE(header->columnWidth("text"), 284.0);
+        QCOMPARE(header->columnWidth("modificationtime"), 120.0);
+        QCOMPARE(header->columnWidth("type"), 120.0);
+        QCOMPARE(header->columnWidth("size"), 80.0);
+    };
+    // Assert startup geometry before invoking any view-mode action; this
+    // catches constructor defaults and late asynchronous directory-layout
+    // work that could otherwise override the Windows 7 column geometry.
+    QTest::qWait(500);
+    QDockWidget *placesDock = m_mainWindow->findChild<QDockWidget *>(
+        QStringLiteral("placesDock"));
+    QVERIFY(placesDock);
+    QCOMPARE(placesDock->width(), 133);
+    QVERIFY(!header->automaticColumnResizing());
+    verifyNormalFolderHeader();
+
+    QSignalSpy refreshed(m_mainWindow.data(), &DolphinMainWindow::urlRefreshed);
+    QTest::mouseClick(refresh, Qt::LeftButton);
+    QTRY_COMPARE(refreshed.count(), 1);
+    QCOMPARE(refreshed.constFirst().constFirst().toUrl(),
+             QUrl::fromLocalFile(QDir::homePath()));
+
+    QVERIFY(history->menu());
+    history->menu()->popup(QPoint(0, 0));
+    QTRY_VERIFY(!history->menu()->actions().isEmpty());
+    history->menu()->hide();
+
+    view->setVisibleRoles({"text", "path", "deletiontime", "size", "type"});
+    view->setVisibleRoles({"text", "modificationtime", "type", "size"});
+    verifyNormalFolderHeader();
+
+    const QImage titleIcon = m_mainWindow->windowIcon().pixmap(16, 16).toImage();
+    QVERIFY(!titleIcon.isNull());
+    bool titleIconIsTransparent = true;
+    for (int y = 0; y < titleIcon.height() && titleIconIsTransparent; ++y) {
+        for (int x = 0; x < titleIcon.width(); ++x) {
+            if (titleIcon.pixelColor(x, y).alpha() != 0) {
+                titleIconIsTransparent = false;
+                break;
+            }
+        }
+    }
+    QVERIFY2(titleIconIsTransparent,
+             "Explorer's Windows 7 title-bar system-menu slot must remain blank");
+}
+
+void DolphinMainWindowTest::testAero7LibraryPlaceActivation()
+{
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+
+    PlacesPanel *placesPanel = m_mainWindow->m_placesPanel;
+    QVERIFY(placesPanel && placesPanel->isVisible());
+    placesPanel->viewport()->update();
+    QTest::qWait(100);
+
+    // Documents is the first child of the custom Libraries group.  A hidden
+    // KDE ~/Documents place with the same display name may also be present;
+    // clicking the painted row must activate Aero7's visible Library entry.
+    QTest::mouseClick(placesPanel->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      QPoint(80, 146));
+    const QUrl documentsLibrary = QUrl::fromLocalFile(
+        Aero7Libraries::instance().materializedPath(QStringLiteral("documents")));
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), documentsLibrary);
+}
+
+void DolphinMainWindowTest::testAero7WindowFitsAvailableScreen()
+{
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+
+    QScreen *windowScreen = m_mainWindow->screen();
+    QVERIFY(windowScreen);
+    const QRect available = windowScreen->availableGeometry();
+    QVERIFY(available.isValid());
+
+    // Model a SPICE client shrinking its virtual monitor while a normal
+    // Explorer window still has the old, wider geometry.
+    m_mainWindow->resize(available.width() + 200, m_mainWindow->height());
+    m_mainWindow->constrainAero7WindowToScreen();
+    QTRY_VERIFY(m_mainWindow->frameGeometry().width() <= available.width());
+    QTRY_VERIFY(m_mainWindow->frameGeometry().height() <= available.height());
+
+    // Switching between the integrated Computer surface and a normal folder
+    // must not reintroduce the stale width.
+    const int fittedWidth = m_mainWindow->width();
+    m_mainWindow->showAero7Computer();
+    QCOMPARE(m_mainWindow->width(), fittedWidth);
+    m_mainWindow->m_winHeader->setComputerMode(false);
+    QTRY_COMPARE(m_mainWindow->width(), fittedWidth);
 }
 
 void DolphinMainWindowTest::testFocusPlacesPanel()

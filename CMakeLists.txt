@@ -5,7 +5,7 @@ set (RELEASE_SERVICE_VERSION_MAJOR "25")
 set (RELEASE_SERVICE_VERSION_MINOR "12")
 set (RELEASE_SERVICE_VERSION_MICRO "3")
 set (RELEASE_SERVICE_VERSION "${RELEASE_SERVICE_VERSION_MAJOR}.${RELEASE_SERVICE_VERSION_MINOR}.${RELEASE_SERVICE_VERSION_MICRO}")
-project(Dolphin VERSION ${RELEASE_SERVICE_VERSION})
+project(Aero7FileExplorer VERSION ${RELEASE_SERVICE_VERSION})
 
 set(QT_MIN_VERSION "6.4.0")
 set(KF6_MIN_VERSION "6.9.0")
@@ -56,6 +56,7 @@ find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Widgets
     Gui
     DBus
+    UiPlugin
 )
 
 if (Qt6Gui_VERSION VERSION_GREATER_EQUAL "6.10.0")
@@ -67,7 +68,6 @@ if (UNIX AND NOT APPLE AND NOT HAIKU)
 endif()
 
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
-    KCMUtils
     NewStuff
     CoreAddons
     I18n
@@ -99,7 +99,7 @@ if(KF6UserFeedback_FOUND)
     set(HAVE_KUSERFEEDBACK TRUE)
 endif()
 
-find_package(AeroQt REQUIRED)
+find_package(Aero7Qt REQUIRED)
 
 find_package(KF6 ${KF6_MIN_VERSION} OPTIONAL_COMPONENTS
     DocTools
@@ -203,17 +203,17 @@ install(FILES
 if(FLATPAK)
     ecm_generate_dbus_service_file(
         NAME org.freedesktop.FileManager1
-        EXECUTABLE "${KDE_INSTALL_FULL_BINDIR}/dolphin --daemon"
+        EXECUTABLE "${KDE_INSTALL_FULL_BINDIR}/aero7-file-explorer --daemon"
         SYSTEMD_SERVICE plasma-dolphin.service
         DESTINATION ${KDE_INSTALL_DBUSSERVICEDIR}
     )
 else()
     ecm_generate_dbus_service_file(
         NAME org.freedesktop.FileManager1
-        EXECUTABLE "${KDE_INSTALL_FULL_BINDIR}/dolphin --daemon"
+        EXECUTABLE "${KDE_INSTALL_FULL_BINDIR}/aero7-file-explorer --daemon"
         SYSTEMD_SERVICE plasma-dolphin.service
         DESTINATION ${KDE_INSTALL_DBUSSERVICEDIR}
-        RENAME org.kde.dolphin.FileManager1.service
+        RENAME org.aero7.FileExplorer.FileManager1.service
     )
 endif()
 

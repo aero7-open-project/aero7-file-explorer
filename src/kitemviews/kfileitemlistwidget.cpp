@@ -89,7 +89,17 @@ QString KFileItemListWidgetInformant::roleText(const QByteArray &role, const QHa
             const QDateTime dateTime = QDateTime::fromSecsSinceEpoch(time);
             text = formatDate(dateTime);
         }
-    } else if (role == "deletiontime" || role == "imageDateTime") {
+    } else if (role == "deletiontime") {
+        const QDateTime dateTime = roleValue.toDateTime();
+        if (dateTime.isValid()) {
+            // Windows 7's Recycle Bin shows a stable deletion timestamp, not
+            // changing phrases such as "19 minutes ago".
+            text = local.toString(dateTime,
+                                  forUsageAs == KStandardItemListWidgetInformant::ForUsageAs::DisplayedText
+                                      ? QLocale::ShortFormat
+                                      : QLocale::LongFormat);
+        }
+    } else if (role == "imageDateTime") {
         const QDateTime dateTime = roleValue.toDateTime();
         if (dateTime.isValid()) {
             text = formatDate(dateTime);

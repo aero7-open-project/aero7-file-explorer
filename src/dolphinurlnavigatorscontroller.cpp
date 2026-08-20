@@ -12,6 +12,7 @@
 #include "global.h"
 
 #include <KUrlComboBox>
+#include <QFileInfo>
 
 void DolphinUrlNavigatorsController::slotReadSettings()
 {
@@ -20,9 +21,10 @@ void DolphinUrlNavigatorsController::slotReadSettings()
     // settings of the URL navigators and split view.
     if (GeneralSettings::modifiedStartupSettings()) {
         for (DolphinUrlNavigator *urlNavigator : s_instances) {
-            urlNavigator->setUrlEditable(GeneralSettings::editableUrl());
-            urlNavigator->setShowFullPath(GeneralSettings::showFullPath());
-            urlNavigator->setHomeUrl(Dolphin::homeUrl());
+            urlNavigator->setUrlEditable(false);
+            urlNavigator->setShowFullPath(true);
+            urlNavigator->setHomeUrl(QUrl::fromLocalFile(
+                QFileInfo(Dolphin::homeUrl().toLocalFile()).absolutePath()));
         }
     }
 }

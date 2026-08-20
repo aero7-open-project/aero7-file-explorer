@@ -15,6 +15,9 @@
 #include <KSqueezedTextLabel>
 
 #include <QApplication>
+#include <QFile>
+#include <QFileInfo>
+#include <QHash>
 #include <QHBoxLayout>
 #include <QHelpEvent>
 #include <QIcon>
@@ -27,6 +30,7 @@
 #include <QTextDocumentFragment>
 #include <QTimer>
 #include <QToolButton>
+#include <QSysInfo>
 
 #include <chrono>
 
@@ -36,6 +40,45 @@ namespace
 {
 constexpr std::chrono::milliseconds minimumTimeBetweenTextChanges = 50ms;
 constexpr std::chrono::seconds temporaryRichTextTimeout = 1s;
+
+QString aero7MemoryText()
+{
+    QFile memoryInfo(QStringLiteral("/proc/meminfo"));
+    if (memoryInfo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        const QList<QByteArray> lines = memoryInfo.readAll().split('\n');
+        for (const QByteArray &line : lines) {
+            if (!line.startsWith("MemTotal:"))
+                continue;
+            const QList<QByteArray> fields = line.simplified().split(' ');
+            if (fields.size() >= 2) {
+                bool valid = false;
+                const double kibibytes = fields.at(1).toDouble(&valid);
+                if (valid)
+                    return QStringLiteral("%1 GB").arg(kibibytes / (1024.0 * 1024.0), 0, 'f', 2);
+            }
+        }
+    }
+    return QStringLiteral("Not available");
+}
+
+QString aero7ProcessorText()
+{
+    QFile cpuInfo(QStringLiteral("/proc/cpuinfo"));
+    if (cpuInfo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        const QList<QByteArray> lines = cpuInfo.readAll().split('\n');
+        for (const QByteArray &line : lines) {
+            if (!line.startsWith("model name"))
+                continue;
+            const qsizetype separator = line.indexOf(':');
+            if (separator >= 0) {
+                const QString model = QString::fromUtf8(line.mid(separator + 1)).trimmed();
+                if (!model.isEmpty())
+                    return model;
+            }
+        }
+    }
+    return QStringLiteral("Standard x64 Processor");
+}
 }
 
 DolphinStatusBar::DolphinStatusBar(QWidget *parent)
@@ -43,6 +86,7 @@ DolphinStatusBar::DolphinStatusBar(QWidget *parent)
     , m_temporaryRichText()
     , m_hoveredItemText()
     , m_defaultText()
+    , m_locationIcon(nullptr)
     , m_label(nullptr)
     , m_zoomLabel(nullptr)
     , m_spaceInfo(nullptr)
@@ -58,6 +102,11 @@ DolphinStatusBar::DolphinStatusBar(QWidget *parent)
 
     QWidget *contentsContainer = prepareContentsContainer();
     contentsContainer->setContentsMargins(0, 0, 0, 0);
+
+    m_locationIcon = new QLabel(contentsContainer);
+    m_locationIcon->setFixedSize(42, 42);
+    m_locationIcon->setAlignment(Qt::AlignCenter);
+    m_locationIcon->setPixmap(QIcon::fromTheme(QStringLiteral("folder")).pixmap(36, 36));
 
     // Initialize text label
     m_label = new KSqueezedTextLabel{contentsContainer};
@@ -141,7 +190,8 @@ DolphinStatusBar::DolphinStatusBar(QWidget *parent)
 
     m_topLayout = new QHBoxLayout(contentsContainer);
     updateContentsMargins();
-    m_topLayout->setSpacing(4);
+    m_topLayout->setSpacing(15);
+    m_topLayout->addWidget(m_locationIcon);
     m_topLayout->addWidget(m_label, 1);
     m_topLayout->addWidget(m_zoomLabel);
     m_topLayout->addWidget(m_zoomSlider, 1);
@@ -228,6 +278,9 @@ void DolphinStatusBar::setHoveredItemText(const QString &hoveredItemText)
 
 void DolphinStatusBar::setDefaultText(const QString &text)
 {
+    if (m_computerMode) {
+        return;
+    }
     m_defaultText = text;
     m_hoveredItemText.clear(); // We want to show the new default text instead of whatever was hovered.
     m_updateLabelTextTimer->start();
@@ -235,6 +288,26 @@ void DolphinStatusBar::setDefaultText(const QString &text)
 
 void DolphinStatusBar::setUrl(const QUrl &url)
 {
+    if (m_locationIcon) {
+        QString iconName;
+        if (url.scheme() == QLatin1String("trash")) {
+            iconName = QStringLiteral("user-trash");
+        } else if (url.scheme() == QLatin1String("network")) {
+            iconName = QStringLiteral("network-workgroup");
+        } else {
+            const QString folder = QFileInfo(url.toLocalFile()).fileName().toLower();
+            static const QHash<QString, QString> folderIcons{
+                {QStringLiteral("desktop"), QStringLiteral("user-desktop")},
+                {QStringLiteral("documents"), QStringLiteral("folder-documents")},
+                {QStringLiteral("downloads"), QStringLiteral("folder-download")},
+                {QStringLiteral("music"), QStringLiteral("folder-music")},
+                {QStringLiteral("pictures"), QStringLiteral("folder-pictures")},
+                {QStringLiteral("videos"), QStringLiteral("folder-videos")},
+            };
+            iconName = folderIcons.value(folder, QStringLiteral("folder"));
+        }
+        m_locationIcon->setPixmap(QIcon::fromTheme(iconName).pixmap(36, 36));
+    }
     if (GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::FullWidth && m_spaceInfo && m_spaceInfo->url() != url) {
         m_spaceInfo->setUrl(url);
         Q_EMIT urlChanged();
@@ -244,6 +317,34 @@ void DolphinStatusBar::setUrl(const QUrl &url)
 QUrl DolphinStatusBar::url() const
 {
     return m_spaceInfo->url();
+}
+
+void DolphinStatusBar::setComputerMode(bool enabled)
+{
+    m_computerMode = enabled;
+    if (enabled) {
+        m_updateLabelTextTimer->stop();
+        m_locationIcon->setPixmap(QIcon::fromTheme(QStringLiteral("computer")).pixmap(42, 42));
+        m_defaultText = QStringLiteral("%1    Workgroup: WORKGROUP    Memory: %2\nProcessor: %3")
+                            .arg(QSysInfo::machineHostName().toUpper(), aero7MemoryText(),
+                                 aero7ProcessorText());
+    } else {
+        setUrl(m_spaceInfo->url());
+        m_defaultText.clear();
+    }
+    m_hoveredItemText.clear();
+    updateLabelText();
+}
+
+void DolphinStatusBar::setSelectedItem(const KFileItem &item)
+{
+    if (m_computerMode)
+        return;
+    if (item.isNull()) {
+        setUrl(m_spaceInfo->url());
+        return;
+    }
+    m_locationIcon->setPixmap(QIcon::fromTheme(item.iconName()).pixmap(42, 42));
 }
 
 void DolphinStatusBar::setZoomLevel(int zoomLevel)
@@ -321,7 +422,9 @@ void DolphinStatusBar::updateMode()
         break;
     case GeneralSettings::EnumShowStatusBar::FullWidth:
         setEnabled(true);
-        m_spaceInfo->setShown(true);
+        m_spaceInfo->setShown(false);
+        m_zoomSlider->setVisible(false);
+        m_zoomLabel->setVisible(false);
         setVisible(true, WithAnimation);
         break;
     case GeneralSettings::EnumShowStatusBar::Disabled:
@@ -417,21 +520,17 @@ void DolphinStatusBar::updateZoomSliderToolTip(int zoomLevel)
 
 void DolphinStatusBar::setExtensionsVisible(bool visible)
 {
-    bool showZoomSlider = visible;
-    if (visible) {
-        showZoomSlider = GeneralSettings::showZoomSlider() && GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::FullWidth;
-    }
-
-    m_zoomSlider->setVisible(showZoomSlider);
-    m_zoomLabel->setVisible(showZoomSlider);
+    Q_UNUSED(visible)
+    m_zoomSlider->setVisible(false);
+    m_zoomLabel->setVisible(false);
+    m_spaceInfo->setShown(false);
     updateContentsMargins();
 }
 
 void DolphinStatusBar::updateContentsMargins()
 {
     if (GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::FullWidth) {
-        // We reduce the outside margin for the flat button so it visually has the same margin as the status bar text label on the other end of the bar.
-        m_topLayout->setContentsMargins(6, 0, 2, 0);
+        m_topLayout->setContentsMargins(16, 5, 16, 5);
     } else {
         // Add extra margins to toplayout to avoid clipping too early.
         m_topLayout->setContentsMargins(clippingAmount() * 2, 0, clippingAmount(), 0);
@@ -470,13 +569,18 @@ void DolphinStatusBar::paintEvent(QPaintEvent *paintEvent)
     }
     // Draw regular statusbar.
     else {
-        style()->drawPrimitive(QStyle::PE_PanelStatusBar, &opt, &p, this);
+        QLinearGradient background(rect().topLeft(), rect().bottomLeft());
+        background.setColorAt(0.0, QColor(QStringLiteral("#f5f9fd")));
+        background.setColorAt(1.0, QColor(QStringLiteral("#e4eef9")));
+        p.fillRect(rect(), background);
+        p.setPen(QColor(QStringLiteral("#c4d5e7")));
+        p.drawLine(rect().topLeft(), rect().topRight());
     }
 }
 
 int DolphinStatusBar::preferredHeight() const
 {
-    return m_spaceInfo->height();
+    return 54;
 }
 
 #include "moc_dolphinstatusbar.cpp"

@@ -12,6 +12,7 @@
 #include "panels/panel.h"
 
 #include <KFilePlacesView>
+#include <QPersistentModelIndex>
 #include <QUrl>
 
 #include <Solid/SolidNamespace> // Solid::ErrorType
@@ -55,6 +56,9 @@ Q_SIGNALS:
 
 protected:
     void dragMoveEvent(QDragMoveEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void contextMenuEvent(QContextMenuEvent *event) override;
 
 private Q_SLOTS:
     void slotConfigureTrash();
@@ -67,9 +71,17 @@ private Q_SLOTS:
     void slotRowsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
 
 private:
+    struct Aero7NavigationHit {
+        QRect rect;
+        QPersistentModelIndex index;
+    };
+
     void connectDeviceSignals(const QModelIndex &idx);
+    QModelIndex aero7IndexForName(const QString &name) const;
+    QModelIndex aero7IndexAt(const QPoint &position) const;
 
     QList<QAction *> m_customContextMenuActions;
+    QList<Aero7NavigationHit> m_aero7NavigationHits;
 
     QPersistentModelIndex m_indexToTearDown;
 

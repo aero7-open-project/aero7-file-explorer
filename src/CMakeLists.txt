@@ -230,9 +230,9 @@ target_link_libraries(
     KF6::WindowSystem
     KF6::WidgetsAddons
     KF6::Codecs
-    KF6::KCMUtils
     KF6::FileMetaData
     KF6::ColorScheme
+    Aero7Qt::Aero7Qt
 
     ${FTS_LIB}
 )
@@ -277,6 +277,36 @@ install(TARGETS dolphinpart DESTINATION ${KDE_INSTALL_PLUGINDIR}/kf6/parts)
 install(FILES dolphinpartactions.desktop DESTINATION "${KDE_INSTALL_DATADIR}/dolphin/")
 
 ##########################################
+
+add_library(aero7shellui STATIC)
+target_sources(aero7shellui PRIVATE
+    aero7/aero7libraries.cpp
+    aero7/aero7libraries.h
+    aero7/aero7commondialog.cpp
+    aero7/aero7commondialog.h
+    aero7/aero7properties.cpp
+    aero7/aero7properties.h
+    aero7/aero7fileoperations.cpp
+    aero7/aero7fileoperations.h
+    aero7/aero7computerdialog.cpp
+    aero7/aero7computerdialog.h
+)
+target_include_directories(aero7shellui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/aero7)
+target_link_libraries(aero7shellui PUBLIC Qt6::Widgets Aero7Qt::Aero7Qt)
+target_link_libraries(dolphinprivate PUBLIC aero7shellui)
+
+add_executable(aero7-file-dialog aero7/aero7filedialogmain.cpp)
+target_link_libraries(aero7-file-dialog PRIVATE aero7shellui)
+install(TARGETS aero7-file-dialog RUNTIME DESTINATION ${KDE_INSTALL_BINDIR})
+
+add_executable(aero7-shell-init aero7/aero7shellinitmain.cpp)
+target_link_libraries(aero7-shell-init PRIVATE aero7shellui)
+install(TARGETS aero7-shell-init RUNTIME DESTINATION ${KDE_INSTALL_BINDIR})
+install(FILES aero7/org.aero7.ShellInit.desktop DESTINATION ${KDE_INSTALL_AUTOSTARTDIR})
+
+add_executable(aero7-shell-selftest aero7/aero7shellselftestmain.cpp)
+target_link_libraries(aero7-shell-selftest PRIVATE aero7shellui)
+install(TARGETS aero7-shell-selftest RUNTIME DESTINATION ${KDE_INSTALL_BINDIR})
 
 add_library(dolphinstatic STATIC)
 
@@ -330,22 +360,7 @@ target_sources(dolphinstatic PRIVATE
     selectionmode/bottombar.cpp
     selectionmode/bottombarcontentscontainer.cpp
     selectionmode/topbar.cpp
-    settings/interface/folderstabssettingspage.cpp
-    settings/interface/statusandlocationbarssettingspage.cpp
-    settings/interface/confirmationssettingspage.cpp
-    settings/interface/interfacesettingspage.cpp
-    settings/interface/previewssettingspage.cpp
-    settings/dolphinsettingsdialog.cpp
-    settings/contextmenu/contextmenusettingspage.cpp
-    settings/settingspagebase.cpp
-    settings/servicemodel.cpp
-    settings/trash/trashsettingspage.cpp
-    settings/viewmodes/dolphinfontrequester.cpp
-    settings/viewmodes/viewsettingspage.cpp
     settings/viewmodes/viewmodesettings.cpp
-    settings/viewmodes/viewsettingstab.cpp
-    settings/viewmodes/contentdisplaytab.cpp
-    settings/viewmodes/generalviewsettingspage.cpp
     statusbar/diskspaceusagemenu.cpp
     statusbar/dolphinstatusbar.cpp
     statusbar/mountpointobserver.cpp
@@ -399,22 +414,7 @@ target_sources(dolphinstatic PRIVATE
     selectionmode/bottombar.h
     selectionmode/bottombarcontentscontainer.h
     selectionmode/topbar.h
-    settings/interface/folderstabssettingspage.h
-    settings/interface/statusandlocationbarssettingspage.h
-    settings/interface/confirmationssettingspage.h
-    settings/interface/interfacesettingspage.h
-    settings/interface/previewssettingspage.h
-    settings/dolphinsettingsdialog.h
-    settings/contextmenu/contextmenusettingspage.h
-    settings/settingspagebase.h
-    settings/servicemodel.h
-    settings/trash/trashsettingspage.h
-    settings/viewmodes/dolphinfontrequester.h
-    settings/viewmodes/viewsettingspage.h
     settings/viewmodes/viewmodesettings.h
-    settings/viewmodes/viewsettingstab.h
-    settings/viewmodes/contentdisplaytab.h
-    settings/viewmodes/generalviewsettingspage.h
     statusbar/diskspaceusagemenu.h
     statusbar/dolphinstatusbar.h
     statusbar/mountpointobserver.h
@@ -489,13 +489,13 @@ target_sources(dolphinstatic PRIVATE
 
 target_link_libraries(dolphinstatic
     dolphinprivate
+    aero7shellui
     KF6::CoreAddons
     KF6::GuiAddons
-    KF6::KCMUtils
     KF6::DBusAddons
     KF6::Notifications
     KF6::BookmarksWidgets
-    AeroQt
+    Aero7Qt::Aero7Qt
 )
 
 if(HAVE_PACKAGEKIT)
@@ -513,20 +513,20 @@ if (HAVE_KUSERFEEDBACK)
     )
 endif()
 
-add_executable(dolphin)
+add_executable(aero7-file-explorer)
 
-target_sources(dolphin PRIVATE
+target_sources(aero7-file-explorer PRIVATE
     dbusinterface.cpp
     dbusinterface.h
     main.cpp
 )
 
 if(FLATPAK)
-    target_compile_definitions(dolphin PRIVATE FLATPAK)
+    target_compile_definitions(aero7-file-explorer PRIVATE FLATPAK)
 endif()
 
 # Install the icons on macOS and Windows
-ecm_add_app_icon(dolphin
+ecm_add_app_icon(aero7-file-explorer
     ICONS
         icons/128-apps-org.kde.dolphin.png
         icons/16-apps-org.kde.dolphin.png
@@ -538,7 +538,7 @@ ecm_add_app_icon(dolphin
 
 install(FILES icons/org.kde.dolphin.svg DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps)
 
-target_link_libraries(dolphin
+target_link_libraries(aero7-file-explorer
     PRIVATE
     dolphinprivate
     dolphinstatic
@@ -546,77 +546,24 @@ target_link_libraries(dolphin
 )
 
 if (HAVE_X11)
-    target_link_libraries(dolphin PRIVATE Qt::GuiPrivate)
+    target_link_libraries(aero7-file-explorer PRIVATE Qt::GuiPrivate)
 endif()
 
 include(DbusInterfaceMacros)
 
 generate_and_install_dbus_interface(
-    dolphin
+    aero7-file-explorer
     dbusinterface.h
     org.freedesktop.FileManager1.xml
     OPTIONS -a
 )
 
-install(TARGETS dolphin ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
+install(TARGETS aero7-file-explorer ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
 
 ##########################################
 
 if(NOT WIN32)
-    # The settings are still accessible from the hamburger menu
-    add_library(kcm_dolphinviewmodes MODULE)
-    add_library(kcm_dolphingeneral MODULE)
-    target_compile_definitions(kcm_dolphingeneral PUBLIC IS_KCM)
-
-    target_sources(kcm_dolphinviewmodes PRIVATE
-        settings/kcm/kcmdolphinviewmodes.cpp
-        settings/viewmodes/dolphinfontrequester.cpp
-        settings/viewmodes/viewmodesettings.cpp
-        settings/viewmodes/viewsettingstab.cpp
-        settings/settingspagebase.cpp
-        views/zoomlevelinfo.cpp
-        settings/kcm/kcmdolphinviewmodes.h
-        settings/viewmodes/dolphinfontrequester.h
-        settings/viewmodes/viewmodesettings.h
-        settings/viewmodes/viewsettingstab.h
-        views/zoomlevelinfo.h)
-
-    target_sources(kcm_dolphingeneral PRIVATE
-        settings/kcm/kcmdolphingeneral.cpp
-        settings/interface/folderstabssettingspage.cpp
-        settings/interface/statusandlocationbarssettingspage.cpp
-        settings/interface/previewssettingspage.cpp
-        settings/interface/confirmationssettingspage.cpp
-        settings/settingspagebase.cpp
-        settings/servicemodel.cpp
-        dolphin_generalsettings.cpp
-        dolphindebug.cpp
-        dolphinmainwindowinterface.cpp
-        views/viewproperties.cpp
-        dolphin_directoryviewpropertysettings.cpp
-        global.cpp
-        settings/kcm/kcmdolphingeneral.h
-        settings/interface/folderstabssettingspage.h
-        settings/interface/statusandlocationbarssettingspage.h
-        settings/interface/previewssettingspage.h
-        settings/interface/confirmationssettingspage.h
-        settings/settingspagebase.h
-        settings/servicemodel.h
-        dolphin_generalsettings.h
-        dolphindebug.h
-        dolphinmainwindowinterface.h
-        views/viewproperties.h
-        dolphin_directoryviewpropertysettings.h
-        global.h
-    )
-
-    target_link_libraries(kcm_dolphinviewmodes dolphinprivate)
-    target_link_libraries(kcm_dolphingeneral dolphinprivate)
-
-    install( FILES org.kde.dolphin.appdata.xml DESTINATION ${KDE_INSTALL_METAINFODIR} )
-
-    install(TARGETS kcm_dolphinviewmodes DESTINATION ${KDE_INSTALL_PLUGINDIR}/dolphin/kcms )
-    install(TARGETS kcm_dolphingeneral DESTINATION ${KDE_INSTALL_PLUGINDIR}/dolphin/kcms )
+    install( FILES org.aero7.FileExplorer.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR} )
 endif()
 
 if(NOT WIN32)
@@ -626,12 +573,12 @@ endif()
 
 ########### install files ###############
 
-install( PROGRAMS org.kde.dolphin.desktop DESTINATION ${KDE_INSTALL_APPDIR} )
+install( PROGRAMS org.aero7.FileExplorer.desktop DESTINATION ${KDE_INSTALL_APPDIR} )
 
 install( DIRECTORY DESTINATION "${KDE_INSTALL_FULL_DATAROOTDIR}/kglobalaccel" )
 
 install(
-    CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \"${KDE_INSTALL_FULL_APPDIR}/org.kde.dolphin.desktop\" \"\$ENV{DESTDIR}${KDE_INSTALL_FULL_DATAROOTDIR}/kglobalaccel/org.kde.dolphin.desktop\")"
+    CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \"${KDE_INSTALL_FULL_APPDIR}/org.aero7.FileExplorer.desktop\" \"\$ENV{DESTDIR}${KDE_INSTALL_FULL_DATAROOTDIR}/kglobalaccel/org.aero7.FileExplorer.desktop\")"
 )
 
 install( FILES settings/dolphin_directoryviewpropertysettings.kcfg

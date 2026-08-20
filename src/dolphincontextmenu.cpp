@@ -14,15 +14,16 @@
 #include "dolphinremoveaction.h"
 #include "dolphinviewcontainer.h"
 #include "global.h"
-#include "settings/dolphinsettingsdialog.h"
 #include "trash/dolphintrash.h"
 #include "views/dolphinview.h"
+#include "aero7properties.h"
 
 #include <KActionCollection>
 #include <KFileItemListProperties>
 #include <KHamburgerMenu>
 #include <KIO/EmptyTrashJob>
 #include <KIO/JobUiDelegate>
+#include <KIO/ListJob>
 #include <KIO/Paste>
 #include <KIO/RestoreJob>
 #include <KJobWidgets>
@@ -67,8 +68,6 @@ DolphinContextMenu::~DolphinContextMenu()
 
 void DolphinContextMenu::addAllActions()
 {
-    static_cast<KHamburgerMenu *>(m_mainWindow->actionCollection()->action(QStringLiteral("hamburger_menu")))->addToMenu(this);
-
     // get the context information
     const auto scheme = m_baseUrl.scheme();
     if (scheme == QLatin1String("trash")) {
@@ -135,7 +134,30 @@ void DolphinContextMenu::addTrashContextMenu()
 
     Q_ASSERT(m_context & TrashContext);
 
-    QAction *emptyTrashAction = addAction(QIcon::fromTheme(QStringLiteral("edit-delete")), i18nc("@action:inmenu", "Empty Trash"), this, [this]() {
+    QAction *restoreAllAction = addAction(QIcon::fromTheme(QStringLiteral("edit-reset")),
+                                          QStringLiteral("Restore all items"), this, [this]() {
+        auto *job = KIO::listDir(QUrl(QStringLiteral("trash:/")), KIO::HideProgressInfo);
+        auto *urls = new QList<QUrl>;
+        connect(job, &KIO::ListJob::entries, job,
+                [urls](KIO::Job *, const KIO::UDSEntryList &entries) {
+            for (const KIO::UDSEntry &entry : entries) {
+                const QString url = entry.stringValue(KIO::UDSEntry::UDS_URL);
+                const QString name = entry.stringValue(KIO::UDSEntry::UDS_NAME);
+                if (!url.isEmpty())
+                    urls->append(QUrl(url));
+                else if (!name.isEmpty() && name != QLatin1String(".") && name != QLatin1String(".."))
+                    urls->append(QUrl(QStringLiteral("trash:/") + name));
+            }
+        });
+        connect(job, &KJob::result, job, [this, urls](KJob *completed) {
+            if (!completed->error() && !urls->isEmpty())
+                KIO::restoreFromTrash(*urls);
+            delete urls;
+        });
+    });
+    restoreAllAction->setEnabled(!Trash::isEmpty());
+
+    QAction *emptyTrashAction = addAction(QIcon::fromTheme(QStringLiteral("edit-delete")), i18nc("@action:inmenu", "Empty Recycle Bin"), this, [this]() {
         Trash::empty(m_mainWindow);
     });
     emptyTrashAction->setEnabled(!Trash::isEmpty());
@@ -146,17 +168,14 @@ void DolphinContextMenu::addTrashContextMenu()
 
     addSeparator();
 
-    auto *configureTrashAction = new QAction(QIcon::fromTheme(QStringLiteral("configure")), i18nc("@action:inmenu", "Configure Trash…"), this);
+    auto *configureTrashAction = new QAction(QIcon::fromTheme(QStringLiteral("configure")), i18nc("@action:inmenu", "Recycle Bin Properties…"), this);
     connect(configureTrashAction, &QAction::triggered, this, &DolphinContextMenu::configureTrash);
     addAction(configureTrashAction);
 }
 
 void DolphinContextMenu::configureTrash()
 {
-    DolphinSettingsDialog *settingsDialog = new DolphinSettingsDialog(m_baseUrl, m_mainWindow);
-    settingsDialog->setCurrentPage(settingsDialog->trashSettings);
-    settingsDialog->setAttribute(Qt::WA_DeleteOnClose);
-    settingsDialog->show();
+    Aero7Properties::showTrash(m_mainWindow);
 }
 
 void DolphinContextMenu::addTrashItemContextMenu()
@@ -200,43 +219,14 @@ void DolphinContextMenu::addTrashItemContextMenu()
 
 void DolphinContextMenu::addDirectoryItemContextMenu()
 {
-    // insert 'Open in new window' and 'Open in new tab' entries
-    const KFileItemListProperties &selectedItemsProps = selectedItemsProperties();
-    if (ContextMenuSettings::showOpenInNewTab()) {
-        addAction(m_mainWindow->actionCollection()->action(QStringLiteral("open_in_new_tab")));
-    }
+    QAction *openAction = addAction(QIcon::fromTheme(QStringLiteral("document-open-folder")),
+                                    QStringLiteral("Open"));
+    connect(openAction, &QAction::triggered, this, [this]() {
+        m_mainWindow->changeUrl(DolphinView::openItemAsFolderUrl(m_fileInfo));
+    });
     if (ContextMenuSettings::showOpenInNewWindow()) {
         addAction(m_mainWindow->actionCollection()->action(QStringLiteral("open_in_new_window")));
     }
-
-    if (ContextMenuSettings::showOpenInSplitView()) {
-        addAction(m_mainWindow->actionCollection()->action(QStringLiteral("open_in_split_view")));
-    }
-
-    // Insert 'Open With' entries
-    addOpenWithActions();
-
-    // set up 'Create New' menu
-    QAction *newDirAction = m_mainWindow->actionCollection()->action(QStringLiteral("create_dir"));
-    QAction *newFileAction = m_mainWindow->actionCollection()->action(QStringLiteral("create_file"));
-    // Do not parent this to the menu, it has to outlive it. It is deleted manually below once a file has been created.
-    DolphinNewFileMenu *newFileMenu = new DolphinNewFileMenu(newDirAction, newFileAction, m_mainWindow);
-    newFileMenu->checkUpToDate();
-    newFileMenu->setWorkingDirectory(m_fileInfo.url());
-    newFileMenu->setEnabled(selectedItemsProps.supportsWriting());
-    connect(newFileMenu, &DolphinNewFileMenu::fileCreated, newFileMenu, &DolphinNewFileMenu::deleteLater);
-    connect(newFileMenu, &DolphinNewFileMenu::fileCreationRejected, newFileMenu, &DolphinNewFileMenu::deleteLater);
-    connect(newFileMenu, &DolphinNewFileMenu::directoryCreated, newFileMenu, [newFileMenu, mainWindow = m_mainWindow](const QUrl &newDirectory) {
-        mainWindow->activeViewContainer()->view()->expandToUrl(newDirectory);
-        newFileMenu->deleteLater();
-    });
-    connect(newFileMenu, &DolphinNewFileMenu::directoryCreationRejected, newFileMenu, &DolphinNewFileMenu::deleteLater);
-
-    QMenu *menu = newFileMenu->menu();
-    menu->setTitle(i18nc("@title:menu Create new folder, file, link, etc.", "Create New"));
-    menu->setIcon(QIcon::fromTheme(QStringLiteral("list-add")));
-    addMenu(menu);
-
     addSeparator();
 }
 
@@ -283,8 +273,13 @@ void DolphinContextMenu::addItemContextMenu()
 
             addSeparator();
         } else {
-            // Insert 'Open With" entries
+            QAction *openAction = addAction(QIcon::fromTheme(QStringLiteral("document-open")),
+                                            QStringLiteral("Open"));
+            connect(openAction, &QAction::triggered, this, [this]() {
+                m_mainWindow->openFiles({m_fileInfo.url()}, false);
+            });
             addOpenWithActions();
+            addSeparator();
         }
         if (m_fileInfo.isLink()) {
             addAction(m_mainWindow->actionCollection()->action(QStringLiteral("show_target")));
@@ -311,26 +306,6 @@ void DolphinContextMenu::addItemContextMenu()
 
     insertDefaultItemActions(selectedItemsProps);
 
-    addAdditionalActions(selectedItemsProps);
-
-    // insert 'Copy To' and 'Move To' sub menus
-    if (ContextMenuSettings::showCopyMoveMenu()) {
-        m_copyToMenu.setUrls(m_selectedItems.urlList());
-        m_copyToMenu.setReadOnly(!selectedItemsProps.supportsWriting());
-        m_copyToMenu.setAutoErrorHandlingEnabled(true);
-        m_copyToMenu.addActionsTo(this);
-    }
-
-    if (m_mainWindow->isSplitViewEnabledInCurrentTab()) {
-        if (ContextMenuSettings::showCopyToOtherSplitView()) {
-            addAction(m_mainWindow->actionCollection()->action(QStringLiteral("copy_to_inactive_split_view")));
-        }
-
-        if (ContextMenuSettings::showMoveToOtherSplitView()) {
-            addAction(m_mainWindow->actionCollection()->action(QStringLiteral("move_to_inactive_split_view")));
-        }
-    }
-
     // insert 'Properties...' entry
     addSeparator();
     QAction *propertiesAction = m_mainWindow->actionCollection()->action(QStringLiteral("properties"));
@@ -342,40 +317,43 @@ void DolphinContextMenu::addViewportContextMenu()
     const KFileItemListProperties baseUrlProperties(KFileItemList() << baseFileItem());
     m_fileItemActions->setItemListProperties(baseUrlProperties);
 
-    // Set up and insert 'Create New' menu
-    KNewFileMenu *newFileMenu = m_mainWindow->newFileMenu();
-    newFileMenu->checkUpToDate();
-    newFileMenu->setWorkingDirectory(m_baseUrl);
-    addMenu(newFileMenu->menu());
+    auto *viewMenu = addMenu(QStringLiteral("View"));
+    const auto addView = [this, viewMenu](const QString &name, DolphinView::Mode mode, int zoom) {
+        viewMenu->addAction(name, this, [this, mode, zoom]() {
+            DolphinView *view = m_mainWindow->activeViewContainer()->view();
+            view->setViewMode(mode);
+            if (zoom >= 0)
+                view->setZoomLevel(zoom);
+        });
+    };
+    addView(QStringLiteral("Extra large icons"), DolphinView::IconsView, 7);
+    addView(QStringLiteral("Large icons"), DolphinView::IconsView, 5);
+    addView(QStringLiteral("Medium icons"), DolphinView::IconsView, 3);
+    addView(QStringLiteral("Small icons"), DolphinView::IconsView, 1);
+    addView(QStringLiteral("List"), DolphinView::CompactView, 1);
+    addView(QStringLiteral("Details"), DolphinView::DetailsView, -1);
 
-    // Show "open with" menu items even if the dir is empty, because there are legitimate
-    // use cases for this, such as opening an empty dir in Kate or VSCode or something
-    addOpenWithActions();
+    QAction *sortAction = m_mainWindow->actionCollection()->action(QStringLiteral("sort"));
+    if (sortAction && sortAction->menu()) {
+        QMenu *sortMenu = addMenu(QStringLiteral("Sort by"));
+        sortMenu->addActions(sortAction->menu()->actions());
+    }
+    addAction(m_mainWindow->actionCollection()->action(
+        KStandardAction::name(KStandardAction::Redisplay)));
+    addSeparator();
 
-    QAction *pasteAction = createPasteAction();
+    QAction *pasteAction = m_mainWindow->actionCollection()->action(
+        KStandardAction::name(KStandardAction::Paste));
     if (pasteAction) {
+        pasteAction->setText(QStringLiteral("Paste"));
         addAction(pasteAction);
     }
 
-    // Insert 'Add to Places' entry if it's not already in the places panel
-    if (ContextMenuSettings::showAddToPlaces() && !placeExists(m_mainWindow->activeViewContainer()->url())) {
-        addAction(m_mainWindow->actionCollection()->action(QStringLiteral("add_to_places")));
-    }
-    addSeparator();
-
-    // Insert 'Sort By' and 'View Mode'
-    if (ContextMenuSettings::showSortBy()) {
-        addAction(m_mainWindow->actionCollection()->action(QStringLiteral("sort")));
-    }
-    if (ContextMenuSettings::showViewMode()) {
-        addAction(m_mainWindow->actionCollection()->action(QStringLiteral("view_mode")));
-    }
-    if (ContextMenuSettings::showSortBy() || ContextMenuSettings::showViewMode()) {
-        addSeparator();
-    }
-
-    addAdditionalActions(baseUrlProperties);
-
+    KNewFileMenu *newFileMenu = m_mainWindow->newFileMenu();
+    newFileMenu->checkUpToDate();
+    newFileMenu->setWorkingDirectory(m_baseUrl);
+    newFileMenu->menu()->setTitle(QStringLiteral("New"));
+    addMenu(newFileMenu->menu());
     addSeparator();
 
     QAction *propertiesAction = m_mainWindow->actionCollection()->action(QStringLiteral("properties"));
@@ -389,48 +367,28 @@ void DolphinContextMenu::insertDefaultItemActions(const KFileItemListProperties 
     // Insert 'Cut', 'Copy', 'Copy Location' and 'Paste'
     addAction(collection->action(KStandardAction::name(KStandardAction::Cut)));
     addAction(collection->action(KStandardAction::name(KStandardAction::Copy)));
-    if (ContextMenuSettings::showCopyLocation()) {
-        QAction *copyPathAction = collection->action(QStringLiteral("copy_location"));
-        copyPathAction->setEnabled(m_selectedItems.size() == 1);
-        addAction(copyPathAction);
-    }
     QAction *pasteAction = createPasteAction();
     if (pasteAction) {
         addAction(pasteAction);
     }
 
-    // Insert 'Duplicate Here'
-    if (ContextMenuSettings::showDuplicateHere()) {
-        addAction(m_mainWindow->actionCollection()->action(QStringLiteral("duplicate")));
-    }
-
     // Insert 'Rename'
-    addAction(collection->action(KStandardAction::name(KStandardAction::RenameFile)));
-
-    // Insert 'Add to Places' entry if appropriate
-    if (ContextMenuSettings::showAddToPlaces() && m_selectedItems.count() == 1 && m_fileInfo.isDir() && !placeExists(m_fileInfo.url())) {
-        addAction(m_mainWindow->actionCollection()->action(QStringLiteral("add_to_places")));
-    }
+    QAction *renameAction = collection->action(KStandardAction::name(KStandardAction::RenameFile));
+    renameAction->setText(QStringLiteral("Rename"));
+    addAction(renameAction);
 
     addSeparator();
 
     // Insert 'Move to Trash' and/or 'Delete'
-    const bool showDeleteAction = (KSharedConfig::openConfig()->group(QStringLiteral("KDE")).readEntry("ShowDeleteCommand", false) || !properties.isLocal());
     const bool showMoveToTrashAction = (properties.isLocal() && properties.supportsMoving());
 
-    if (showDeleteAction && showMoveToTrashAction) {
-        delete m_removeAction;
-        m_removeAction = nullptr;
-        addAction(m_mainWindow->actionCollection()->action(KStandardAction::name(KStandardAction::MoveToTrash)));
+    if (showMoveToTrashAction) {
+        QAction *trashAction = m_mainWindow->actionCollection()->action(
+            KStandardAction::name(KStandardAction::MoveToTrash));
+        trashAction->setText(QStringLiteral("Delete"));
+        addAction(trashAction);
+    } else if (properties.supportsDeleting()) {
         addAction(m_mainWindow->actionCollection()->action(KStandardAction::name(KStandardAction::DeleteFile)));
-    } else if (showDeleteAction && !showMoveToTrashAction) {
-        addAction(m_mainWindow->actionCollection()->action(KStandardAction::name(KStandardAction::DeleteFile)));
-    } else {
-        if (!m_removeAction) {
-            m_removeAction = new DolphinRemoveAction(this, m_mainWindow->actionCollection());
-        }
-        addAction(m_removeAction);
-        m_removeAction->update();
     }
 }
 

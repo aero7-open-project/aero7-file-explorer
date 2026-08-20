@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component type="desktop-application">
+  <id>org.aero7.FileExplorer</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <name>File Explorer</name>
+  <summary>Browse and manage files with the Aero7 desktop</summary>
+  <description>
+    <p>Aero7 File Explorer provides Windows 7-style navigation, libraries, computer storage, search, previews, and file operations on the Linux desktop.</p>
+  </description>
+  <launchable type="desktop-id">org.aero7.FileExplorer.desktop</launchable>
+  <provides>
+    <binary>aero7-file-explorer</binary>
+  </provides>
+</component>

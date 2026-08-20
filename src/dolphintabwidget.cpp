@@ -42,6 +42,10 @@ DolphinTabWidget::DolphinTabWidget(DolphinNavigatorsWidgetAction *navigatorsWidg
 
     setTabBar(tabBar);
     setDocumentMode(true);
+    // Even with its tab bar hidden, QTabWidget's Aero7 style paints a black
+    // pane frame along the folder view's right and bottom edges. Windows
+    // Explorer has no such inner frame.
+    setStyleSheet(QStringLiteral("QTabWidget::pane { border: 0; }"));
     setElideMode(Qt::ElideRight);
     setUsesScrollButtons(true);
     setTabBarAutoHide(!GeneralSettings::alwaysShowTabBar());

@@ -21,7 +21,7 @@
     <number>4</number>
    </property>
    <item>
-    <widget class="Aero::NavButtons" name="navs" native="true"/>
+    <widget class="Aero7::NavigationButtons" name="navs" native="true"/>
    </item>
    <item>
     <widget class="QFrame" name="primaryNavHole">
@@ -127,9 +127,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Aero::NavButtons</class>
+   <class>Aero7::NavigationButtons</class>
    <extends>QWidget</extends>
-   <header>AeroQt/navbuttons.h</header>
+   <header>Aero7Qt/navigationbuttons.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

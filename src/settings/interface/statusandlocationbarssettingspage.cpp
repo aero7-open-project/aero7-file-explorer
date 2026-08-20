@@ -22,7 +22,6 @@
 
 StatusAndLocationBarsSettingsPage::StatusAndLocationBarsSettingsPage(QWidget *parent, FoldersTabsSettingsPage *foldersPage)
     : SettingsPageBase(parent)
-    , m_editableUrl(nullptr)
     , m_showFullPath(nullptr)
     , m_statusBarButtonGroup(nullptr)
     , m_showStatusBarSmall(nullptr)
@@ -65,18 +64,13 @@ StatusAndLocationBarsSettingsPage::StatusAndLocationBarsSettingsPage(QWidget *pa
     topLayout->addRow(QString(), m_disableStatusBar);
     topLayout->addItem(new QSpacerItem(0, Dolphin::VERTICAL_SPACER_HEIGHT, QSizePolicy::Fixed, QSizePolicy::Fixed));
 
-    // Location bar
-    m_editableUrl = new QCheckBox(i18nc("@option:check Startup Settings", "Make location bar editable"));
-    topLayout->addRow(i18n("Location bar:"), m_editableUrl);
-
     m_showFullPath = new QCheckBox(i18nc("@option:check Startup Settings", "Show full path inside location bar"));
-    topLayout->addRow(QString(), m_showFullPath);
+    topLayout->addRow(i18n("Location bar:"), m_showFullPath);
 
     loadSettings();
 
     locationUpdateInitialViewOptions();
 
-    connect(m_editableUrl, &QCheckBox::toggled, this, &StatusAndLocationBarsSettingsPage::locationSlotSettingsChanged);
     connect(m_showFullPath, &QCheckBox::toggled, this, &StatusAndLocationBarsSettingsPage::locationSlotSettingsChanged);
 
     connect(m_statusBarButtonGroup, &QButtonGroup::idClicked, this, &StatusAndLocationBarsSettingsPage::changed);
@@ -90,7 +84,7 @@ void StatusAndLocationBarsSettingsPage::applySettings()
 {
     GeneralSettings *settings = GeneralSettings::self();
 
-    settings->setEditableUrl(m_editableUrl->isChecked());
+    settings->setEditableUrl(false);
     settings->setShowFullPath(m_showFullPath->isChecked());
 
     settings->setShowStatusBar(m_statusBarButtonGroup->checkedId());
@@ -133,7 +127,6 @@ void StatusAndLocationBarsSettingsPage::locationUpdateInitialViewOptions()
 
 void StatusAndLocationBarsSettingsPage::loadSettings()
 {
-    m_editableUrl->setChecked(GeneralSettings::editableUrl());
     m_showFullPath->setChecked(GeneralSettings::showFullPath());
     m_statusBarButtonGroup->button(GeneralSettings::showStatusBar())->setChecked(true);
     m_showZoomSlider->setChecked(GeneralSettings::showZoomSlider());

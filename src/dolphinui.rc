@@ -57,8 +57,6 @@
             <Action name="panels" />
             <Menu name="location_bar" icon="edit-select-text">
                 <text context="@title:menu">Location Bar</text>
-                <Action name="editable_location" />
-                <Action name="replace_location" />
             </Menu>
             <Separator/>
             <Action name="view_properties" />

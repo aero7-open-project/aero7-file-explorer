@@ -9,6 +9,7 @@
 
 #include "animatedheightwidget.h"
 
+#include <KFileItem>
 #include <KMessageWidget>
 
 class QUrl;
@@ -76,6 +77,8 @@ public:
 
     QUrl url() const;
     int zoomLevel() const;
+    void setComputerMode(bool enabled);
+    void setSelectedItem(const KFileItem &item);
 
     /**
      * Refreshes the status bar to get synchronized with the (updated) Dolphin settings.
@@ -183,6 +186,8 @@ private:
     QString m_hoveredItemText;
     /** @see setDefaultText() */
     QString m_defaultText;
+    bool m_computerMode = false;
+    QLabel *m_locationIcon;
     KSqueezedTextLabel *m_label;
     QLabel *m_zoomLabel;
     StatusBarSpaceInfo *m_spaceInfo;

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Aero7 Shell Initialization
+Comment=Prepare Libraries and the Recycle Bin for the Aero7 session
+Exec=aero7-shell-init
+Icon=folder-library
+NoDisplay=true
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=1

@@ -125,6 +125,10 @@ public:
     const DolphinView *view() const;
     DolphinView *view();
 
+    /** The live Explorer details pane associated with this view. */
+    DolphinStatusBar *statusBarWidget() const;
+    void setStatusBarExternallyHosted(bool externallyHosted);
+
     /**
      * @param urlNavigator  The UrlNavigator that is supposed to control
      *                      this view.
@@ -522,6 +526,7 @@ private:
     SelectionMode::BottomBar *m_selectionModeBottomBar;
 
     DolphinStatusBar *m_statusBar;
+    bool m_statusBarExternallyHosted = false;
     QTimer *m_statusBarTimer; // Triggers a delayed update
     QElapsedTimer m_statusBarTimestamp; // Time in ms since last update
     bool m_grabFocusOnUrlChange;

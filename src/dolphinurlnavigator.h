@@ -42,6 +42,12 @@ public:
     QSize sizeHint() const override;
 
     /**
+     * Re-applies the Windows 7 breadcrumb presentation after a location was
+     * changed while navigator signals were blocked.
+     */
+    void updateAero7Breadcrumbs();
+
+    /**
      * Wraps the visual state of a DolphinUrlNavigator so it can be passed around.
      * This notably doesn't involve the locationUrl or history.
      */
@@ -100,6 +106,11 @@ Q_SIGNALS:
     void requestToLoseFocus();
 
 protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+
     /**
      * Return focus back to the view when pressing Escape and this would have no other effect (e.g. deselecting or changing edit mode).
      */

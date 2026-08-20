@@ -136,6 +136,12 @@ DolphinViewContainer::DolphinViewContainer(const QUrl &url, QWidget *parent)
     connect(m_view, &DolphinView::directoryLoadingCanceled, this, &DolphinViewContainer::slotDirectoryLoadingCanceled);
     connect(m_view, &DolphinView::itemCountChanged, this, &DolphinViewContainer::delayedStatusBarUpdate);
     connect(m_view, &DolphinView::selectionChanged, this, &DolphinViewContainer::delayedStatusBarUpdate);
+    connect(m_view, &DolphinView::selectionChanged, this,
+            [this](const KFileItemList &selection) {
+                m_statusBar->setSelectedItem(selection.size() == 1
+                                                 ? selection.constFirst()
+                                                 : KFileItem());
+            });
     connect(m_view, &DolphinView::errorMessage, this, &DolphinViewContainer::slotErrorMessageFromView);
     connect(m_view, &DolphinView::urlIsFileError, this, &DolphinViewContainer::slotUrlIsFileError);
     connect(m_view, &DolphinView::activated, this, &DolphinViewContainer::activate);
@@ -184,7 +190,8 @@ DolphinViewContainer::DolphinViewContainer(const QUrl &url, QWidget *parent)
     }
     connect(m_statusBar, &DolphinStatusBar::modeUpdated, this, [this]() {
         const bool statusBarInLayout = m_topLayout->itemAtPosition(positionFor.statusBar, 0);
-        if (GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::FullWidth) {
+        if (GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::FullWidth
+            && !m_statusBarExternallyHosted) {
             if (!statusBarInLayout) {
                 m_topLayout->addWidget(m_statusBar, positionFor.statusBar, 0);
                 m_statusBar->setUrl(m_view->url());
@@ -278,6 +285,25 @@ const DolphinView *DolphinViewContainer::view() const
 DolphinView *DolphinViewContainer::view()
 {
     return m_view;
+}
+
+DolphinStatusBar *DolphinViewContainer::statusBarWidget() const
+{
+    return m_statusBar;
+}
+
+void DolphinViewContainer::setStatusBarExternallyHosted(bool externallyHosted)
+{
+    if (m_statusBarExternallyHosted == externallyHosted)
+        return;
+
+    m_statusBarExternallyHosted = externallyHosted;
+    m_topLayout->removeWidget(m_statusBar);
+    if (!externallyHosted
+        && GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::FullWidth) {
+        m_topLayout->addWidget(m_statusBar, positionFor.statusBar, 0);
+    }
+    m_statusBar->setVisible(true, WithoutAnimation);
 }
 
 void DolphinViewContainer::connectUrlNavigator(DolphinUrlNavigator *urlNavigator)

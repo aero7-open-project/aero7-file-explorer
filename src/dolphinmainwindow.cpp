@@ -33,13 +33,17 @@
 #if KIO_VERSION >= QT_VERSION_CHECK(6, 24, 0)
 #include "servicemenushortcutmanager.h"
 #endif
-#include "settings/dolphinsettingsdialog.h"
 #include "statusbar/diskspaceusagemenu.h"
+#include "statusbar/dolphinstatusbar.h"
 #include "views/dolphinnewfilemenuobserver.h"
 #include "views/dolphinremoteencoding.h"
 #include "views/dolphinviewactionhandler.h"
 #include "views/draganddrophelper.h"
 #include "views/viewproperties.h"
+#include "aero7libraries.h"
+#include "aero7properties.h"
+#include "aero7computerdialog.h"
+#include "trash/dolphintrash.h"
 
 #include <KActionCollection>
 #include <KActionMenu>
@@ -55,8 +59,10 @@
 #include <KHelpMenu>
 #include <KIO/CommandLauncherJob>
 #include <KIO/JobUiDelegateFactory>
+#include <KIO/ListJob>
 #include <KIO/OpenFileManagerWindowJob>
 #include <KIO/OpenUrlJob>
+#include <KIO/RestoreJob>
 #include <KJobWidgets>
 #include <KLocalizedString>
 #include <KMessageBox>
@@ -77,9 +83,9 @@
 #include <KWindowSystem>
 #include <KXMLGUIFactory>
 
-#include <AeroQt/insetwindow.h>
-#include <AeroQt/util/props.h>
-#include <AeroQt/util/objecteventlistener.h>
+#include <Aero7Qt/eventlistener.h>
+#include <Aero7Qt/glassframe.h>
+#include <Aero7Qt/properties.h>
 
 #include <kwidgetsaddons_version.h>
 
@@ -91,13 +97,24 @@
 #include <QDomDocument>
 #include <QFileInfo>
 #include <QLineEdit>
+#include <QLabel>
 #include <QMenuBar>
+#include <QMessageBox>
+#include <QProcess>
+#include <QPixmap>
 #include <QPushButton>
+#include <QScreen>
 #include <QSharedPointer>
 #include <QShowEvent>
+#include <QSignalBlocker>
+#include <QStackedWidget>
 #include <QStandardPaths>
+#include <QStatusBar>
+#include <QStorageInfo>
 #include <QTimer>
+#include <QToolBar>
 #include <QToolButton>
+#include <QVBoxLayout>
 #include <QtConcurrentRun>
 #include <dolphindebug.h>
 #include <QFile>
@@ -129,7 +146,6 @@ DolphinMainWindow::DolphinMainWindow()
     , m_winHeader(nullptr)
     , m_actionHandler(nullptr)
     , m_remoteEncoding(nullptr)
-    , m_settingsDialog()
     , m_bookmarkHandler(nullptr)
     , m_disabledActionNotifier(nullptr)
     , m_lastHandleUrlOpenJob(nullptr)
@@ -151,11 +167,51 @@ DolphinMainWindow::DolphinMainWindow()
 
 #ifndef Q_OS_WIN
     setWindowFlags(Qt::WindowContextHelpButtonHint);
-    setAttribute(Qt::WA_TranslucentBackground, true);
-    setAttribute(Qt::WA_NoSystemBackground, true);
 #endif
-    setComponentName(QStringLiteral("dolphin"), QGuiApplication::applicationDisplayName());
-    setObjectName(QStringLiteral("Dolphin#"));
+    setComponentName(QStringLiteral("aero7-file-explorer"), QGuiApplication::applicationDisplayName());
+    setObjectName(QStringLiteral("Aero7FileExplorer"));
+    // Windows 7 Explorer deliberately leaves the decoration's system-menu
+    // slot blank, while the taskbar still resolves the application icon from
+    // org.aero7.FileExplorer.desktop.  A transparent per-window icon gives
+    // SMOD that same title-bar treatment without changing launcher identity.
+    QPixmap blankTitleBarIcon(16, 16);
+    blankTitleBarIcon.fill(Qt::transparent);
+    setWindowIcon(QIcon(blankTitleBarIcon));
+    // Windows 7 separates the navigation pane from the folder view with one
+    // quiet blue-grey pixel.  The platform style's default dock separator is
+    // six black pixels wide, which made the pane look like a KDE splitter.
+    setStyleSheet(QStringLiteral(R"(
+        QMainWindow#Aero7FileExplorer {
+            background: #a0afc3;
+        }
+        QMainWindow#Aero7FileExplorer::separator {
+            background: #d6e5f5;
+        }
+        QMainWindow#Aero7FileExplorer::separator:vertical {
+            width: 1px;
+            margin: 0;
+            padding: 0;
+            /* Qt keeps a six-pixel resize hit target. Paint only its second
+               pixel as the visible Windows divider and blend the remainder
+               into the two adjacent white panes. */
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                        stop:0 #ffffff,
+                                        stop:0.166 #ffffff,
+                                        stop:0.167 #d6e5f5,
+                                        stop:0.333 #d6e5f5,
+                                        stop:0.334 #fcfcfc,
+                                        stop:1 #fcfcfc);
+        }
+        QMainWindow#Aero7FileExplorer::separator:horizontal {
+            height: 1px;
+            margin: 0;
+            padding: 0;
+            background: #a0afc3;
+        }
+        QMainWindow#Aero7FileExplorer::separator:hover {
+            background: #b9d1ea;
+        }
+    )"));
 
     setStateConfigGroup("State");
 
@@ -291,7 +347,7 @@ DolphinMainWindow::DolphinMainWindow()
     connect(GeneralSettings::self(), &GeneralSettings::tabBarChanged, this, &DolphinMainWindow::slotTabBarChanged);
 
     setupWindowHeader();
-    Aero::makeInsetWindow(this, nullptr, m_winHeader, nullptr);
+    Aero7::applyGlassFrame(this, nullptr, m_winHeader, nullptr);
 }
 
 DolphinMainWindow::~DolphinMainWindow()
@@ -324,6 +380,19 @@ QVector<DolphinViewContainer *> DolphinMainWindow::viewContainers() const
 
 void DolphinMainWindow::openDirectories(const QList<QUrl> &dirs, bool splitView)
 {
+    // Command-line and D-Bus launches reach openDirectories() directly rather
+    // than changeUrl(). Seed Dolphin with a real backing directory so no KIO
+    // worker ever sees the Aero7-owned Computer URL, then reveal the integrated
+    // shell surface. This is the path used by the Start menu's Computer item.
+    if (dirs.size() == 1
+        && (dirs.constFirst().scheme() == QLatin1String("aero7computer")
+            || dirs.constFirst().scheme() == QLatin1String("computer"))) {
+        m_tabWidget->openDirectories({Dolphin::homeUrl()}, false);
+        // Run after the initial tab/window title synchronization so Computer's
+        // breadcrumb, command bar and title remain the final visible state.
+        QTimer::singleShot(0, this, &DolphinMainWindow::showAero7Computer);
+        return;
+    }
     m_tabWidget->openDirectories(dirs, splitView);
 }
 
@@ -388,12 +457,19 @@ void DolphinMainWindow::pasteIntoFolder()
 
 void DolphinMainWindow::changeUrl(const QUrl &url)
 {
+    if (url.scheme() == QLatin1String("aero7computer")
+        || url.scheme() == QLatin1String("computer")) {
+        showAero7Computer();
+        return;
+    }
     if (!KProtocolManager::supportsListing(url)) {
         // The URL navigator only checks for validity, not
         // if the URL can be listed. An error message is
         // shown due to DolphinViewContainer::restoreView().
         return;
     }
+
+    hideAero7Computer();
 
     m_activeViewContainer->setUrl(url);
     updateFileAndEditActions();
@@ -422,8 +498,11 @@ void DolphinMainWindow::slotTerminalDirectoryChanged(const QUrl &url)
 
 void DolphinMainWindow::slotEditableStateChanged(bool editable)
 {
+    Q_UNUSED(editable)
     KToggleAction *editableLocationAction = static_cast<KToggleAction *>(actionCollection()->action(QStringLiteral("editable_location")));
-    editableLocationAction->setChecked(editable);
+    editableLocationAction->setChecked(false);
+    if (m_activeViewContainer && m_activeViewContainer->urlNavigator())
+        m_activeViewContainer->urlNavigator()->setUrlEditable(false);
 }
 
 void DolphinMainWindow::slotSelectionChanged(const KFileItemList &selection)
@@ -633,14 +712,127 @@ bool DolphinMainWindow::event(QEvent *event)
         }
     }
 
+    if (event->type() == QEvent::ScreenChangeInternal) {
+        // SPICE can change the virtual monitor while Explorer is already open.
+        // Rebind to the new QScreen after Qt has committed that change and
+        // constrain stale normal-window geometry to the new work area.
+        QTimer::singleShot(0, this, [this]() {
+            trackAero7WindowScreen();
+            constrainAero7WindowToScreen();
+        });
+    }
+
     return KXmlGuiWindow::event(event);
+}
+
+void DolphinMainWindow::trackAero7WindowScreen()
+{
+    QScreen *currentScreen = screen();
+    if (m_aero7TrackedScreen == currentScreen)
+        return;
+
+    QObject::disconnect(m_aero7ScreenGeometryConnection);
+    QObject::disconnect(m_aero7ScreenAvailableGeometryConnection);
+    m_aero7TrackedScreen = currentScreen;
+    if (!currentScreen)
+        return;
+
+    const auto scheduleConstraint = [this]() {
+        QTimer::singleShot(0, this, &DolphinMainWindow::constrainAero7WindowToScreen);
+    };
+    m_aero7ScreenGeometryConnection = connect(
+        currentScreen, &QScreen::geometryChanged, this, scheduleConstraint);
+    m_aero7ScreenAvailableGeometryConnection = connect(
+        currentScreen, &QScreen::availableGeometryChanged, this, scheduleConstraint);
+}
+
+void DolphinMainWindow::constrainAero7WindowToScreen()
+{
+    if (isMaximized() || isFullScreen())
+        return;
+
+    QScreen *windowScreen = screen();
+    if (!windowScreen)
+        return;
+    const QRect available = windowScreen->availableGeometry();
+    if (!available.isValid())
+        return;
+
+    // QWidget::size() excludes the server-side frame, while availableGeometry()
+    // describes the whole work area. Account for the current decoration and
+    // leave an eight-pixel margin on both sides, exactly like showEvent().
+    const QSize frameOverhead(qMax(0, frameGeometry().width() - width()),
+                              qMax(0, frameGeometry().height() - height()));
+    const QSize maximumClientSize(
+        qMax(minimumWidth(), available.width() - frameOverhead.width() - 16),
+        qMax(minimumHeight(), available.height() - frameOverhead.height() - 16));
+    const QSize constrained(qMin(width(), maximumClientSize.width()),
+                            qMin(height(), maximumClientSize.height()));
+    if (constrained != size())
+        resize(constrained);
+
+    // KWin usually repositions windows after an output change. This also
+    // handles window managers that leave a normal window just outside the new
+    // work area. On Wayland move() may be ignored, but the size constraint above
+    // still guarantees that the complete right edge can be brought on-screen.
+    const QRect currentFrame = frameGeometry();
+    const int maxX = available.right() - currentFrame.width() + 1;
+    const int maxY = available.bottom() - currentFrame.height() + 1;
+    const QPoint frameTarget(qBound(available.left(), currentFrame.x(), qMax(available.left(), maxX)),
+                             qBound(available.top(), currentFrame.y(), qMax(available.top(), maxY)));
+    if (frameTarget != currentFrame.topLeft()) {
+        const QPoint frameOffset = pos() - currentFrame.topLeft();
+        move(frameTarget + frameOffset);
+    }
 }
 
 void DolphinMainWindow::showEvent(QShowEvent *event)
 {
     KXmlGuiWindow::showEvent(event);
 
+    // Explorer has no KDE application menu or editable toolbar. Dolphin's
+    // XMLGUI restoration runs after construction, so enforce the shell chrome
+    // here as well as during setup.
+    menuBar()->hide();
+    toolBar()->hide();
+    trackAero7WindowScreen();
+
+    if (!property("aero7InitialGeometryApplied").toBool()) {
+        setProperty("aero7InitialGeometryApplied", true);
+        if (QScreen *windowScreen = screen()) {
+            const QRect available = windowScreen->availableGeometry();
+            const QSize target(qMin(1188, available.width() - 16),
+                               qMin(638, available.height() - 16));
+            if (!isMaximized()) {
+                resize(target);
+                move(available.left() + 8, available.top() + 8);
+            }
+        }
+    }
+    constrainAero7WindowToScreen();
+
     if (!event->spontaneous() && m_activeViewContainer) {
+        const QUrl location = m_activeViewContainer->url();
+        const bool recycleBin = location.scheme() == QLatin1String("trash");
+        QString searchScope;
+        if (location.isLocalFile()) {
+            searchScope = QFileInfo(location.toLocalFile()).fileName();
+            if (searchScope.isEmpty())
+                searchScope = QDir(location.toLocalFile()).dirName();
+        } else if (recycleBin) {
+            searchScope = QStringLiteral("Recycle Bin");
+        } else if (location.scheme() == QLatin1String("network")) {
+            searchScope = QStringLiteral("Network");
+        } else {
+            searchScope = m_activeViewContainer->captionWindowTitle();
+        }
+        m_winHeader->setRecycleBinMode(recycleBin);
+        m_winHeader->setLocationName(searchScope);
+        if (recycleBin) {
+            DolphinView *view = m_activeViewContainer->view();
+            view->setViewMode(DolphinView::DetailsView);
+            view->setVisibleRoles({"text", "path", "deletiontime", "size", "type"});
+        }
         m_activeViewContainer->view()->setFocus();
     }
 }
@@ -1206,27 +1398,16 @@ void DolphinMainWindow::toggleFilterBar()
 
 void DolphinMainWindow::toggleEditLocation()
 {
-    QAction *action = actionCollection()->action(QStringLiteral("editable_location"));
     KUrlNavigator *urlNavigator = m_activeViewContainer->urlNavigator();
-    urlNavigator->setUrlEditable(action->isChecked());
+    urlNavigator->setUrlEditable(false);
+    m_activeViewContainer->view()->setFocus();
 }
 
 void DolphinMainWindow::replaceLocation()
 {
     KUrlNavigator *navigator = m_activeViewContainer->urlNavigator();
-    QLineEdit *lineEdit = navigator->editor()->lineEdit();
-
-    // If the text field currently has focus and everything is selected,
-    // pressing the keyboard shortcut returns the whole thing to breadcrumb mode
-    // and goes back to the view, just like how it was before this action was triggered the first time.
-    if (navigator->isUrlEditable() && lineEdit->hasFocus() && lineEdit->selectedText() == lineEdit->text()) {
-        navigator->setUrlEditable(false);
-        m_activeViewContainer->view()->setFocus();
-    } else {
-        navigator->setUrlEditable(true);
-        navigator->setFocus();
-        lineEdit->selectAll();
-    }
+    navigator->setUrlEditable(false);
+    m_activeViewContainer->view()->setFocus();
 }
 
 void DolphinMainWindow::togglePanelLockState()
@@ -1475,20 +1656,8 @@ void DolphinMainWindow::openTerminalJob(const QUrl &url)
 
 void DolphinMainWindow::editSettings()
 {
-    if (!m_settingsDialog) {
-        DolphinViewContainer *container = activeViewContainer();
-        container->view()->writeSettings();
-
-        const QUrl url = container->url();
-        DolphinSettingsDialog *settingsDialog = new DolphinSettingsDialog(url, this, actionCollection());
-        connect(settingsDialog, &DolphinSettingsDialog::settingsChanged, this, &DolphinMainWindow::refreshViews);
-        connect(settingsDialog, &DolphinSettingsDialog::settingsChanged, &DolphinUrlNavigatorsController::slotReadSettings);
-        settingsDialog->setAttribute(Qt::WA_DeleteOnClose);
-        settingsDialog->show();
-        m_settingsDialog = settingsDialog;
-    } else {
-        m_settingsDialog.data()->raise();
-    }
+    QProcess::startDetached(QStringLiteral("control"),
+                            {QStringLiteral("--page"), QStringLiteral("folder-options")});
 }
 
 void DolphinMainWindow::handleUrl(const QUrl &url)
@@ -1638,9 +1807,6 @@ void DolphinMainWindow::updateHamburgerMenu()
     auto configureMenu = menu->addMenu(QIcon::fromTheme(QStringLiteral("configure")), i18nc("@action:inmenu menu for configure actions", "Configure"));
     configureMenu->addAction(actionCollection()->action(QStringLiteral("window_color_sheme")));
     configureMenu->addSeparator();
-    configureMenu->addAction(ac->action(KStandardAction::name(KStandardAction::SwitchApplicationLanguage)));
-    configureMenu->addAction(ac->action(KStandardAction::name(KStandardAction::KeyBindings)));
-    configureMenu->addAction(ac->action(KStandardAction::name(KStandardAction::ConfigureToolbars)));
     configureMenu->addAction(ac->action(KStandardAction::name(KStandardAction::Preferences)));
     hamburgerMenu->hideActionsOf(configureMenu);
 }
@@ -1648,6 +1814,46 @@ void DolphinMainWindow::updateHamburgerMenu()
 void DolphinMainWindow::slotPlaceActivated(const QUrl &url)
 {
     DolphinViewContainer *view = activeViewContainer();
+
+    const QString specialPlaces = QDir(QStandardPaths::writableLocation(
+        QStandardPaths::GenericDataLocation)).filePath(QStringLiteral("Aero7/Shell Places"));
+    if (url.scheme() == QLatin1String("aero7computer")
+        || (url.isLocalFile()
+            && QDir::cleanPath(url.toLocalFile())
+                == QDir(specialPlaces).filePath(QStringLiteral("Computer")))) {
+        showAero7Computer();
+        return;
+    }
+    if (url.isLocalFile()
+        && QDir::cleanPath(url.toLocalFile())
+            == QDir(specialPlaces).filePath(QStringLiteral("Recent Places"))) {
+        changeUrl(QUrl(QStringLiteral("recentlyused:/files")));
+        return;
+    }
+    if (url.isLocalFile()
+        && QDir::cleanPath(url.toLocalFile())
+            == QDir(specialPlaces).filePath(QStringLiteral("Local Disk (C:)"))) {
+        changeUrl(QUrl::fromLocalFile(QDir::homePath()));
+        return;
+    }
+    if (url.isLocalFile()
+        && QDir::cleanPath(url.toLocalFile())
+            == QDir(specialPlaces).filePath(QStringLiteral("CD Drive (D:)"))) {
+        for (const QStorageInfo &storage : QStorageInfo::mountedVolumes()) {
+            if (Aero7ComputerView::isUserVisibleStorage(storage)
+                && QDir::cleanPath(storage.rootPath()) != QLatin1String("/")) {
+                changeUrl(QUrl::fromLocalFile(storage.rootPath()));
+                return;
+            }
+        }
+        return;
+    }
+    if (url.isLocalFile()
+        && QDir::cleanPath(url.toLocalFile())
+            == QDir(specialPlaces).filePath(QStringLiteral("Network"))) {
+        changeUrl(QUrl(QStringLiteral("network:/")));
+        return;
+    }
 
     if (view->url() == url) {
         view->clearFilterBar(); // Fixes bug 259382.
@@ -1664,6 +1870,44 @@ void DolphinMainWindow::slotPlaceActivated(const QUrl &url)
     }
 }
 
+void DolphinMainWindow::showAero7Computer()
+{
+    if (!m_aero7ContentStack || !m_aero7ComputerView)
+        return;
+    m_aero7ComputerView->refresh();
+    m_aero7ContentStack->setCurrentWidget(m_aero7ComputerView);
+    m_winHeader->setComputerMode(true);
+    activeViewContainer()->statusBarWidget()->setComputerMode(true);
+    setWindowTitle(QString(QChar(0x200B)));
+
+    // Keep the existing Dolphin view alive behind the Computer surface. Only
+    // the visible breadcrumb is changed, with signals blocked so KIO never
+    // attempts to resolve this Aero7-owned shell location.
+    if (DolphinUrlNavigator *navigator =
+            m_navigatorsWidgetAction->primaryUrlNavigator()) {
+        const QSignalBlocker blocker(navigator);
+        navigator->setLocationUrl(QUrl(QStringLiteral("aero7computer:/")));
+        navigator->updateAero7Breadcrumbs();
+    }
+}
+
+void DolphinMainWindow::hideAero7Computer()
+{
+    if (!m_aero7ContentStack || !m_aero7ComputerView
+        || m_aero7ContentStack->currentWidget() != m_aero7ComputerView)
+        return;
+    m_aero7ContentStack->setCurrentIndex(0);
+    m_winHeader->setComputerMode(false);
+    activeViewContainer()->statusBarWidget()->setComputerMode(false);
+    activeViewContainer()->reload();
+    if (DolphinUrlNavigator *navigator =
+            m_navigatorsWidgetAction->primaryUrlNavigator()) {
+        const QSignalBlocker blocker(navigator);
+        navigator->setLocationUrl(activeViewContainer()->url());
+        navigator->updateAero7Breadcrumbs();
+    }
+}
+
 void DolphinMainWindow::closedTabsCountChanged(unsigned int count)
 {
     actionCollection()->action(QStringLiteral("undo_close_tab"))->setEnabled(count > 0);
@@ -1675,6 +1919,25 @@ void DolphinMainWindow::activeViewChanged(DolphinViewContainer *viewContainer)
     Q_ASSERT(viewContainer);
 
     m_activeViewContainer = viewContainer;
+
+    QStatusBar *explorerStatus = statusBar();
+    explorerStatus->setObjectName(QStringLiteral("aero7ExplorerStatusHost"));
+    explorerStatus->setSizeGripEnabled(false);
+    explorerStatus->setFixedHeight(54);
+    explorerStatus->setContentsMargins(0, 0, 0, 0);
+    explorerStatus->layout()->setContentsMargins(0, 0, 0, 0);
+    explorerStatus->layout()->setSpacing(0);
+    explorerStatus->setStyleSheet(QStringLiteral(
+        "QStatusBar#aero7ExplorerStatusHost { border: 0; border-top: 1px solid #c4d5e7; "
+        "padding: 0; background: #eaf2fb; }"
+        "QStatusBar#aero7ExplorerStatusHost::item { border: 0; }"));
+    if (oldViewContainer && oldViewContainer != viewContainer) {
+        explorerStatus->removeWidget(oldViewContainer->statusBarWidget());
+        oldViewContainer->setStatusBarExternallyHosted(false);
+    }
+    viewContainer->setStatusBarExternallyHosted(true);
+    explorerStatus->addWidget(viewContainer->statusBarWidget(), 1);
+    viewContainer->statusBarWidget()->setVisible(true, WithoutAnimation);
 
     if (oldViewContainer) {
         // Disconnect all signals between the old view container (container,
@@ -1735,10 +1998,9 @@ void DolphinMainWindow::tabCountChanged(int count)
 
 void DolphinMainWindow::updateWindowTitle()
 {
-    const QString newTitle = m_activeViewContainer->captionWindowTitle();
-    if (windowTitle() != newTitle) {
-        setWindowTitle(newTitle);
-    }
+    // Stock Windows 7 Explorer leaves its glass title strip visually blank;
+    // the current location is communicated by the breadcrumb instead.
+    setWindowTitle(QString(QChar(0x200B)));
 }
 
 void DolphinMainWindow::slotStorageTearDownFromPlacesRequested(const QString &mountPath)
@@ -1770,19 +2032,8 @@ void DolphinMainWindow::slotStorageTearDownExternallyRequested(const QString &mo
 
 void DolphinMainWindow::slotKeyBindings()
 {
-#if KIO_VERSION >= QT_VERSION_CHECK(6, 24, 0)
-    m_serviceMenuShortcutManager->cleanupStaleShortcuts(this);
-#endif
-
-    KShortcutsDialog dialog(KShortcutsEditor::AllActions, KShortcutsEditor::LetterShortcutsAllowed, this);
-    dialog.addCollection(actionCollection());
-    if (m_terminalPanel) {
-        KActionCollection *konsolePartActionCollection = m_terminalPanel->actionCollection();
-        if (konsolePartActionCollection) {
-            dialog.addCollection(konsolePartActionCollection, QStringLiteral("KonsolePart"));
-        }
-    }
-    dialog.configure();
+    QProcess::startDetached(QStringLiteral("control"),
+                            {QStringLiteral("--page"), QStringLiteral("input-devices")});
 }
 
 void DolphinMainWindow::setViewsToHomeIfMountPathOpen(const QString &mountPath)
@@ -2082,25 +2333,15 @@ void DolphinMainWindow::setupActions()
     connect(stop, &QAction::triggered, this, &DolphinMainWindow::stopLoading);
 
     KToggleAction *editableLocation = actionCollection()->add<KToggleAction>(QStringLiteral("editable_location"));
-    editableLocation->setText(i18nc("@action:inmenu Navigation Bar", "Editable Location"));
-    editableLocation->setWhatsThis(xi18nc("@info:whatsthis",
-                                          "This toggles the <emphasis>Location Bar</emphasis> to be "
-                                          "editable so you can directly enter a location you want to go to.<nl/>"
-                                          "You can also switch to editing by clicking to the right of the "
-                                          "location and switch back by confirming the edited location."));
-    actionCollection()->setDefaultShortcut(editableLocation, Qt::Key_F6);
-    connect(editableLocation, &KToggleAction::triggered, this, &DolphinMainWindow::toggleEditLocation);
+    editableLocation->setChecked(false);
+    editableLocation->setEnabled(false);
+    editableLocation->setVisible(false);
+    editableLocation->setShortcuts({});
 
     QAction *replaceLocation = actionCollection()->addAction(QStringLiteral("replace_location"));
-    replaceLocation->setText(i18nc("@action:inmenu Navigation Bar", "Replace Location"));
-    // i18n: "enter" is used both in the meaning of "writing" and "going to" a new location here.
-    // Both meanings are useful but not necessary to understand the use of "Replace Location".
-    // So you might want to be more verbose in your language to convey the meaning but it's up to you.
-    replaceLocation->setWhatsThis(xi18nc("@info:whatsthis",
-                                         "This switches to editing the location and selects it "
-                                         "so you can quickly enter a different location."));
-    actionCollection()->setDefaultShortcuts(replaceLocation, {Qt::CTRL | Qt::Key_L, Qt::ALT | Qt::Key_D});
-    connect(replaceLocation, &QAction::triggered, this, &DolphinMainWindow::replaceLocation);
+    replaceLocation->setEnabled(false);
+    replaceLocation->setVisible(false);
+    replaceLocation->setShortcuts({});
 
     // setup 'Go' menu
     {
@@ -2329,14 +2570,13 @@ void DolphinMainWindow::setupActions()
         openInSplitView(QUrl());
     });
 
-    // Window color scheme menu
-    auto *manager = KColorSchemeManager::instance();
-    KActionMenu *selectionMenu = KColorSchemeMenu::createMenu(manager, this);
-    auto windowColorSchemeMenu = new QAction(this);
-    windowColorSchemeMenu->setMenu(selectionMenu->menu());
-    windowColorSchemeMenu->menu()->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-color")));
-    windowColorSchemeMenu->menu()->setTitle(i18n("&Window Color Scheme"));
-    actionCollection()->addAction(QStringLiteral("window_color_sheme"), windowColorSchemeMenu);
+    auto *windowColor = actionCollection()->addAction(QStringLiteral("window_color_sheme"));
+    windowColor->setText(QStringLiteral("Window Color and Appearance"));
+    windowColor->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-color")));
+    connect(windowColor, &QAction::triggered, this, []() {
+        QProcess::startDetached(QStringLiteral("control"),
+                                {QStringLiteral("--page"), QStringLiteral("personalization")});
+    });
 
     m_recentFiles = new KRecentFilesAction(this);
 
@@ -2535,6 +2775,8 @@ void DolphinMainWindow::setupDockWidgets()
     placesDock->setLocked(lock);
     placesDock->setObjectName(QStringLiteral("placesDock"));
     placesDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    placesDock->setMinimumWidth(133);
+    placesDock->setMaximumWidth(220);
 
     m_placesPanel = new PlacesPanel(placesDock);
     m_placesPanel->setCustomContextMenuActions({lockLayoutAction});
@@ -2543,6 +2785,7 @@ void DolphinMainWindow::setupDockWidgets()
     createPanelAction(QIcon::fromTheme(QStringLiteral("compass")), Qt::Key_F9, placesDock, QStringLiteral("show_places_panel"));
 
     addDockWidget(Qt::LeftDockWidgetArea, placesDock);
+    resizeDocks({placesDock}, {133}, Qt::Horizontal);
     connect(m_placesPanel, &PlacesPanel::placeActivated, this, &DolphinMainWindow::slotPlaceActivated);
     connect(m_placesPanel, &PlacesPanel::tabRequested, this, &DolphinMainWindow::openNewTab);
     connect(m_placesPanel, &PlacesPanel::activeTabRequested, this, &DolphinMainWindow::openNewTabAndActivate);
@@ -2631,9 +2874,194 @@ void DolphinMainWindow::setupWindowHeader()
     m_winHeader = new DolphinWindowHeader();
     auto d = m_winHeader->ui;
 
+    // Explorer has one fixed navigation pane. Never restore Dolphin's Folders
+    // or Terminal editing panels into the end-user shell. The Information dock
+    // remains available only through the Windows-style preview-pane button.
+    for (QDockWidget *dock : findChildren<QDockWidget *>()) {
+        if (dock->objectName() == QLatin1String("placesDock"))
+            dock->show();
+        else
+            dock->hide();
+    }
+    // setupGUI() restores an upstream Dolphin dock width before this shell
+    // pass runs.  Reapply Explorer 7's 133-pixel navigation pane after the
+    // first event-loop layout, while keeping its normal resize affordance.
+    QTimer::singleShot(0, this, [this]() {
+        if (QDockWidget *placesDock = findChild<QDockWidget *>(QStringLiteral("placesDock"))) {
+            resizeDocks({placesDock}, {133}, Qt::Horizontal);
+        }
+    });
+
+    auto *organizeMenu = new QMenu(m_winHeader->m_organize);
+    organizeMenu->addAction(QStringLiteral("Properties"), this, [this]() {
+        const KFileItemList selected = activeViewContainer()->view()->selectedItems();
+        Aero7Properties::show(selected.isEmpty()
+                                  ? QList<QUrl>{activeViewContainer()->url()}
+                                  : selected.urlList(), this);
+    });
+    organizeMenu->addAction(QStringLiteral("Folder and search options"), this, []() {
+        QProcess::startDetached(QStringLiteral("control"),
+                                {QStringLiteral("--page"), QStringLiteral("folder-options")});
+    });
+    m_winHeader->m_organize->setMenu(organizeMenu);
+    m_winHeader->m_organize->setPopupMode(QToolButton::InstantPopup);
+
+    auto *libraryMenu = new QMenu(m_winHeader->m_include);
+    for (Aero7Library library : Aero7Libraries::instance().libraries()) {
+        libraryMenu->addAction(
+            QIcon::fromTheme(QStringLiteral("folder-%1").arg(library.id)),
+            library.name, this, [this, library]() mutable {
+                const KFileItemList selected = activeViewContainer()->view()->selectedItems();
+                QString folder;
+                if (selected.size() == 1 && selected.constFirst().isDir()
+                    && selected.constFirst().url().isLocalFile()) {
+                    folder = selected.constFirst().url().toLocalFile();
+                } else if (activeViewContainer()->url().isLocalFile()) {
+                    folder = activeViewContainer()->url().toLocalFile();
+                }
+                if (folder.isEmpty()) {
+                    QMessageBox::warning(this, QStringLiteral("Include in Library"),
+                                         QStringLiteral("Select a local folder first."));
+                    return;
+                }
+                if (!library.locations.contains(folder))
+                    library.locations.append(folder);
+                QString error;
+                if (!Aero7Libraries::instance().saveLibrary(library, &error))
+                    QMessageBox::warning(this, QStringLiteral("Include in Library"), error);
+            });
+    }
+    m_winHeader->m_include->setMenu(libraryMenu);
+    m_winHeader->m_include->setPopupMode(QToolButton::InstantPopup);
+
+    auto *shareMenu = new QMenu(m_winHeader->m_share);
+    shareMenu->addAction(QStringLiteral("Advanced sharing settings"), []() {
+        QProcess::startDetached(QStringLiteral("control"),
+                                {QStringLiteral("--page"), QStringLiteral("network-settings")});
+    });
+    m_winHeader->m_share->setMenu(shareMenu);
+    m_winHeader->m_share->setPopupMode(QToolButton::InstantPopup);
+    connect(m_winHeader->m_newFolder, &QToolButton::clicked,
+            this, &DolphinMainWindow::createDirectory);
+    const auto updateRecycleBinCommands = [this](bool isEmpty) {
+        m_winHeader->m_restoreAll->setEnabled(!isEmpty);
+        m_winHeader->m_emptyRecycleBin->setEnabled(!isEmpty);
+    };
+    updateRecycleBinCommands(Trash::isEmpty());
+    connect(&Trash::instance(), &Trash::emptinessChanged,
+            this, updateRecycleBinCommands);
+    connect(m_winHeader->m_restoreAll, &QToolButton::clicked, this, [this]() {
+        auto *job = KIO::listDir(QUrl(QStringLiteral("trash:/")), KIO::HideProgressInfo);
+        auto *urls = new QList<QUrl>;
+        connect(job, &KIO::ListJob::entries, job,
+                [urls](KIO::Job *, const KIO::UDSEntryList &entries) {
+            for (const KIO::UDSEntry &entry : entries) {
+                const QString url = entry.stringValue(KIO::UDSEntry::UDS_URL);
+                const QString name = entry.stringValue(KIO::UDSEntry::UDS_NAME);
+                if (!url.isEmpty())
+                    urls->append(QUrl(url));
+                else if (!name.isEmpty() && name != QLatin1String(".")
+                         && name != QLatin1String(".."))
+                    urls->append(QUrl(QStringLiteral("trash:/") + name));
+            }
+        });
+        connect(job, &KJob::result, job, [this, urls](KJob *completed) {
+            if (!completed->error() && !urls->isEmpty()) {
+                KIO::RestoreJob *restore = KIO::restoreFromTrash(*urls);
+                KJobWidgets::setWindow(restore, this);
+                restore->uiDelegate()->setAutoErrorHandlingEnabled(true);
+            }
+            delete urls;
+        });
+    });
+    connect(m_winHeader->m_emptyRecycleBin, &QToolButton::clicked,
+            this, [this]() { Trash::empty(this); });
+    connect(m_winHeader->m_recycleBinProperties, &QToolButton::clicked,
+            this, [this]() { Aero7Properties::showTrash(this); });
+    if (QAction *preview = actionCollection()->action(QStringLiteral("show_information_panel"))) {
+        m_winHeader->m_preview->setChecked(preview->isChecked());
+        connect(m_winHeader->m_preview, &QToolButton::clicked,
+                preview, &QAction::trigger);
+        connect(preview, &QAction::toggled,
+                m_winHeader->m_preview, &QToolButton::setChecked);
+    }
+    auto *viewsMenu = new QMenu(m_winHeader->m_views);
+    const auto addView = [this, viewsMenu](const QString &name,
+                                          DolphinView::Mode mode, int zoom,
+                                          const QList<QByteArray> &roles = {}) {
+        viewsMenu->addAction(name, this, [this, mode, zoom, roles]() {
+            DolphinView *view = activeViewContainer()->view();
+            view->setViewMode(mode);
+            if (zoom >= 0)
+                view->setZoomLevel(zoom);
+            if (!roles.isEmpty())
+                view->setVisibleRoles(roles);
+        });
+    };
+    addView(QStringLiteral("Extra large icons"), DolphinView::IconsView, 7);
+    addView(QStringLiteral("Large icons"), DolphinView::IconsView, 5);
+    addView(QStringLiteral("Medium icons"), DolphinView::IconsView, 3);
+    addView(QStringLiteral("Small icons"), DolphinView::IconsView, 0);
+    viewsMenu->addSeparator();
+    addView(QStringLiteral("List"), DolphinView::CompactView, 0);
+    addView(QStringLiteral("Details"), DolphinView::DetailsView, 0,
+            {"text", "modificationtime", "type", "size"});
+    addView(QStringLiteral("Tiles"), DolphinView::IconsView, 3,
+            {"text", "size", "type"});
+    addView(QStringLiteral("Content"), DolphinView::DetailsView, -1,
+            {"text", "type", "size", "modificationtime", "rating", "tags"});
+    m_winHeader->m_views->setMenu(viewsMenu);
+    m_winHeader->m_views->setPopupMode(QToolButton::InstantPopup);
+
+    QWidget *viewContent = takeCentralWidget();
+    auto *central = new QWidget(this);
+    auto *centralLayout = new QVBoxLayout(central);
+    centralLayout->setContentsMargins(0, 0, 0, 0);
+    centralLayout->setSpacing(0);
+    m_aero7ContentStack = new QStackedWidget(central);
+    m_aero7ContentStack->setFrameShape(QFrame::NoFrame);
+    m_aero7ContentStack->setStyleSheet(QStringLiteral(
+        "QStackedWidget { border: 0; background: white; }"));
+    m_aero7ContentStack->addWidget(viewContent);
+    m_aero7ComputerView = new Aero7ComputerView(m_aero7ContentStack);
+    m_aero7ContentStack->addWidget(m_aero7ComputerView);
+    connect(m_aero7ComputerView, &Aero7ComputerView::openRequested,
+            this, [this](const QString &rootPath) {
+                hideAero7Computer();
+                changeUrl(QUrl::fromLocalFile(rootPath));
+            });
+    centralLayout->addWidget(m_aero7ContentStack, 1);
+    setCentralWidget(central);
+    menuBar()->hide();
+    toolBar()->hide();
+    if (QAction *showMenu = actionCollection()->action(
+            KStandardAction::name(KStandardAction::ShowMenubar))) {
+        showMenu->setChecked(false);
+        showMenu->setEnabled(false);
+        showMenu->setVisible(false);
+    }
+    // A locked top toolbar spans above both dock areas and the central view,
+    // matching Explorer's full-width navigation and command rows.  Keep the
+    // real menu bar alive: replacing it with setMenuWidget() destroys widget
+    // actions that still own the URL navigator and causes a queued crash.
+    auto *shellChrome = new QToolBar(this);
+    shellChrome->setObjectName(QStringLiteral("aero7ExplorerChrome"));
+    shellChrome->setMovable(false);
+    shellChrome->setFloatable(false);
+    shellChrome->setAllowedAreas(Qt::TopToolBarArea);
+    shellChrome->setFixedHeight(65);
+    shellChrome->setContentsMargins(0, 0, 0, 0);
+    shellChrome->setStyleSheet(QStringLiteral(
+        "QToolBar#aero7ExplorerChrome { border: 0; spacing: 0; padding: 0; }"));
+    shellChrome->addWidget(m_winHeader);
+    shellChrome->layout()->setContentsMargins(0, 0, 0, 0);
+    shellChrome->layout()->setSpacing(0);
+    addToolBar(Qt::TopToolBarArea, shellChrome);
+    m_placesPanel->setShowAll(false);
+
     /* Nav buttons */
-    bind_prop(m_backAction, "enabled", d->navs->back(), "enabled", &QAction::enabledChanged, true);
-    bind_prop(m_forwardAction, "enabled", d->navs->forward(), "enabled", &QAction::enabledChanged, true);
+    Aero7::bindProperty(m_backAction, "enabled", d->navs->back(), "enabled", &QAction::enabledChanged, true);
+    Aero7::bindProperty(m_forwardAction, "enabled", d->navs->forward(), "enabled", &QAction::enabledChanged, true);
     connect(d->navs->back(), &QAbstractButton::clicked, m_backAction, &QAction::trigger);
     connect(d->navs->forward(), &QAbstractButton::clicked, m_forwardAction, &QAction::trigger);
 
@@ -2646,16 +3074,38 @@ void DolphinMainWindow::setupWindowHeader()
     /* Search bar */
     QList<QMetaObject::Connection> conns;
     QAction *lastSavedSearchAction = nullptr;
-    connect(this, &DolphinMainWindow::urlChanged, [=]() mutable {    // ::urlChanged() is a proxy signal for the active view having changed. That doesn't have a notifier signal of its own.
+    connect(this, &DolphinMainWindow::urlChanged, [=, this]() mutable {    // ::urlChanged() is a proxy signal for the active view having changed. That doesn't have a notifier signal of its own.
         for (auto c: conns)
             QObject::disconnect(c);
         conns.clear();
 
         /* Upon active view changed */
 
+        const QUrl location = activeViewContainer()->url();
+        const bool recycleBin = location.scheme() == QLatin1String("trash");
+        QString searchScope;
+        if (location.isLocalFile()) {
+            searchScope = QFileInfo(location.toLocalFile()).fileName();
+            if (searchScope.isEmpty())
+                searchScope = QDir(location.toLocalFile()).dirName();
+        } else if (location.scheme() == QLatin1String("trash")) {
+            searchScope = QStringLiteral("Recycle Bin");
+        } else if (location.scheme() == QLatin1String("network")) {
+            searchScope = QStringLiteral("Network");
+        } else {
+            searchScope = activeViewContainer()->captionWindowTitle();
+        }
+        m_winHeader->setRecycleBinMode(recycleBin);
+        m_winHeader->setLocationName(searchScope);
+        if (recycleBin) {
+            DolphinView *view = activeViewContainer()->view();
+            view->setViewMode(DolphinView::DetailsView);
+            view->setVisibleRoles({"text", "path", "deletiontime", "size", "type"});
+        }
+
         d->searchBar->setText(activeViewContainer()->m_searchBar->m_searchTermEditor->text());
 
-        conns += (bind_prop(
+        conns += (Aero7::bindProperty(
             d->searchBar, "text",
             activeViewContainer()->m_searchBar->m_searchTermEditor, "text",
             &QLineEdit::textChanged
@@ -2696,22 +3146,108 @@ void DolphinMainWindow::setupWindowHeader()
         d->actSearchOpts->menu()->exec(pos);
     });
 
-    onEvent(d->searchBar, QEvent::KeyPress, [=](QEvent *_event) {
+    Aero7::onEvent(d->searchBar, QEvent::KeyPress, [=](QEvent *_event) {
         if (static_cast<QKeyEvent *>(_event)->key() == Qt::Key_Escape) {
             d->searchBar->setText("");
         }
     });
+    connect(d->searchBar, &QLineEdit::returnPressed, this, [this, d]() {
+        const QUrl current = activeViewContainer()->url();
+        if (!current.isLocalFile())
+            return;
+        const QString id = Aero7Libraries::instance().libraryIdForPath(current.toLocalFile());
+        if (id.isEmpty())
+            return;
+        QString error;
+        const QString results = Aero7Libraries::instance().materializeSearch(
+            id, d->searchBar->text(), &error);
+        if (results.isEmpty()) {
+            QMessageBox::warning(this, QStringLiteral("Search"), error);
+            return;
+        }
+        activeViewContainer()->setUrl(QUrl::fromLocalFile(results));
+    });
 
     /* Navigator(s) */
-    d->primaryNavHole->layout()->addWidget(
-        m_navigatorsWidgetAction->stealPrimaryUrlNavigator()
-    );
+    auto *locationIcon = new QLabel(d->primaryNavHole);
+    locationIcon->setObjectName(QStringLiteral("aero7LocationIcon"));
+    locationIcon->setFixedSize(21, 21);
+    locationIcon->setAlignment(Qt::AlignCenter);
+    locationIcon->setPixmap(QIcon::fromTheme(QStringLiteral("folder-download")).pixmap(16, 16));
+    d->primaryNavHole->layout()->addWidget(locationIcon);
+    DolphinUrlNavigator *primaryNavigator = m_navigatorsWidgetAction->stealPrimaryUrlNavigator();
+    primaryNavigator->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    primaryNavigator->setMaximumWidth(QWIDGETSIZE_MAX);
+    // The frame belongs to the combined icon + breadcrumb field rather than
+    // to KUrlNavigator alone.  This keeps the location icon inside the same
+    // 23-pixel Windows 7 address box and avoids a nested KDE frame.
+    primaryNavigator->setBackgroundEnabled(false);
+    static_cast<QHBoxLayout *>(d->primaryNavHole->layout())->addWidget(primaryNavigator, 1);
+    auto *addressHistory = new QToolButton(d->primaryNavHole);
+    addressHistory->setObjectName(QStringLiteral("aero7AddressHistoryButton"));
+    addressHistory->setFixedSize(20, 21);
+    addressHistory->setAutoRaise(true);
+    addressHistory->setFocusPolicy(Qt::NoFocus);
+    addressHistory->setArrowType(Qt::DownArrow);
+    addressHistory->setToolTip(QStringLiteral("Recent locations"));
+    auto *addressHistoryMenu = new QMenu(addressHistory);
+    addressHistory->setMenu(addressHistoryMenu);
+    addressHistory->setPopupMode(QToolButton::InstantPopup);
+    connect(addressHistoryMenu, &QMenu::aboutToShow, this,
+            [this, addressHistoryMenu]() {
+                addressHistoryMenu->clear();
+                const KUrlNavigator *navigator =
+                    activeViewContainer()->urlNavigatorInternalWithHistory();
+                const int currentIndex = navigator->historyIndex();
+                for (int i = 0; i < navigator->historySize(); ++i) {
+                    const QUrl url = navigator->locationUrl(i);
+                    QString label = url.fileName();
+                    if (label.isEmpty())
+                        label = url.toDisplayString(QUrl::PreferLocalFile);
+                    QAction *entry = addressHistoryMenu->addAction(
+                        QIcon::fromTheme(url.isLocalFile()
+                                             ? QStringLiteral("folder")
+                                             : QStringLiteral("folder-remote")),
+                        label);
+                    entry->setCheckable(true);
+                    entry->setChecked(i == currentIndex);
+                    connect(entry, &QAction::triggered, this, [this, url]() {
+                        hideAero7Computer();
+                        changeUrl(url);
+                    });
+                }
+                if (addressHistoryMenu->isEmpty()) {
+                    QAction *empty = addressHistoryMenu->addAction(
+                        QStringLiteral("No recent locations"));
+                    empty->setEnabled(false);
+                }
+            });
+    static_cast<QHBoxLayout *>(d->primaryNavHole->layout())->addWidget(addressHistory);
+
+    auto *refreshButton = new QToolButton(d->primaryNavHole);
+    refreshButton->setObjectName(QStringLiteral("aero7RefreshButton"));
+    refreshButton->setFixedSize(24, 21);
+    refreshButton->setAutoRaise(true);
+    refreshButton->setFocusPolicy(Qt::NoFocus);
+    refreshButton->setIcon(QIcon::fromTheme(QStringLiteral("view-refresh")));
+    refreshButton->setIconSize(QSize(22, 22));
+    refreshButton->setToolTip(QStringLiteral("Refresh"));
+    connect(refreshButton, &QToolButton::clicked, this, [this]() {
+        if (m_aero7ContentStack && m_aero7ComputerView
+            && m_aero7ContentStack->currentWidget() == m_aero7ComputerView) {
+            m_aero7ComputerView->refresh();
+        } else {
+            reloadView();
+        }
+    });
+    static_cast<QHBoxLayout *>(d->primaryNavHole->layout())->addWidget(refreshButton);
     m_navigatorsWidgetAction->followViewContainersGeometry(d->primaryNavHole);  // It needs to set internal nonsense that isn't relevant any more like `m_primaryViewContainer`
-    m_navigatorsWidgetAction->primaryUrlNavigator()->setFixedHeight(26);
+    m_navigatorsWidgetAction->primaryUrlNavigator()->setFixedHeight(21);
+
 
     d->separator->setVisible(false);
 
-    connect(m_navigatorsWidgetAction, &DolphinNavigatorsWidgetAction::secondaryUrlNavigatorChanged, [=]() {
+    connect(m_navigatorsWidgetAction, &DolphinNavigatorsWidgetAction::secondaryUrlNavigatorChanged, [=, this]() {
         if (m_navigatorsWidgetAction->secondaryUrlNavigator() != nullptr)
         {
             d->separator->setVisible(true);
@@ -2720,13 +3256,14 @@ void DolphinMainWindow::setupWindowHeader()
             d->secondaryNavHole->layout()->addWidget(
                 m_navigatorsWidgetAction->stealSecondaryUrlNavigator()
             );
-            m_navigatorsWidgetAction->secondaryUrlNavigator()->setFixedHeight(26);
+            m_navigatorsWidgetAction->secondaryUrlNavigator()->setBackgroundEnabled(false);
+            m_navigatorsWidgetAction->secondaryUrlNavigator()->setFixedHeight(21);
 
             // Separator visibility mirrors that of the second navigator
-            onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Show, [=](QEvent *) {
+            Aero7::onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Show, [=](QEvent *) {
                 d->separator->show();
             });
-            onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Hide, [=](QEvent *) {
+            Aero7::onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Hide, [=](QEvent *) {
                 d->separator->hide();
                 d->separator->parentWidget()->layout()->invalidate();
                 d->separator->parentWidget()->layout()->activate();
@@ -2970,7 +3507,9 @@ void DolphinMainWindow::connectViewSignals(DolphinViewContainer *container)
         m_tabWidget->currentTabPage()->primaryViewActive() ? navigators->primaryUrlNavigator() : navigators->secondaryUrlNavigator();
 
     QAction *editableLocactionAction = actionCollection()->action(QStringLiteral("editable_location"));
-    editableLocactionAction->setChecked(navigator->isUrlEditable());
+    editableLocactionAction->setChecked(false);
+    editableLocactionAction->setEnabled(false);
+    editableLocactionAction->setVisible(false);
     connect(navigator, &KUrlNavigator::editableStateChanged, this, &DolphinMainWindow::slotEditableStateChanged);
     connect(navigator, &KUrlNavigator::tabRequested, this, &DolphinMainWindow::openNewTab);
     connect(navigator, &KUrlNavigator::activeTabRequested, this, &DolphinMainWindow::openNewTabAndActivate);

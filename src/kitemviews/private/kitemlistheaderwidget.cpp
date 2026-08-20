@@ -458,13 +458,19 @@ void KItemListHeaderWidget::paintRole(QPainter *painter, const QByteArray &role,
     if (m_pressedRoleIndex == orderIndex) {
         option.state |= QStyle::State_Sunken;
     }
-    if (m_model->sortRole() == role) {
-        option.sortIndicator = (m_model->sortOrder() == Qt::AscendingOrder) ? QStyleOptionHeader::SortDown : QStyleOptionHeader::SortUp;
-    }
+    const bool sorted = m_model->sortRole() == role;
+    // QStyle puts Dolphin's sort indicator at the far right of the section.
+    // Explorer 7 instead centers a small blue chevron at the top of the
+    // sorted column, leaving the label itself undisturbed.
+    option.sortIndicator = QStyleOptionHeader::None;
     option.rect = rect.toRect();
     option.orientation = Qt::Horizontal;
     option.selectedPosition = QStyleOptionHeader::NotAdjacent;
-    option.text = m_model->roleDescription(role);
+    const QString headerText = m_model->roleDescription(role);
+    // The platform style hard-codes black header text, ignoring the palette in
+    // QStyleOptionHeader. Let it paint only the section background and draw
+    // the Windows 7 label color and insets ourselves below.
+    option.text.clear();
 
     // First we paint any potential empty (padding) space on left and/or right of this role's column.
     const auto paintPadding = [&](int section, const QRectF &rect, const QStyleOptionHeader::SectionPosition &pos) {
@@ -503,6 +509,34 @@ void KItemListHeaderWidget::paintRole(QPainter *painter, const QByteArray &role,
     }
 
     style()->drawControl(QStyle::CE_Header, &option, painter, widget);
+
+    painter->save();
+    painter->setPen(QColor(QStringLiteral("#4c607a")));
+    const int textInset = orderIndex == 0 ? 3 : 6;
+    const QRectF textRect = rect.adjusted(textInset, 0, -4, 0);
+    const QString elided = QFontMetricsF(painter->font()).elidedText(
+        headerText, Qt::ElideRight, textRect.width());
+    painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, elided);
+    painter->restore();
+
+    if (sorted) {
+        const qreal center = rect.center().x();
+        QPolygonF arrow;
+        if (m_model->sortOrder() == Qt::AscendingOrder) {
+            arrow << QPointF(center, 2.0)
+                  << QPointF(center - 4.0, 6.0)
+                  << QPointF(center + 4.0, 6.0);
+        } else {
+            arrow << QPointF(center - 4.0, 2.0)
+                  << QPointF(center + 4.0, 2.0)
+                  << QPointF(center, 6.0);
+        }
+        painter->save();
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(QColor(QStringLiteral("#5b86ad")));
+        painter->drawPolygon(arrow);
+        painter->restore();
+    }
 }
 
 void KItemListHeaderWidget::updatePressedRoleIndex(const QPointF &pos)

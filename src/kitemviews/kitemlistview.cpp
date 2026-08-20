@@ -691,11 +691,10 @@ bool KItemListView::isTransactionActive() const
 void KItemListView::setHeaderVisible(bool visible)
 {
     if (visible && !m_headerWidget->isVisible()) {
-        QStyleOptionHeader option;
-        const QSize headerSize = style()->sizeFromContents(QStyle::CT_HeaderSection, &option, QSize());
+        constexpr int aero7HeaderHeight = 20;
 
         m_headerWidget->setPos(0, 0);
-        m_headerWidget->resize(size().width(), headerSize.height());
+        m_headerWidget->resize(size().width(), aero7HeaderHeight);
         m_headerWidget->setModel(m_model);
         m_headerWidget->setColumns(m_visibleRoles);
         m_headerWidget->setZValue(1);
@@ -708,7 +707,7 @@ void KItemListView::setHeaderVisible(bool visible)
         connect(m_headerWidget, &KItemListHeaderWidget::columnHovered, this, &KItemListView::columnHovered);
         connect(m_headerWidget, &KItemListHeaderWidget::columnUnHovered, this, &KItemListView::columnUnHovered);
 
-        m_layouter->setHeaderHeight(headerSize.height());
+        m_layouter->setHeaderHeight(aero7HeaderHeight);
         m_headerWidget->setVisible(true);
     } else if (!visible && m_headerWidget->isVisible()) {
         disconnect(m_headerWidget, &KItemListHeaderWidget::columnWidthChanged, this, &KItemListView::slotHeaderColumnWidthChanged);

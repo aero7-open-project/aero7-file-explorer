@@ -217,7 +217,7 @@ ViewProperties::ViewProperties(const QUrl &url)
             }
         } else if (useTrashView) {
             setViewMode(DolphinView::DetailsView);
-            setVisibleRoles({"text", "path", "deletiontime"});
+            setVisibleRoles({"text", "path", "deletiontime", "size", "type"});
         } else if (useRecentDocumentsView || useDownloadsView) {
             setSortOrder(Qt::DescendingOrder);
             setSortFoldersFirst(false);

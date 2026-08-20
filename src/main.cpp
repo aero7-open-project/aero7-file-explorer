@@ -27,7 +27,7 @@
 #include <KLocalizedString>
 #include <KWindowSystem>
 
-#include <AeroQt/stylesheet.h>
+#include <Aero7Qt/stylesheet.h>
 
 #define HAVE_STYLE_MANAGER __has_include(<KStyleManager>)
 #if HAVE_STYLE_MANAGER
@@ -50,6 +50,7 @@
 #include <iostream>
 
 constexpr auto dolphinTranslationDomain{"dolphin"};
+constexpr auto aero7ApplicationId{"org.aero7.FileExplorer"};
 
 int main(int argc, char **argv)
 {
@@ -60,8 +61,8 @@ int main(int argc, char **argv)
         std::cout << qPrintable(
             xi18ndc(dolphinTranslationDomain,
                     "@info:shell %1 is a terminal command",
-                    "Running <application>Dolphin</application> with <command>sudo</command> is discouraged. Please run <icode>%1</icode> instead.",
-                    QStringLiteral("dolphin --sudo")))
+                    "Running <application>File Explorer</application> with <command>sudo</command> is discouraged. Please run <icode>%1</icode> instead.",
+                    QStringLiteral("aero7-file-explorer --sudo")))
                   << '\n';
         // We could perform a privilege de-escalation here and continue as normal. It is a bit safer though to simply let the user restart without sudo.
         return EXIT_FAILURE;
@@ -74,7 +75,9 @@ int main(int argc, char **argv)
     KIconTheme::initTheme();
 
     QApplication app(argc, argv);
-    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("org.kde.dolphin"), app.windowIcon()));
+    app.setDesktopFileName(QString::fromLatin1(aero7ApplicationId));
+    app.setApplicationDisplayName(QStringLiteral("File Explorer"));
+    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("system-file-manager"), app.windowIcon()));
 
 #if HAVE_STYLE_MANAGER
     /**
@@ -90,35 +93,41 @@ int main(int argc, char **argv)
     QApplication::setStyle(QStringLiteral("breeze"));
 #endif
 #endif
-    Aero::registerStylesheet(&app);
+    Aero7::applyApplicationStyle(&app);
 
     QString qss = R"(
         *[_Aero_transpbg="true"] DolphinUrlNavigator KUrlComboBox
         {
-            border-image: url(:/AeroQt/null.png)
+            border: none;
         }
 
         *[_Aero_transpbg="true"] DolphinUrlNavigator
         {
-            border-image: url(:/AeroQt/transpbg/entry/normal.png) 4 4 4 4 repeat;
-            border-width: 4px;
+            border: 1px solid #7f9db9;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 235);
         }
         *[_Aero_transpbg="true"] DolphinUrlNavigator:hover
         {
-            border-image: url(:/AeroQt/transpbg/entry/hover.png) 4 4 4 4 repeat;
+            border-color: #3c7fb1;
         }
     )";
     app.setStyleSheet(app.styleSheet() + qss);
 
     KLocalizedString::setApplicationDomain(dolphinTranslationDomain);
 
-    KAboutData aboutData(QStringLiteral("dolphin"),
-                         i18n("Dolphin"),
+    // Windows 7 Explorer always exposes its full-width information pane and
+    // does not place a desktop-style zoom control in that pane.
+    GeneralSettings::setShowStatusBar(GeneralSettings::EnumShowStatusBar::FullWidth);
+    GeneralSettings::setShowZoomSlider(false);
+
+    KAboutData aboutData(QStringLiteral("aero7-file-explorer"),
+                         i18n("File Explorer"),
                          QStringLiteral(DOLPHIN_VERSION_STRING),
-                         i18nc("@title", "File Manager"),
+                         i18nc("@title", "Aero7 File Explorer"),
                          KAboutLicense::GPL,
                          i18nc("@info:credit", "© 2006–2025 The Dolphin Developers"));
-    aboutData.setHomepage(QStringLiteral("https://apps.kde.org/dolphin"));
+    aboutData.setDesktopFileName(QString::fromLatin1(aero7ApplicationId));
     aboutData.addAuthor(i18nc("@info:credit", "Felix Ernst"),
                         i18nc("@info:credit", "Maintainer (since 2021) and developer"),
                         QStringLiteral("felixernst@kde.org"));
@@ -157,12 +166,12 @@ int main(int argc, char **argv)
                                         i18nc("@info:shell",
                                               "The files and folders passed as arguments "
                                               "will be selected.")));
-    parser.addOption(QCommandLineOption(QStringList() << QStringLiteral("split"), i18nc("@info:shell", "Dolphin will get started with a split view.")));
-    parser.addOption(QCommandLineOption(QStringList() << QStringLiteral("new-window"), i18nc("@info:shell", "Dolphin will explicitly open in a new window.")));
+    parser.addOption(QCommandLineOption(QStringList() << QStringLiteral("split"), i18nc("@info:shell", "File Explorer will get started with a split view.")));
+    parser.addOption(QCommandLineOption(QStringList() << QStringLiteral("new-window"), i18nc("@info:shell", "File Explorer will explicitly open in a new window.")));
     parser.addOption(QCommandLineOption(QStringList() << QStringLiteral("sudo") << QStringLiteral("admin"),
-                                        i18nc("@info:shell", "Set up Dolphin for administrative tasks.")));
+                                        i18nc("@info:shell", "Set up File Explorer for administrative tasks.")));
     parser.addOption(
-        QCommandLineOption(QStringList() << QStringLiteral("daemon"), i18nc("@info:shell", "Start Dolphin Daemon (only required for DBus Interface).")));
+        QCommandLineOption(QStringList() << QStringLiteral("daemon"), i18nc("@info:shell", "Start the File Explorer daemon (only required for the D-Bus interface).")));
     parser.addPositionalArgument(QStringLiteral("+[Url]"), i18nc("@info:shell", "Document to open"));
 
     parser.process(app);
@@ -249,7 +258,7 @@ int main(int argc, char **argv)
     DBusInterface interface;
 
     if (!app.isSessionRestored()) {
-        KConfigGui::setSessionConfig(QStringLiteral("dolphin"), QStringLiteral("dolphin"));
+        KConfigGui::setSessionConfig(QStringLiteral("aero7-file-explorer"), QStringLiteral("aero7-file-explorer"));
     }
 
     // Only restore session if:
@@ -260,7 +269,7 @@ int main(int argc, char **argv)
     // 3. There is a session available to restore
     if (app.isSessionRestored() || GeneralSettings::rememberOpenedTabs()) {
         // Get saved state data for the last-closed Dolphin instance
-        const QString serviceName = QStringLiteral("org.kde.dolphin-%1").arg(QCoreApplication::applicationPid());
+        const QString serviceName = QStringLiteral("org.aero7.FileExplorer-%1").arg(QCoreApplication::applicationPid());
         const auto instancesCount = Dolphin::dolphinGuiInstances(serviceName).size();
         if (instancesCount == 1 || (app.isSessionRestored() && instancesCount > 0)) {
             const QString className = KXmlGuiWindow::classNameOfToplevel(1);

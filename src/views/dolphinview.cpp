@@ -28,6 +28,7 @@
 #include "viewproperties.h"
 #include "views/tooltips/tooltipmanager.h"
 #include "zoomlevelinfo.h"
+#include "aero7fileoperations.h"
 
 #if HAVE_BALOO
 #include <Baloo/IndexerConfig>
@@ -44,7 +45,6 @@
 #include <KIO/JobUiDelegateFactory>
 #include <KIO/Paste>
 #include <KIO/PasteJob>
-#include <KIO/RenameFileDialog>
 #include <KIconUtils>
 #include <KJob>
 #include <KJobWidgets>
@@ -63,15 +63,24 @@
 #include <QActionGroup>
 #include <QApplication>
 #include <QClipboard>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QDropEvent>
+#include <QDirIterator>
+#include <QFileInfo>
 #include <QGraphicsOpacityEffect>
 #include <QGraphicsSceneDragDropEvent>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
+#include <QMessageBox>
 #include <QMimeDatabase>
 #include <QPixmapCache>
+#include <QPushButton>
 #include <QScrollBar>
+#include <QSettings>
 #include <QSize>
+#include <QStandardPaths>
 #include <QTimer>
 #include <QToolTip>
 #include <QVBoxLayout>
@@ -155,6 +164,16 @@ DolphinView::DolphinView(const QUrl &url, QWidget *parent)
     m_view->setEnlargeSmallPreviews(GeneralSettings::enlargeSmallPreviews());
 
     m_container = new KItemListContainer(controller, this);
+    m_container->setFrameShape(QFrame::NoFrame);
+    // The native StyledPanel frame is a heavy black/grey three-pixel bevel in
+    // the Aero7 style. Explorer uses a single subdued line above the Details
+    // header and at the far right edge of the folder view.
+    m_container->setStyleSheet(QStringLiteral(R"(
+        KItemListContainer {
+            border: 0;
+            border-right: 1px solid #b9d1ea;
+        }
+    )"));
     m_container->installEventFilter(this);
 #ifndef QT_NO_ACCESSIBILITY
     m_view->setAccessibleParentsObject(m_container);
@@ -181,20 +200,21 @@ DolphinView::DolphinView(const QUrl &url, QWidget *parent)
 
     QFont placeholderLabelFont;
     // To match the size of a level 2 Heading/KTitleWidget
-    placeholderLabelFont.setPointSize(qRound(placeholderLabelFont.pointSize() * 1.3));
+    placeholderLabelFont.setPointSize(9);
     m_placeholderLabel->setFont(placeholderLabelFont);
     m_placeholderLabel->setWordWrap(true);
     m_placeholderLabel->setAlignment(Qt::AlignCenter);
     // Match opacity of QML placeholder label component
     auto *effect = new QGraphicsOpacityEffect(m_placeholderLabel);
-    effect->setOpacity(0.5);
+    effect->setOpacity(0.75);
     m_placeholderLabel->setGraphicsEffect(effect);
     // Set initial text and visibility
     updatePlaceholderLabel();
 
     auto *centeringLayout = new QVBoxLayout(m_container);
+    centeringLayout->setContentsMargins(0, 41, 0, 0);
     centeringLayout->addWidget(m_placeholderLabel);
-    centeringLayout->setAlignment(m_placeholderLabel, Qt::AlignCenter);
+    centeringLayout->setAlignment(m_placeholderLabel, Qt::AlignTop | Qt::AlignHCenter);
 
     controller->setSelectionBehavior(KItemListController::MultiSelection);
     connect(controller, &KItemListController::itemActivated, this, &DolphinView::slotItemActivated);
@@ -269,6 +289,18 @@ DolphinView::DolphinView(const QUrl &url, QWidget *parent)
     connect(m_twoClicksRenamingTimer, &QTimer::timeout, this, &DolphinView::slotTwoClicksRenamingTimerTimeout);
 
     applyViewProperties();
+    // Windows 7 Explorer's normal folder presentation starts in Details mode.
+    // Users can still change it through the Windows-style Views button.
+    setViewMode(DolphinView::DetailsView);
+    setZoomLevel(0);
+    setVisibleRoles({"text", "modificationtime", "type", "size"});
+    m_view->header()->setAutomaticColumnResizing(false);
+    m_view->header()->setColumnWidths({
+        {"text", 284},
+        {"modificationtime", 120},
+        {"type", 120},
+        {"size", 80},
+    });
     m_topLayout->addWidget(m_container);
 
     loadDirectory(url);
@@ -587,13 +619,39 @@ bool DolphinView::sortHiddenLast() const
 
 void DolphinView::setVisibleRoles(const QList<QByteArray> &roles)
 {
-    const QList<QByteArray> &previousRoles = roles;
+    const QList<QByteArray> previousRoles = m_visibleRoles;
 
     ViewProperties props(viewPropertiesUrl());
     props.setVisibleRoles(roles);
 
     m_visibleRoles = roles;
     m_view->setVisibleRoles(roles);
+    const QList<QByteArray> recycleBinRoles{
+        "text", "path", "deletiontime", "size", "type"};
+    const QList<QByteArray> normalFolderRoles{
+        "text", "modificationtime", "type", "size"};
+    if (roles == recycleBinRoles) {
+        // Windows 7 keeps all five Recycle Bin headings readable instead of
+        // inheriting the narrower normal-folder widths.
+        m_view->header()->setAutomaticColumnResizing(false);
+        m_view->header()->setColumnWidths({
+            {"text", 250},
+            {"path", 190},
+            {"deletiontime", 140},
+            {"size", 80},
+            {"type", 145},
+        });
+    } else if (roles == normalFolderRoles) {
+        // Reapply the Windows 7 normal-folder geometry when leaving a special
+        // surface such as the Recycle Bin in the same Explorer window.
+        m_view->header()->setAutomaticColumnResizing(false);
+        m_view->header()->setColumnWidths({
+            {"text", 284},
+            {"modificationtime", 120},
+            {"type", 120},
+            {"size", 80},
+        });
+    }
 
     Q_EMIT visibleRolesChanged(m_visibleRoles, previousRoles);
 }
@@ -721,29 +779,11 @@ void DolphinView::requestStatusBarText()
 
 void DolphinView::emitStatusBarText(const int folderCount, const int fileCount, KIO::filesize_t totalFileSize, const Selection selection)
 {
-    QString foldersText;
-    QString filesText;
-    QString summary;
-
-    if (selection == HasSelection) {
-        // At least 2 items are selected because the case of 1 selected item is handled in
-        // DolphinView::requestStatusBarText().
-        foldersText = i18ncp("@info:status", "1 folder selected", "%1 folders selected", folderCount);
-        filesText = i18ncp("@info:status", "1 file selected", "%1 files selected", fileCount);
-    } else {
-        foldersText = i18ncp("@info:status", "1 folder", "%1 folders", folderCount);
-        filesText = i18ncp("@info:status", "1 file", "%1 files", fileCount);
-    }
-
-    if (fileCount > 0 && folderCount > 0) {
-        summary = i18nc("@info:status folders, files (size)", "%1, %2 (%3)", foldersText, filesText, KFormat().formatByteSize(totalFileSize));
-    } else if (fileCount > 0) {
-        summary = i18nc("@info:status files (size)", "%1 (%2)", filesText, KFormat().formatByteSize(totalFileSize));
-    } else if (folderCount > 0) {
-        summary = foldersText;
-    } else {
-        summary = i18nc("@info:status", "0 folders, 0 files");
-    }
+    Q_UNUSED(totalFileSize)
+    const int itemCount = folderCount + fileCount;
+    const QString summary = selection == HasSelection
+        ? i18ncp("@info:status", "1 item selected", "%1 items selected", itemCount)
+        : i18ncp("@info:status", "1 item", "%1 items", itemCount);
     Q_EMIT statusBarTextChanged(summary);
 }
 
@@ -832,26 +872,11 @@ void DolphinView::renameSelectedItems()
         m_view->scrollToItem(index);
 
     } else {
-        KIO::RenameFileDialog *dialog = new KIO::RenameFileDialog(items, this);
-        connect(dialog, &KIO::RenameFileDialog::renamingFinished, this, [this, items](const QList<QUrl> &urls) {
-            // The model may have already been updated, so it's possible that we don't find the old items.
-            for (int i = 0; i < items.count(); ++i) {
-                const int index = m_model->index(items[i]);
-                if (index >= 0) {
-                    QHash<QByteArray, QVariant> data;
-                    data.insert("text", urls[i].fileName());
-                    m_model->setData(index, data);
-                }
-            }
-
-            forceUrlsSelection(urls.first(), urls);
+        const QList<QUrl> urls = Aero7FileOperationDialog::renameItems(items.urlList(), this);
+        if (!urls.isEmpty()) {
+            forceUrlsSelection(urls.constFirst(), urls);
             updateSelectionState();
-        });
-        connect(dialog, &KIO::RenameFileDialog::error, this, [this](KJob *job) {
-            KMessageBox::error(this, job->errorString());
-        });
-
-        dialog->open();
+        }
     }
 
     // Assure that the current index remains visible when KFileItemModel
@@ -863,27 +888,121 @@ void DolphinView::renameSelectedItems()
 void DolphinView::trashSelectedItems()
 {
     const QList<QUrl> list = simplifiedSelectedUrls();
+    QSettings settings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+                           + QStringLiteral("/trashrc"), QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("Aero7"));
+    const bool deleteImmediately = settings.value(QStringLiteral("DeleteImmediately"), false).toBool();
+    const bool confirmDelete = settings.value(QStringLiteral("ConfirmDelete"), true).toBool();
+    const qint64 maximumBytes = settings.value(QStringLiteral("MaximumSizeMiB"), 0).toLongLong()
+        * 1024LL * 1024LL;
+    settings.endGroup();
 
-    using Iface = KIO::AskUserActionInterface;
-    auto *trashJob = new KIO::DeleteOrTrashJob(list, Iface::Trash, Iface::DefaultConfirmation, this);
-    // Auto*Warning*Handling, errors are put in a KMessageWidget by us in slotTrashFileFinished.
-    trashJob->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoWarningHandlingEnabled, this));
-    connect(trashJob, &KJob::result, this, &DolphinView::slotTrashFileFinished);
+    if (deleteImmediately) {
+        deleteSelectedItems();
+        return;
+    }
+    if (confirmDelete) {
+        const bool single = list.size() == 1 && list.constFirst().isLocalFile();
+        const QFileInfo info(single ? list.constFirst().toLocalFile() : QString());
+        const bool folder = single && info.isDir();
+        QDialog confirmation(this);
+        confirmation.setWindowTitle(single
+                                        ? (folder ? QStringLiteral("Delete Folder")
+                                                  : QStringLiteral("Delete File"))
+                                        : QStringLiteral("Delete Multiple Items"));
+        confirmation.resize(495, 235);
+        auto *outer = new QVBoxLayout(&confirmation);
+        auto *questionRow = new QHBoxLayout;
+        auto *recycleIcon = new QLabel;
+        recycleIcon->setFixedSize(64, 64);
+        recycleIcon->setAlignment(Qt::AlignCenter);
+        recycleIcon->setPixmap(QIcon::fromTheme(QStringLiteral("user-trash")).pixmap(48, 48));
+        questionRow->addWidget(recycleIcon, 0, Qt::AlignTop);
+
+        auto *questionColumn = new QVBoxLayout;
+        auto *question = new QLabel(single
+                                        ? QStringLiteral("Are you sure you want to move this %1 to the Recycle Bin?")
+                                              .arg(folder ? QStringLiteral("folder") : QStringLiteral("file"))
+                                        : QStringLiteral("Are you sure you want to move these %1 items to the Recycle Bin?")
+                                              .arg(list.size()));
+        question->setWordWrap(true);
+        questionColumn->addWidget(question);
+        if (single) {
+            QMimeDatabase database;
+            const QMimeType mime = database.mimeTypeForFile(info);
+            auto *detailsRow = new QHBoxLayout;
+            auto *itemIcon = new QLabel;
+            itemIcon->setFixedSize(72, 72);
+            itemIcon->setAlignment(Qt::AlignCenter);
+            itemIcon->setPixmap(QIcon::fromTheme(folder ? QStringLiteral("folder")
+                                                       : mime.iconName()).pixmap(64, 64));
+            detailsRow->addWidget(itemIcon);
+            const QString modified = QLocale().toString(info.lastModified(), QLocale::ShortFormat);
+            auto *details = new QLabel(QStringLiteral("%1\nType: %2\nDate modified: %3")
+                                           .arg(info.fileName(),
+                                                folder ? QStringLiteral("File folder") : mime.comment(),
+                                                modified));
+            detailsRow->addWidget(details, 1);
+            questionColumn->addLayout(detailsRow);
+        }
+        questionRow->addLayout(questionColumn, 1);
+        outer->addLayout(questionRow, 1);
+
+        auto *buttons = new QDialogButtonBox;
+        QPushButton *yes = buttons->addButton(QStringLiteral("Yes"), QDialogButtonBox::AcceptRole);
+        QPushButton *no = buttons->addButton(QStringLiteral("No"), QDialogButtonBox::RejectRole);
+        yes->setMinimumWidth(75);
+        no->setMinimumWidth(75);
+        yes->setDefault(true);
+        connect(buttons, &QDialogButtonBox::accepted, &confirmation, &QDialog::accept);
+        connect(buttons, &QDialogButtonBox::rejected, &confirmation, &QDialog::reject);
+        outer->addWidget(buttons);
+        if (confirmation.exec() != QDialog::Accepted)
+            return;
+    }
+    if (maximumBytes > 0) {
+        qint64 pendingBytes = 0;
+        for (const QUrl &item : list) {
+            if (!item.isLocalFile())
+                continue;
+            const QFileInfo info(item.toLocalFile());
+            if (info.isFile()) {
+                pendingBytes += info.size();
+            } else if (info.isDir()) {
+                QDirIterator iterator(info.absoluteFilePath(), QDir::Files,
+                                      QDirIterator::Subdirectories);
+                while (iterator.hasNext()) {
+                    iterator.next();
+                    pendingBytes += iterator.fileInfo().size();
+                }
+            }
+        }
+        const QString trashFiles = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+            + QStringLiteral("/Trash/files");
+        QDirIterator iterator(trashFiles, QDir::Files, QDirIterator::Subdirectories);
+        while (iterator.hasNext()) {
+            iterator.next();
+            pendingBytes += iterator.fileInfo().size();
+        }
+        if (pendingBytes > maximumBytes) {
+            QMessageBox::warning(this, QStringLiteral("Recycle Bin Full"),
+                                 QStringLiteral("These items would exceed the Recycle Bin's configured maximum size. Empty the Recycle Bin or increase its maximum size."));
+            return;
+        }
+    }
     m_selectNextItem = true;
-    trashJob->start();
+    auto *job = KIO::trash(list, KIO::HideProgressInfo);
+    connect(job, &KJob::result, this, &DolphinView::slotTrashFileFinished);
 }
 
 void DolphinView::deleteSelectedItems()
 {
     const QList<QUrl> list = simplifiedSelectedUrls();
 
-    using Iface = KIO::AskUserActionInterface;
-    auto *trashJob = new KIO::DeleteOrTrashJob(list, Iface::Delete, Iface::DefaultConfirmation, this);
-    // Auto*Warning*Handling, errors are put in a KMessageWidget by us in slotDeleteFileFinished.
-    trashJob->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoWarningHandlingEnabled, this));
-    connect(trashJob, &KJob::result, this, &DolphinView::slotDeleteFileFinished);
-    m_selectNextItem = true;
-    trashJob->start();
+    if (Aero7FileOperationDialog::deletePermanently(list, this)) {
+        m_selectNextItem = false;
+        Q_EMIT operationCompletedMessage(i18nc("@info:status", "Delete operation completed."));
+    }
 }
 
 void DolphinView::cutSelectedItemsToClipboard()
@@ -911,7 +1030,15 @@ void DolphinView::copySelectedItems(const KFileItemList &selection, const QUrl &
     m_markFirstNewlySelectedItemAsCurrent = true;
     m_selectJobCreatedItems = true;
 
-    KIO::CopyJob *job = KIO::copy(selection.urlList(), destinationUrl, KIO::DefaultFlags);
+    if (destinationUrl.isLocalFile()
+        && std::all_of(selection.cbegin(), selection.cend(),
+                       [](const KFileItem &item) { return item.url().isLocalFile(); })) {
+        if (Aero7FileOperationDialog::run(Aero7FileOperationDialog::Operation::Copy,
+                                          selection.urlList(), destinationUrl, this))
+            Q_EMIT operationCompletedMessage(i18nc("@info:status", "Copy operation completed."));
+        return;
+    }
+    KIO::CopyJob *job = KIO::copy(selection.urlList(), destinationUrl, KIO::HideProgressInfo);
     KJobWidgets::setWindow(job, this);
 
     connect(job, &KIO::CopyJob::result, this, &DolphinView::slotJobResult);
@@ -933,7 +1060,15 @@ void DolphinView::moveSelectedItems(const KFileItemList &selection, const QUrl &
     m_markFirstNewlySelectedItemAsCurrent = true;
     m_selectJobCreatedItems = true;
 
-    KIO::CopyJob *job = KIO::move(selection.urlList(), destinationUrl, KIO::DefaultFlags);
+    if (destinationUrl.isLocalFile()
+        && std::all_of(selection.cbegin(), selection.cend(),
+                       [](const KFileItem &item) { return item.url().isLocalFile(); })) {
+        if (Aero7FileOperationDialog::run(Aero7FileOperationDialog::Operation::Move,
+                                          selection.urlList(), destinationUrl, this))
+            Q_EMIT operationCompletedMessage(i18nc("@info:status", "Move operation completed."));
+        return;
+    }
+    KIO::CopyJob *job = KIO::move(selection.urlList(), destinationUrl, KIO::HideProgressInfo);
     KJobWidgets::setWindow(job, this);
 
     connect(job, &KIO::CopyJob::result, this, &DolphinView::slotJobResult);
@@ -2145,6 +2280,36 @@ void DolphinView::slotDirectoryLoadingCompleted()
 
     applyDynamicView();
 
+    // Loading completion can reapply a directory's automatic column sizing
+    // after the window has reached its final width.  Windows 7 keeps these
+    // Details columns stable, so restore Aero7's owned layouts at the final
+    // asynchronous boundary as well as during the initial property pass.
+    QTimer::singleShot(0, this, [this]() {
+        KItemListHeader *header = m_container->controller()->view()->header();
+        const QList<QByteArray> recycleBinRoles{
+            "text", "path", "deletiontime", "size", "type"};
+        const QList<QByteArray> normalFolderRoles{
+            "text", "modificationtime", "type", "size"};
+        if (m_visibleRoles == recycleBinRoles) {
+            header->setAutomaticColumnResizing(false);
+            header->setColumnWidths({
+                {"text", 250},
+                {"path", 190},
+                {"deletiontime", 140},
+                {"size", 80},
+                {"type", 145},
+            });
+        } else if (m_visibleRoles == normalFolderRoles) {
+            header->setAutomaticColumnResizing(false);
+            header->setColumnWidths({
+                {"text", 284},
+                {"modificationtime", 120},
+                {"type", 120},
+                {"size", 80},
+            });
+        }
+    });
+
     // Update the placeholder label in case we found that the folder was empty
     // after loading it
     updatePlaceholderLabel();
@@ -2472,7 +2637,37 @@ void DolphinView::applyViewProperties(const ViewProperties &props)
         } else {
             header->setAutomaticColumnResizing(true);
         }
-        header->setSidePadding(DetailsModeSettings::leftPadding(), DetailsModeSettings::rightPadding());
+        // Qt retains five visually transparent pixels in the navigation-pane
+        // separator as its resize hit target. Ten pixels here plus that hit
+        // area and the native four-pixel text inset place "Name" at the same
+        // 19-pixel optical offset as Windows Explorer.
+        header->setSidePadding(10, DetailsModeSettings::rightPadding());
+
+        // ViewProperties applies its automatic-width preference after the
+        // visible roles change. Finish every location transition by restoring
+        // the two Windows 7 layouts that Aero7 owns explicitly.
+        const QList<QByteArray> recycleBinRoles{
+            "text", "path", "deletiontime", "size", "type"};
+        const QList<QByteArray> normalFolderRoles{
+            "text", "modificationtime", "type", "size"};
+        if (m_visibleRoles == recycleBinRoles) {
+            header->setAutomaticColumnResizing(false);
+            header->setColumnWidths({
+                {"text", 250},
+                {"path", 190},
+                {"deletiontime", 140},
+                {"size", 80},
+                {"type", 145},
+            });
+        } else if (m_visibleRoles == normalFolderRoles) {
+            header->setAutomaticColumnResizing(false);
+            header->setColumnWidths({
+                {"text", 284},
+                {"modificationtime", 120},
+                {"type", 120},
+                {"size", 80},
+            });
+        }
     }
 
     m_view->endTransaction();
@@ -2573,6 +2768,20 @@ void DolphinView::applyDynamicView()
 
 void DolphinView::pasteToUrl(const QUrl &url)
 {
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData();
+    const QList<QUrl> clipboardUrls = mimeData->urls();
+    if (url.isLocalFile() && !clipboardUrls.isEmpty()
+        && std::all_of(clipboardUrls.cbegin(), clipboardUrls.cend(),
+                       [](const QUrl &item) { return item.isLocalFile(); })) {
+        const auto operation = KIO::isClipboardDataCut(mimeData)
+            ? Aero7FileOperationDialog::Operation::Move
+            : Aero7FileOperationDialog::Operation::Copy;
+        if (Aero7FileOperationDialog::run(operation, clipboardUrls, url, this))
+            Q_EMIT operationCompletedMessage(operation == Aero7FileOperationDialog::Operation::Move
+                ? i18nc("@info:status", "Move operation completed.")
+                : i18nc("@info:status", "Copy operation completed."));
+        return;
+    }
     KIO::PasteJob *job = KIO::paste(QApplication::clipboard()->mimeData(), url);
     KJobWidgets::setWindow(job, this);
     m_clearSelectionBeforeSelectingNewItems = true;
@@ -2780,7 +2989,7 @@ void DolphinView::updatePlaceholderLabel()
     } else if (m_url.scheme() == QLatin1String("bluetooth")) {
         m_placeholderLabel->setText(i18n("No Bluetooth devices found"));
     } else {
-        m_placeholderLabel->setText(i18n("Folder is empty"));
+        m_placeholderLabel->setText(i18n("This folder is empty."));
     }
 
     m_placeholderLabel->setVisible(true);

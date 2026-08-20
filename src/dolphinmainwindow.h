@@ -36,11 +36,11 @@ using CommandType = KIO::FileUndoManager::CommandType;
 class DiskSpaceUsageMenu;
 class DolphinBookmarkHandler;
 class DolphinViewActionHandler;
-class DolphinSettingsDialog;
 class DolphinViewContainer;
 class DolphinRemoteEncoding;
 class DolphinTabWidget;
 class DolphinWindowHeader;
+class Aero7ComputerView;
 class KFileItem;
 class KFileItemList;
 class KJob;
@@ -48,6 +48,8 @@ class KNewFileMenu;
 class KRecentFilesAction;
 class KToolBarPopupAction;
 class QToolButton;
+class QStackedWidget;
+class QScreen;
 class PlacesPanel;
 class TerminalPanel;
 class ServiceMenuShortcutManager;
@@ -719,6 +721,11 @@ private:
      */
     void connectViewSignals(DolphinViewContainer *container);
 
+    void showAero7Computer();
+    void hideAero7Computer();
+    void trackAero7WindowScreen();
+    void constrainAero7WindowToScreen();
+
     /**
      * Updates the text of the split action:
      * If two views are shown, the text is set to "Split",
@@ -783,11 +790,15 @@ private:
     DolphinTabWidget *m_tabWidget;
     DolphinViewContainer *m_activeViewContainer;
     DolphinWindowHeader *m_winHeader;
+    QStackedWidget *m_aero7ContentStack = nullptr;
+    Aero7ComputerView *m_aero7ComputerView = nullptr;
+    QPointer<QScreen> m_aero7TrackedScreen;
+    QMetaObject::Connection m_aero7ScreenGeometryConnection;
+    QMetaObject::Connection m_aero7ScreenAvailableGeometryConnection;
     DolphinNavigatorsWidgetAction *m_navigatorsWidgetAction;
 
     DolphinViewActionHandler *m_actionHandler;
     DolphinRemoteEncoding *m_remoteEncoding;
-    QPointer<DolphinSettingsDialog> m_settingsDialog;
     DolphinBookmarkHandler *m_bookmarkHandler;
     SelectionMode::ActionTextHelper *m_actionTextHelper;
     DisabledActionNotifier *m_disabledActionNotifier;

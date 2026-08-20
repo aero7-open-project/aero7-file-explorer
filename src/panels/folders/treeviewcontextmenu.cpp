@@ -18,7 +18,7 @@
 #include <KIO/PasteJob>
 #include <KJobWidgets>
 #include <KLocalizedString>
-#include <KPropertiesDialog>
+#include "aero7properties.h"
 #include <KSharedConfig>
 #include <KUrlMimeData>
 
@@ -201,9 +201,7 @@ void TreeViewContextMenu::deleteItem()
 
 void TreeViewContextMenu::showProperties()
 {
-    KPropertiesDialog *dialog = new KPropertiesDialog(m_fileItem.url(), m_parent);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-    dialog->show();
+    Aero7Properties::show({m_fileItem.url()}, m_parent);
 }
 
 void TreeViewContextMenu::setShowHiddenFiles(bool show)

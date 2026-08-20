@@ -22,7 +22,7 @@
 #include <KIO/CopyJob>
 #include <KIO/DropJob>
 #include <KIO/FileUndoManager>
-#include <KIO/RenameFileDialog>
+#include "aero7fileoperations.h"
 #include <KJobUiDelegate>
 #include <KJobWidgets>
 
@@ -92,8 +92,7 @@ void FoldersPanel::rename(const KFileItem &item)
         const int index = m_model->index(item);
         m_controller->view()->editRole(index, "text");
     } else {
-        KIO::RenameFileDialog *dialog = new KIO::RenameFileDialog(KFileItemList({item}), this);
-        dialog->open();
+        Aero7FileOperationDialog::renameItems({item.url()}, this);
     }
 }
 

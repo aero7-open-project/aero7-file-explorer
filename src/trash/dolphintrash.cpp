@@ -9,7 +9,7 @@
 
 #include <KConfig>
 #include <KConfigGroup>
-#include <KIO/DeleteOrTrashJob>
+#include <KIO/EmptyTrashJob>
 #include <KLocalizedString>
 #include <KNotification>
 #include <Solid/Device>
@@ -17,6 +17,7 @@
 #include <Solid/StorageAccess>
 
 #include <QList>
+#include <QMessageBox>
 
 Trash::Trash()
     : m_trashDirLister(new KDirLister())
@@ -78,8 +79,12 @@ static void notifyEmptied()
 
 void Trash::empty(QWidget *window)
 {
-    using Iface = KIO::AskUserActionInterface;
-    auto *emptyJob = new KIO::DeleteOrTrashJob(QList<QUrl>{}, Iface::EmptyTrash, Iface::DefaultConfirmation, window);
+    if (QMessageBox::question(window, QStringLiteral("Empty Recycle Bin"),
+                              QStringLiteral("Are you sure you want to permanently delete all items in the Recycle Bin?"),
+                              QMessageBox::Yes | QMessageBox::No,
+                              QMessageBox::No) != QMessageBox::Yes)
+        return;
+    auto *emptyJob = KIO::emptyTrash();
     QObject::connect(emptyJob, &KIO::Job::result, emptyJob, [emptyJob] {
         if (!emptyJob->error()) {
             notifyEmptied();

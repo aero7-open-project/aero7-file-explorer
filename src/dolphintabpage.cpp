@@ -252,27 +252,15 @@ void DolphinTabPage::disconnectNavigators()
 void DolphinTabPage::insertNavigatorsWidget(DolphinNavigatorsWidgetAction *navigatorsWidget)
 {
     QGridLayout *gridLayout = static_cast<QGridLayout *>(layout());
-    if (navigatorsWidget->isInToolbar()) {
-        if (m_navigatorSeparator) {
-            m_navigatorSeparator->setFrameStyle(QFrame::NoFrame);
-            gridLayout->removeWidget(m_navigatorSeparator.get());
-        }
-        gridLayout->setRowMinimumHeight(0, 0);
-    } else {
-        // We set a row minimum height, so the height does not visibly change whenever
-        // navigatorsWidget is inserted which happens every time the current tab is changed.
-        gridLayout->setRowMinimumHeight(0, navigatorsWidget->primaryUrlNavigator()->height());
-        gridLayout->setRowMinimumHeight(1, 1);
-
-        gridLayout->addWidget(navigatorsWidget->requestWidget(this), 0, 0);
-        if (!m_navigatorSeparator) {
-            m_navigatorSeparator = std::make_unique<QFrame>(this);
-        }
-        m_navigatorSeparator->setFrameStyle(QFrame::HLine);
-        m_navigatorSeparator->setFixedHeight(1);
-        m_navigatorSeparator->setContentsMargins(0, 0, 0, 0);
-        gridLayout->addWidget(m_navigatorSeparator.get(), 1, 0);
+    Q_UNUSED(navigatorsWidget);
+    // The single Explorer breadcrumb lives permanently in the shell chrome.
+    // Never reserve Dolphin's old per-tab navigator and separator rows.
+    if (m_navigatorSeparator) {
+        m_navigatorSeparator->setFrameStyle(QFrame::NoFrame);
+        gridLayout->removeWidget(m_navigatorSeparator.get());
     }
+    gridLayout->setRowMinimumHeight(0, 0);
+    gridLayout->setRowMinimumHeight(1, 0);
 }
 
 void DolphinTabPage::markUrlsAsSelected(const QList<QUrl> &urls)

@@ -227,18 +227,10 @@ QWidget *DolphinNavigatorsWidgetAction::createNavigatorWidget(Side side) const
         &KUrlNavigator::urlChanged,
         this,
         [urlNavigator, this]() {
-            // Update URL navigator to show a server URL entry placeholder text if we
-            // just loaded the remote:/ page, to make it easier for users to figure out
-            // that they can enter arbitrary remote URLs. See bug 414670
-            if (urlNavigator->locationUrl().scheme() == QLatin1String("remote")) {
-                if (!urlNavigator->isUrlEditable()) {
-                    urlNavigator->setUrlEditable(true);
-                }
-                urlNavigator->clearText();
-                urlNavigator->setPlaceholderText(i18n("Enter server URL (e.g. smb://[ip address])"));
-            } else {
-                urlNavigator->setPlaceholderText(QString());
-            }
+            // Aero7 uses a permanently breadcrumb-only location bar.  The upstream
+            // remote:/ exception must not expose the raw URL editor either.
+            urlNavigator->setUrlEditable(false);
+            urlNavigator->setPlaceholderText(QString());
 
             // We have to wait for DolphinUrlNavigator::sizeHint() to update which
             // happens a little bit later than when urlChanged is emitted.
