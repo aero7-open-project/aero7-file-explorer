@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="logo.png" width="150" alt="Aero7 logo">
+<img src="https://raw.githubusercontent.com/memegeko/aero7-shell/release/docs/assets/aero7-logo.png" width="150" alt="Aero7 logo">
 
 # Aero7 File Explorer
 
