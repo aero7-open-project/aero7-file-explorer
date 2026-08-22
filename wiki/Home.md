@@ -8,6 +8,8 @@ This Wiki belongs only to the File Explorer project. Documentation for the
 Aero7 operating system, installer, Control Panel, and package repository
 remains in each project's own repository.
 
+[![Aero7 File Explorer Documents view](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-documents.png)](Screenshots)
+
 ## Start here
 
 | I want to… | Read… |
@@ -54,6 +56,19 @@ a second file manager or change the public Aero7 application identity.
 The project retains the mature KDE/Dolphin file-management foundation and its
 applicable license notices while maintaining the Aero7 interface and shell
 contract as the product experience.
+
+## Current status
+
+File Explorer is included in Aero7 and distributed as the
+`aero7-file-explorer` package through the signed Aero7 package repository.
+Current documentation and screenshots cover the installed application,
+Libraries, Computer, common dialogs, file operations, and the supported
+package transition from the retired `aero7-dolphin` name.
+
+The project is actively maintained. Features without a safe and complete
+backend are disabled or omitted instead of being presented as working. Review
+[Feature Reference](Feature-Reference) for the implemented boundary and
+[Troubleshooting](Troubleshooting) before reporting a problem.
 
 ## Project links
 

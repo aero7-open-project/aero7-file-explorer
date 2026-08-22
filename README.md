@@ -1,77 +1,192 @@
+<a id="readme-top"></a>
+
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/memegeko/aero7-shell/beta/docs/assets/aero7-logo.png" width="150" alt="Aero7 logo">
+
 # Aero7 File Explorer
 
-Aero7 File Explorer is the Aero7 desktop's complete Windows 7-style file
-manager and a maintained fork of KDE Dolphin. It is a standalone Aero7 product
-with its own executable, desktop identity, shell integration, navigation
-chrome, library model, Computer view, details layout, dialogs, and
-file-management experience.
+### Familiar file management for the Aero7 desktop
 
-The installed application identity is:
+A maintained fork of KDE Dolphin with an independent Aero7 application
+identity, Windows 7-inspired navigation, Libraries, Computer, common dialogs,
+and native file-operation workflows.
 
-- executable: `aero7-file-explorer`
-- desktop id: `org.aero7.FileExplorer`
-- visible name: `File Explorer`
-- compatibility commands: `dolphin` and `aero7-dolphin` (provided by the
-  distribution package)
+[![Arch Linux](https://img.shields.io/badge/Arch_Linux-supported-1793D1?logo=archlinux&logoColor=white)](https://archlinux.org/)
+[![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6-1D99F3?logo=kde&logoColor=white)](https://kde.org/plasma-desktop/)
+[![GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0%2B-2ea44f.svg)](LICENSES/GPL-2.0-or-later.txt)
 
-Builds require the Aero7 Qt library plus the KDE Frameworks and Qt 6
-dependencies listed by CMake. See [AERO7_FORK.md](AERO7_FORK.md) for the
-application boundary, upstream heritage, and compatibility policy.
+[Features](#features) ·
+[Documentation](https://github.com/aero7-open-project/aero7-file-explorer/wiki) ·
+[Installation](#installation) ·
+[Build and test](#build-and-test) ·
+[Upstream](#upstream) ·
+[Report a bug](https://github.com/aero7-open-project/aero7-file-explorer/issues/new)
 
-The fork retains KDE Dolphin code under its original free-software licenses.
-Upstream internals are maintained where practical, while the Aero7 application
-identity and user experience remain independently owned and developed.
+</div>
 
 ---
 
-# Dolphin
+**Aero7 File Explorer is an independent project and is not affiliated with or
+endorsed by Microsoft Corporation. Windows is a trademark of the Microsoft
+group of companies.**
 
-Dolphin is KDE's file manager that lets you navigate and browse the contents of your hard drives, USB sticks, SD cards, and more. Creating, moving, or deleting files and folders is simple and fast. See more information [on Dolphin's homepage](https://apps.kde.org/dolphin/).
+> [!NOTE]
+> Aero7 File Explorer is developed and tested as part of the Aero7 desktop.
+> Compatibility commands are provided for existing integrations, but the
+> public application identity is File Explorer.
 
-![Screenshot](https://cdn.kde.org/screenshots/dolphin/dolphin.png)
+[![Aero7 File Explorer Documents view](docs/screenshots/file-explorer-documents.png)](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Screenshots)
 
-## User Documentation
+See the [File Explorer screenshot gallery](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Screenshots)
+for Libraries, Computer, Documents, and Details-view captures from installed
+Aero7 virtual machines.
 
-See https://userbase.kde.org/Special:myLanguage/Dolphin.
+## About the project
+
+Aero7 File Explorer is the complete file-management application for the
+[Aero7](https://github.com/aero7-open-project/aero7) desktop. It keeps the
+mature KDE Dolphin and KIO foundation while maintaining a separate Aero7
+executable, desktop entry, D-Bus identity, shell contract, interface, tests,
+and distribution package.
+
+The installed application identity is:
+
+| Component | Identity |
+| --- | --- |
+| Visible name | File Explorer |
+| Executable | `aero7-file-explorer` |
+| Desktop id | `org.aero7.FileExplorer` |
+| Package | `aero7-file-explorer` |
+| Compatibility commands | `dolphin`, `aero7-dolphin` |
+
+The compatibility commands open the same Aero7 application. They preserve old
+shortcuts and third-party integrations; they do not install a second file
+manager or change the public Aero7 identity.
+
+## Features
+
+- Windows 7-inspired navigation header, breadcrumb address bar, command bar,
+  navigation pane, Details layout, preview pane, and status area
+- Favorites, Libraries, Computer, and Network as first-class navigation groups
+- Multi-location Documents, Music, Pictures, Videos, and custom Libraries
+  shared with Aero7 common file dialogs
+- Integrated Computer view with live storage capacity and free-space data
+  while filtering raw Linux implementation mounts
+- Extra Large, Large, Medium, Small, List, Details, Tiles, and Content views
+- Aero7 copy, move, rename, delete, conflict, progress, recoverable-error,
+  Properties, and Recycle Bin workflows
+- Open, multi-open, save, and folder-selection dialogs for Aero7 applications
+- KIO-backed local, removable, trash, and supported network locations
+- Separate executable, desktop metadata, D-Bus services, packaging, and tests
+
+Unavailable operations are disabled or omitted when a correct backend does not
+exist. The application does not present decorative controls as working system
+features.
+
+## Libraries and common dialogs
+
+Libraries combine multiple real folders into one logical view without moving
+or duplicating their contents. File Explorer and `aero7-file-dialog` share the
+same versioned Library definitions, Favorites, Computer presentation,
+navigation model, and metadata.
+
+Third-party applications keep their toolkit's normal dialog unless they
+explicitly integrate the Aero7 dialog protocol. System-wide dialog
+interception is not claimed.
+
+## Installation
+
+Aero7 File Explorer is included with Aero7 and distributed through the signed
+[Aero7 Package Repository](https://github.com/memegeko/aero7-repo).
+
+On an Aero7 system, install or update it with:
+
+```bash
+sudo pacman -Syu aero7-file-explorer
+```
+
+The package provides the historical `dolphin` and `aero7-dolphin` commands so
+the supported package transition does not leave competing default file
+managers. See [Installation and Updates](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Installation-and-Updates)
+for verification and removal guidance.
+
+## Build and test
+
+The source requires Qt 6, KDE Frameworks 6, ECM, and the development
+dependencies declared by CMake. On a prepared Arch/Aero7 development system:
+
+```bash
+cmake -S . -B build -G Ninja -DBUILD_TESTING=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+Run the staged binary or install it into a disposable test environment before
+performing graphical and package-lifecycle validation. The full dependency,
+test, and VM workflow is documented in
+[Building and Testing](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Building-and-Testing).
+
+## Documentation
+
+| Topic | Wiki page |
+| --- | --- |
+| Window layout and everyday navigation | [User Guide](https://github.com/aero7-open-project/aero7-file-explorer/wiki/User-Guide) |
+| Implemented Aero7-owned behavior | [Feature Reference](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Feature-Reference) |
+| Multi-location Library model | [Libraries](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Libraries) |
+| Storage and navigation-pane behavior | [Computer and Navigation](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Computer-and-Navigation) |
+| Copy, move, delete, Properties, and dialogs | [File Operations and Dialogs](https://github.com/aero7-open-project/aero7-file-explorer/wiki/File-Operations-and-Dialogs) |
+| Fork boundaries and upstream policy | [Architecture and Upstream](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Architecture-and-Upstream) |
+| Common problems and bug-report details | [Troubleshooting](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Troubleshooting) |
+
+The repository keeps the versioned wiki source in [`wiki/`](wiki). Changes on
+the main branch are synchronized to the GitHub Wiki by the repository's
+documentation workflow.
+
+## Related Aero7 projects
+
+- [Aero7](https://github.com/aero7-open-project/aero7) — the Aero7 operating system
+- [Aero7 Desktop](https://github.com/memegeko/aero7-desktop) — desktop session and shell integration
+- [Aero7 Control Panel](https://github.com/memegeko/aero7-control-panel-) — settings and configuration
+- [Aero7 Package Repository](https://github.com/memegeko/aero7-repo) — signed packages and updates
+
+## Upstream
+
+Aero7 File Explorer is a maintained fork of
+[KDE Dolphin](https://github.com/KDE/dolphin). Applicable KDE and Dolphin
+copyright and free-software license notices are preserved. Historical Dolphin
+class and library names remain internally where renaming would add
+compatibility risk without improving the user experience.
+
+The upstream repository remains configured as the source used to review and
+adopt future Dolphin changes. See [AERO7_FORK.md](AERO7_FORK.md) for the concise
+application-boundary and compatibility policy.
 
 ## Contributing
 
-Like other projects in the KDE ecosystem, contributions are welcome from all. This repository is managed in [KDE Invent](https://invent.kde.org/system/dolphin), our GitLab instance.
+Bug reports, tested fixes, upstream sync improvements, and documentation
+updates are welcome. For Aero7-specific behavior, include the package version,
+Aero7 and KDE Frameworks versions, reproduction steps, location type, terminal
+output, and visual evidence when relevant.
 
-* Want to contribute code? See the [GitLab wiki page](https://community.kde.org/Infrastructure/GitLab) for a tutorial on how to send a merge request.
-* Reporting a bug? Please submit it on the [KDE Bugtracking System](https://bugs.kde.org/enter_bug.cgi?format=guided&product=dolphin). Please do not use the Issues
-tab to report bugs.
-* Is there a part of Dolphin that's not translated? See the [Getting Involved in Translation wiki page](https://community.kde.org/Get_Involved/translation) to see how
-you can help translate!
+Reproduce suspected upstream Dolphin defects before reporting them to KDE.
 
-If you get stuck or need help with anything at all, head over to the [KDE New Contributors room](https://go.kde.org/matrix/#/#kde-welcome:kde.org) on Matrix. For questions about Dolphin, please ask in the [KDE File Management room](https://go.kde.org/matrix/#/#kde-fm:kde.org). See [Matrix](https://community.kde.org/Matrix) for more details.
+## License
 
-## Development Philosophy
+This repository preserves the per-file SPDX licensing inherited from KDE
+Dolphin and its dependencies. Most application sources are licensed under
+GPL-2.0-or-later; supporting components use the compatible licenses recorded
+in their source headers and in [`LICENSES/`](LICENSES).
 
-Dolphin is a file manager focusing on usability. When reading the term Usability people often assume that the focus is on newbies and only basic features are offered. This is not the case; Dolphin is quite full-featured, but the features are carefully chosen so as to not impede any of the users in the target user groups.
+## Legal / Trademark Notice
 
-### Target User Groups
+Aero7 File Explorer and Aero7 are independent open-source projects. They are
+not affiliated with, authorized, sponsored, endorsed, or approved by Microsoft
+Corporation.
 
-Focusing on usability means that features are discoverable and efficient to use. The feature set is defined indirectly by the target user group of Dolphin:
+Microsoft and Windows are trademarks of the Microsoft group of companies.
+KDE, Dolphin, and other trademarks belong to their respective owners. This
+project recreates interface concepts and does not include or redistribute
+proprietary Microsoft assets.
 
-- **Lisa**: Lisa has been familiar with computers for 10 years. From her job, she has experience with Word, Excel and Outlook. At home she mainly uses the computer for browsing the web and writing e-mails. She requires a file manager for managing photos from the camera, documents she gets via e-mail, or PDFs she downloads with a browser. Lisa knows concepts like folders and a file hierarchy, but she is not familiar with the file hierarchy of Linux.
-
-- **Simon**: Simon has been a developer at a software company for 8 years. At home he uses a file manager to maintain his large collection of photos and music. Additionally he owns a small homepage and needs to transfer updated files on the FTP server. Moving and copying files are regular tasks in Simon's workflow.
-
-Not part of the target user group of Dolphin are Fred and Jeff:
-
-- **Fred**: Fred is 75 years old and is able to write e-mails and browsing the web. He is not familiar with file hierarchies and stores all his documents on the desktop.
-
-- **Jeff**: Jeff is Linux-freak since the age of 16 a few years ago. He is a developer and in his spare time he acts as administrator for a small company. Jeff has two monitors to keep the overview about his huge number of opened applications.
-
-This does not mean that Fred or Jeff cannot work with Dolphin. But there might be features and concepts of Dolphin that overburden Fred. Also Jeff might miss some features which are a must-have for his daily work. This is acceptable; there are other tools that cater specifically to their needs.
-
-### Non-Intrusive Features
-
-Before a feature is added in Dolphin, check whether the feature is mandatory for the target user group. If this is not the case, then this does not mean that the feature cannot be added; first it must be clarified whether the feature might be non-intrusive, so that it adds value for users outside the primary target user group of Dolphin. The term "non-intrusive" is mainly related to the user interface. A feature that adds a lot of clutter to the main menu, context menus or toolbar might harm the target user group. In this case the feature should not be added.
-
-A good example of a feature that is non-intrusive is the embedded terminal in Dolphin. It only requires one entry inside a sub-menu, but adds great value for Jeff, who is not part of the target user group.
-
-### Options
-
-Options are mandatory as the "average Joe" user does not exist. Still it is not the goal of Dolphin to offer options for all kind of things. Again the focus is on the possible needs of the target user group. Each additional option makes it harder finding other options, so the same rules for features are applied to options too.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
