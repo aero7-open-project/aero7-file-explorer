@@ -60,7 +60,11 @@ contract as the product experience.
 ## Current status
 
 File Explorer is included in Aero7 and distributed as the
-`aero7-file-explorer` package through the signed Aero7 package repository.
+`aero7-file-explorer` package through the signed
+[Aero7 package repository](https://github.com/memegeko/aero7-repo). The
+repository owns the reviewed package recipe and delivers File Explorer through
+the same normal update process as the rest of the Aero7 desktop; users do not
+need to build the application manually.
 Current documentation and screenshots cover the installed application,
 Libraries, Computer, common dialogs, file operations, and the supported
 package transition from the retired `aero7-dolphin` name.

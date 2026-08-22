@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/memegeko/aero7-shell/beta/docs/assets/aero7-logo.png" width="150" alt="Aero7 logo">
+<img src="logo.png" width="150" alt="Aero7 logo">
 
 # Aero7 File Explorer
 
@@ -19,7 +19,6 @@ and native file-operation workflows.
 [Features](#features) ·
 [Documentation](https://github.com/aero7-open-project/aero7-file-explorer/wiki) ·
 [Installation](#installation) ·
-[Build and test](#build-and-test) ·
 [Upstream](#upstream) ·
 [Report a bug](https://github.com/aero7-open-project/aero7-file-explorer/issues/new)
 
@@ -32,9 +31,9 @@ endorsed by Microsoft Corporation. Windows is a trademark of the Microsoft
 group of companies.**
 
 > [!NOTE]
-> Aero7 File Explorer is developed and tested as part of the Aero7 desktop.
-> Compatibility commands are provided for existing integrations, but the
-> public application identity is File Explorer.
+> Aero7 File Explorer is included with Aero7 and maintained in the official
+> Aero7 package repository. Compatibility commands are provided for existing
+> integrations, but the public application identity is File Explorer.
 
 [![Aero7 File Explorer Documents view](docs/screenshots/file-explorer-documents.png)](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Screenshots)
 
@@ -111,21 +110,11 @@ the supported package transition does not leave competing default file
 managers. See [Installation and Updates](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Installation-and-Updates)
 for verification and removal guidance.
 
-## Build and test
-
-The source requires Qt 6, KDE Frameworks 6, ECM, and the development
-dependencies declared by CMake. On a prepared Arch/Aero7 development system:
-
-```bash
-cmake -S . -B build -G Ninja -DBUILD_TESTING=ON
-cmake --build build
-ctest --test-dir build --output-on-failure
-```
-
-Run the staged binary or install it into a disposable test environment before
-performing graphical and package-lifecycle validation. The full dependency,
-test, and VM workflow is documented in
-[Building and Testing](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Building-and-Testing).
+The official package recipe is maintained alongside the rest of the Aero7
+desktop stack in `memegeko/aero7-repo`. It pins File Explorer to a reviewed
+source revision, builds the package for Aero7, declares the supported Dolphin
+compatibility transition, and delivers updates through the normal signed
+Aero7 update process. Users do not need to build File Explorer manually.
 
 ## Documentation
 
