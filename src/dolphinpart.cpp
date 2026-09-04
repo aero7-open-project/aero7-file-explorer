@@ -5,6 +5,7 @@
 */
 
 #include "dolphinpart.h"
+#include "aero7icons.h"
 
 #include "dolphindebug.h"
 #include "dolphinnewfilemenu.h"
@@ -190,7 +191,7 @@ void DolphinPart::createActions()
 #ifndef Q_OS_WIN
     if (KAuthorized::authorize(QStringLiteral("shell_access"))) {
         m_openTerminalAction = actionCollection()->addAction(QStringLiteral("open_terminal"));
-        m_openTerminalAction->setIcon(QIcon::fromTheme(QStringLiteral("dialog-scripts")));
+        m_openTerminalAction->setIcon(Aero7Icons::icon(QStringLiteral("terminal")));
         m_openTerminalAction->setText(i18nc("@action:inmenu Tools", "Open &Terminal"));
         connect(m_openTerminalAction, &QAction::triggered, this, &DolphinPart::slotOpenTerminal);
         actionCollection()->setDefaultShortcut(m_openTerminalAction, Qt::Key_F4);
@@ -201,7 +202,7 @@ void DolphinPart::createActions()
 void DolphinPart::createGoAction(const char *name, const char *iconName, const QString &text, const QString &url, QActionGroup *actionGroup)
 {
     QAction *action = actionCollection()->addAction(name);
-    action->setIcon(QIcon::fromTheme(iconName));
+    action->setIcon(Aero7Icons::icon(QString::fromLatin1(iconName)));
     action->setText(text);
     action->setData(url);
     action->setActionGroup(actionGroup);

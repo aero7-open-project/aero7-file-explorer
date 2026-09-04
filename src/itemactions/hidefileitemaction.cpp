@@ -5,6 +5,7 @@
  */
 
 #include "hidefileitemaction.h"
+#include "aero7icons.h"
 #include "../dolphindebug.h"
 
 #ifdef QT_DBUS_LIB
@@ -111,7 +112,7 @@ QList<QAction *> HideFileItemAction::actions(const KFileItemListProperties &file
     const bool canWrite = parentFileInfo.isWritable() && (!hiddenFileInfo.exists() || hiddenFileInfo.isWritable());
 
     QAction *hideFolder = new QAction(i18nc("@action:inmenu", "Hide"), parentWidget);
-    hideFolder->setIcon(QIcon::fromTheme("hide_table_row"));
+    hideFolder->setIcon(Aero7Icons::icon(QStringLiteral("hide")));
     hideFolder->setEnabled(canWrite);
 
     connect(hideFolder, &QAction::triggered, this, [selectedItems, hiddenFilePath, parentFilePath]() {
@@ -130,7 +131,7 @@ QList<QAction *> HideFileItemAction::actions(const KFileItemListProperties &file
     });
 
     QAction *unhideFolder = new QAction(i18nc("@action:inmenu", "Unhide"), parentWidget);
-    unhideFolder->setIcon(QIcon::fromTheme("view-visible"));
+    unhideFolder->setIcon(Aero7Icons::icon(QStringLiteral("view-visible")));
     unhideFolder->setEnabled(canWrite);
 
     connect(unhideFolder, &QAction::triggered, this, [selectedItems, hiddenFilePath, parentFilePath]() {

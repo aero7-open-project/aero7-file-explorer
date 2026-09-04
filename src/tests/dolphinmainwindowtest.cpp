@@ -344,14 +344,16 @@ void DolphinMainWindowTest::testUpdateWindowTitleAfterChangingSplitView()
     auto leftViewContainer = tabWidget->currentTabPage()->primaryViewContainer();
     auto rightViewContainer = tabWidget->currentTabPage()->secondaryViewContainer();
 
-    // Store old window title.
+    // The taskbar and window switcher must keep the Aero7 product identity
+    // when either side of a split view changes location.
     const auto oldTitle = m_mainWindow->windowTitle();
+    QCOMPARE(oldTitle, QStringLiteral("File Explorer"));
 
-    // Change URL in the right view and make sure the title gets updated.
+    // Changing the URL must not replace the product name with a raw location.
     rightViewContainer->setUrl(QUrl::fromLocalFile(QDir::rootPath()));
-    QVERIFY(m_mainWindow->windowTitle() != oldTitle);
+    QCOMPARE(m_mainWindow->windowTitle(), oldTitle);
 
-    // Activate back the left view and check whether the old title gets restored.
+    // Activating the other view also preserves the stable taskbar caption.
     leftViewContainer->setActive(true);
     QCOMPARE(m_mainWindow->windowTitle(), oldTitle);
 }
@@ -479,9 +481,9 @@ void DolphinMainWindowTest::testWindowTitle_data()
     QTest::addColumn<QString>("expectedWindowTitle");
 
     // TODO: this test should enforce the english locale.
-    QTest::newRow("home") << QUrl::fromLocalFile(QDir::homePath()) << QStringLiteral("Home");
-    QTest::newRow("home with trailing slash") << QUrl::fromLocalFile(QStringLiteral("%1/").arg(QDir::homePath())) << QStringLiteral("Home");
-    QTest::newRow("trash") << QUrl::fromUserInput(QStringLiteral("trash:/")) << QStringLiteral("Trash");
+    QTest::newRow("home") << QUrl::fromLocalFile(QDir::homePath()) << QStringLiteral("File Explorer");
+    QTest::newRow("home with trailing slash") << QUrl::fromLocalFile(QStringLiteral("%1/").arg(QDir::homePath())) << QStringLiteral("File Explorer");
+    QTest::newRow("trash") << QUrl::fromUserInput(QStringLiteral("trash:/")) << QStringLiteral("File Explorer");
 }
 
 void DolphinMainWindowTest::testWindowTitle()
@@ -579,17 +581,17 @@ void DolphinMainWindowTest::testAero7ExplorerChromeContract()
 
     const QImage titleIcon = m_mainWindow->windowIcon().pixmap(16, 16).toImage();
     QVERIFY(!titleIcon.isNull());
-    bool titleIconIsTransparent = true;
-    for (int y = 0; y < titleIcon.height() && titleIconIsTransparent; ++y) {
+    bool titleIconHasVisiblePixels = false;
+    for (int y = 0; y < titleIcon.height() && !titleIconHasVisiblePixels; ++y) {
         for (int x = 0; x < titleIcon.width(); ++x) {
             if (titleIcon.pixelColor(x, y).alpha() != 0) {
-                titleIconIsTransparent = false;
+                titleIconHasVisiblePixels = true;
                 break;
             }
         }
     }
-    QVERIFY2(titleIconIsTransparent,
-             "Explorer's Windows 7 title-bar system-menu slot must remain blank");
+    QVERIFY2(titleIconHasVisiblePixels,
+             "File Explorer must expose its Windows-style icon to the taskbar");
 }
 
 void DolphinMainWindowTest::testAero7LibraryPlaceActivation()

@@ -6,6 +6,7 @@
 */
 
 #include "bottombarcontentscontainer.h"
+#include "aero7icons.h"
 
 #include "dolphin_generalsettings.h"
 #include "dolphincontextmenu.h"
@@ -171,7 +172,7 @@ void BottomBarContentsContainer::addCopyContents()
 
     // clang-format off
     // i18n: Aborts the current step-by-step process to copy files by leaving the selection mode.
-    auto *cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Copying"), this);
+    auto *cancelButton = new QPushButton(Aero7Icons::icon(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Copying"), this);
     // clang-format on
     connect(cancelButton, &QAbstractButton::clicked, this, &BottomBarContentsContainer::selectionModeLeavingRequested);
     m_layout->addWidget(cancelButton);
@@ -206,7 +207,7 @@ void BottomBarContentsContainer::addCopyLocationContents()
 
     // clang-format off
     // i18n: Aborts the current step-by-step process to copy the location of files by leaving the selection mode.
-    auto *cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Copying"), this);
+    auto *cancelButton = new QPushButton(Aero7Icons::icon(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Copying"), this);
     // clang-format on
     connect(cancelButton, &QAbstractButton::clicked, this, &BottomBarContentsContainer::selectionModeLeavingRequested);
     m_layout->addWidget(cancelButton);
@@ -229,7 +230,7 @@ void BottomBarContentsContainer::addCopyToOtherViewContents()
 
     // clang-format off
     // i18n: Aborts the current step-by-step process to copy the location of files by leaving the selection mode.
-    auto *cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Copying"), this);
+    auto *cancelButton = new QPushButton(Aero7Icons::icon(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Copying"), this);
     // clang-format on
     connect(cancelButton, &QAbstractButton::clicked, this, &BottomBarContentsContainer::selectionModeLeavingRequested);
     m_layout->addWidget(cancelButton);
@@ -249,7 +250,7 @@ void BottomBarContentsContainer::addCutContents()
 
     // clang-format off
     // i18n: Aborts the current step-by-step process to cut files by leaving the selection mode.
-    auto *cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Cutting"), this);
+    auto *cancelButton = new QPushButton(Aero7Icons::icon(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Cutting"), this);
     // clang-format on
     connect(cancelButton, &QAbstractButton::clicked, this, &BottomBarContentsContainer::selectionModeLeavingRequested);
     m_layout->addWidget(cancelButton);
@@ -285,7 +286,7 @@ void BottomBarContentsContainer::addDeleteContents()
 
     // clang-format off
     // i18n: Aborts the current step-by-step process to delete files by leaving the selection mode.
-    auto *cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel"), this);
+    auto *cancelButton = new QPushButton(Aero7Icons::icon(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel"), this);
     // clang-format on
     connect(cancelButton, &QAbstractButton::clicked, this, &BottomBarContentsContainer::selectionModeLeavingRequested);
     m_layout->addWidget(cancelButton);
@@ -305,7 +306,7 @@ void BottomBarContentsContainer::addDuplicateContents()
 
     // clang-format off
     // i18n: Aborts the current step-by-step process to duplicate files by leaving the selection mode.
-    auto *cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Duplicating"), this);
+    auto *cancelButton = new QPushButton(Aero7Icons::icon(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Duplicating"), this);
     // clang-format on
     connect(cancelButton, &QAbstractButton::clicked, this, &BottomBarContentsContainer::selectionModeLeavingRequested);
     m_layout->addWidget(cancelButton);
@@ -322,7 +323,7 @@ void BottomBarContentsContainer::addGeneralContents()
         // clang-format off
         // i18n: This button appears in a bar if there isn't enough horizontal space to fit all the other buttons so please keep it short.
         // The small button opens a menu that contains the actions that didn't fit on the bar.
-        m_overflowButton = new QPushButton{QIcon::fromTheme(QStringLiteral("view-more-symbolic")), i18nc("@action keep short", "More"), this};
+        m_overflowButton = new QPushButton{Aero7Icons::icon(QStringLiteral("view-more")), i18nc("@action keep short", "More"), this};
         // clang-format on
         m_overflowButton->setMenu(new QMenu{m_overflowButton});
         m_overflowButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding); // Makes sure it has the same height as the labeled buttons.
@@ -376,7 +377,7 @@ void BottomBarContentsContainer::addMoveToOtherViewContents()
 
     // clang-format off
     // i18n: Aborts the current step-by-step process to copy the location of files by leaving the selection mode.
-    auto *cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Moving"), this);
+    auto *cancelButton = new QPushButton(Aero7Icons::icon(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Moving"), this);
     // clang-format on
     connect(cancelButton, &QAbstractButton::clicked, this, &BottomBarContentsContainer::selectionModeLeavingRequested);
     m_layout->addWidget(cancelButton);
@@ -397,7 +398,7 @@ void BottomBarContentsContainer::addMoveToTrashContents()
 
     // clang-format off
     // i18n: Aborts the current step-by-step process of moving files to the trash by leaving the selection mode.
-    auto *cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel"), this);
+    auto *cancelButton = new QPushButton(Aero7Icons::icon(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel"), this);
     // clang-format on
     connect(cancelButton, &QAbstractButton::clicked, this, &BottomBarContentsContainer::selectionModeLeavingRequested);
     m_layout->addWidget(cancelButton);
@@ -463,7 +464,7 @@ void BottomBarContentsContainer::addRenameContents()
 
     // clang-format off
     // i18n: Aborts the current step-by-step process to delete files by leaving the selection mode.
-    auto *cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Renaming"), this);
+    auto *cancelButton = new QPushButton(Aero7Icons::icon(QStringLiteral("dialog-cancel")), i18nc("@action:button", "Cancel Renaming"), this);
     // clang-format on
     connect(cancelButton, &QAbstractButton::clicked, this, &BottomBarContentsContainer::selectionModeLeavingRequested);
     m_layout->addWidget(cancelButton);

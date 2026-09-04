@@ -5,6 +5,7 @@
  */
 
 #include "informationpanelcontent.h"
+#include "aero7icons.h"
 
 #include <KConfigGroup>
 #include <KIO/PreviewJob>
@@ -215,7 +216,7 @@ void InformationPanelContent::refreshPreview()
 
             // in the case of a search-URL the URL is not readable for humans
             // (at least not useful to show in the Information Panel)
-            m_preview->setPixmap(QIcon::fromTheme(QStringLiteral("baloo")).pixmap(m_preview->height(), m_preview->width()));
+            m_preview->setPixmap(Aero7Icons::icon(QStringLiteral("search-index")).pixmap(m_preview->height(), m_preview->width()));
         } else {
             refreshPixmapView();
 
@@ -291,7 +292,7 @@ void InformationPanelContent::showItems(const KFileItemList &items)
 
     m_preview->stopAnimatedImage();
 
-    m_preview->setPixmap(QIcon::fromTheme(QStringLiteral("dialog-information")).pixmap(m_preview->height(), m_preview->width()));
+    m_preview->setPixmap(Aero7Icons::icon(QStringLiteral("information")).pixmap(m_preview->height(), m_preview->width()));
     setNameLabelText(i18ncp("@label", "%1 item selected", "%1 items selected", items.count()));
 
     m_metaDataWidget->setItems(items);

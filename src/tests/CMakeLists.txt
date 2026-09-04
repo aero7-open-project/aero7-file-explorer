@@ -5,6 +5,15 @@ include(ECMAddTests)
 
 include(FindGem)  # For servicemenutest, see bottom of this file
 
+add_executable(aero7iconindependencetest aero7iconindependencetest.cpp)
+target_link_libraries(aero7iconindependencetest PRIVATE aero7shellui Qt6::Widgets)
+add_test(NAME aero7iconindependencetest COMMAND aero7iconindependencetest)
+set_tests_properties(aero7iconindependencetest PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+add_test(NAME aero7iconpolicytest
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/aero7iconpolicytest.py)
+
 # KItemSetTest
 ecm_add_test(kitemsettest.cpp LINK_LIBRARIES dolphinprivate Qt6::Test)
 

@@ -5,6 +5,7 @@
 */
 
 #include "mediawidget.h"
+#include "aero7icons.h"
 
 #include <KLocalizedString>
 
@@ -261,13 +262,13 @@ void MediaWidget::initLayout()
 
         m_playButton->setToolTip(i18n("play"));
         m_playButton->setIconSize(buttonSize);
-        m_playButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
+        m_playButton->setIcon(Aero7Icons::icon(QStringLiteral("media-playback-start")));
         m_playButton->setAutoRaise(true);
         connect(m_playButton, &QToolButton::clicked, this, &MediaWidget::play);
 
         m_pauseButton->setToolTip(i18n("pause"));
         m_pauseButton->setIconSize(buttonSize);
-        m_pauseButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-pause")));
+        m_pauseButton->setIcon(Aero7Icons::icon(QStringLiteral("media-playback-pause")));
         m_pauseButton->setAutoRaise(true);
         m_pauseButton->hide();
         connect(m_pauseButton, &QToolButton::clicked, this, &MediaWidget::togglePlayback);

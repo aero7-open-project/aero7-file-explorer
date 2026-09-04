@@ -5,6 +5,7 @@
  */
 
 #include "movetonewfolderitemaction.h"
+#include "aero7icons.h"
 
 #include <KFileItem>
 #include <KLocalizedString>
@@ -35,7 +36,7 @@ QList<QAction *> MoveToNewFolderItemAction::actions(const KFileItemListPropertie
     }
 
     QAction *createFolderFromSelected = new QAction(i18nc("@action:inmenu", "Move to New Folder…"), parentWidget);
-    createFolderFromSelected->setIcon(QIcon::fromTheme(QStringLiteral("folder-new")));
+    createFolderFromSelected->setIcon(Aero7Icons::icon(QStringLiteral("folder-new")));
     connect(createFolderFromSelected, &QAction::triggered, this, [=, this]() {
         const QUrl selectedFileDirPath = selectedItems.at(0).url().adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash);
         auto newFileMenu = new KNewFileMenu(parentWidget);

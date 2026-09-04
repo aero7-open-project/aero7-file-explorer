@@ -5,6 +5,7 @@
  */
 
 #include "dolphinviewcontainer.h"
+#include "aero7icons.h"
 
 #include "admin/bar.h"
 #include "admin/workerintegration.h"
@@ -1062,7 +1063,7 @@ void DolphinViewContainer::slotErrorMessageFromView(const QString &message, cons
         if (!m_createFolderAction) {
             m_createFolderAction = new QAction(this);
             m_createFolderAction->setText(i18nc("@action", "Create missing folder"));
-            m_createFolderAction->setIcon(QIcon::fromTheme(QStringLiteral("folder-new")));
+            m_createFolderAction->setIcon(Aero7Icons::icon(QStringLiteral("folder-new")));
             connect(m_createFolderAction, &QAction::triggered, this, [this](bool) {
                 KIO::MkpathJob *job = KIO::mkpath(m_view->url());
                 KIO::FileUndoManager::self()->recordJob(KIO::FileUndoManager::Mkpath, {}, m_view->url(), job);

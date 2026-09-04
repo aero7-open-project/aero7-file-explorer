@@ -6,6 +6,7 @@
  */
 
 #include "dolphinviewactionhandler.h"
+#include "aero7icons.h"
 
 #include "kitemviews/kfileitemlisttostring.h"
 #include "kitemviews/kfileitemmodel.h"
@@ -89,7 +90,7 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
 
     QAction *newFileAction = m_actionCollection->addAction(QStringLiteral("create_file"));
     newFileAction->setText(i18nc("@action", "New file"));
-    newFileAction->setIcon(QIcon::fromTheme(QStringLiteral("document-new")));
+    newFileAction->setIcon(Aero7Icons::icon(QStringLiteral("document-new")));
     newFileAction->setEnabled(false); // Will be enabled in slotWriteStateChanged(bool) if the current URL is writable
     connect(newFileAction, &QAction::triggered, this, &DolphinViewActionHandler::createFileTriggered);
 
@@ -139,7 +140,7 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
 
     QAction *duplicateAction = m_actionCollection->addAction(QStringLiteral("duplicate"));
     duplicateAction->setText(i18nc("@action:inmenu File", "Duplicate Here"));
-    duplicateAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-duplicate")));
+    duplicateAction->setIcon(Aero7Icons::icon(QStringLiteral("edit-duplicate")));
     m_actionCollection->setDefaultShortcut(duplicateAction, Qt::CTRL | Qt::Key_D);
     duplicateAction->setEnabled(false);
     connect(duplicateAction, &QAction::triggered, this, &DolphinViewActionHandler::slotDuplicate);
@@ -153,7 +154,7 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
                                           "window will be about the currently viewed folder instead.<nl/>"
                                           "You can configure advanced options there like managing "
                                           "read- and write-permissions."));
-    propertiesAction->setIcon(QIcon::fromTheme(QStringLiteral("document-properties")));
+    propertiesAction->setIcon(Aero7Icons::icon(QStringLiteral("document-properties")));
     m_actionCollection->setDefaultShortcuts(propertiesAction, {Qt::ALT | Qt::Key_Return, Qt::ALT | Qt::Key_Enter});
     connect(propertiesAction, &QAction::triggered, this, &DolphinViewActionHandler::slotProperties);
 
@@ -161,7 +162,7 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
     copyPathAction->setText(i18nc("@action:incontextmenu", "Copy Location"));
     copyPathAction->setWhatsThis(i18nc("@info:whatsthis copy_location", "This will copy the path of the first selected item into the clipboard."));
 
-    copyPathAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-copy-path")));
+    copyPathAction->setIcon(Aero7Icons::icon(QStringLiteral("edit-copy-path")));
     m_actionCollection->setDefaultShortcuts(copyPathAction, {Qt::CTRL | Qt::ALT | Qt::Key_C});
     connect(copyPathAction, &QAction::triggered, this, &DolphinViewActionHandler::slotCopyPath);
 
@@ -247,7 +248,7 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
     zoomResetAction->setText(i18nc("@action:inmenu View", "Reset Zoom Level"));
     zoomResetAction->setToolTip(i18n("Zoom To Default"));
     zoomResetAction->setWhatsThis(i18nc("@info:whatsthis zoom reset", "This resets the icon size to default."));
-    zoomResetAction->setIcon(QIcon::fromTheme(QStringLiteral("zoom-original")));
+    zoomResetAction->setIcon(Aero7Icons::icon(QStringLiteral("zoom-original")));
     m_actionCollection->setDefaultShortcuts(zoomResetAction, {Qt::CTRL | Qt::Key_0});
     connect(zoomResetAction, &QAction::triggered, this, &DolphinViewActionHandler::zoomReset);
 
@@ -265,7 +266,7 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
                                      "enabled, the icons are based on the actual file or folder "
                                      "contents.<nl/>For example the icons of images become scaled "
                                      "down versions of the images."));
-    showPreview->setIcon(QIcon::fromTheme(QStringLiteral("view-preview")));
+    showPreview->setIcon(Aero7Icons::icon(QStringLiteral("view-preview")));
     m_actionCollection->setDefaultShortcut(showPreview, QKeySequence(Qt::Key_F12));
     connect(showPreview, &KToggleAction::triggered, this, &DolphinViewActionHandler::togglePreview);
 
@@ -281,7 +282,7 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
     QActionGroup *sortByActionGroup = createFileItemRolesActionGroup(QStringLiteral("sort_by_"));
 
     KActionMenu *sortByActionMenu = m_actionCollection->add<KActionMenu>(QStringLiteral("sort"));
-    sortByActionMenu->setIcon(QIcon::fromTheme(QStringLiteral("view-sort")));
+    sortByActionMenu->setIcon(Aero7Icons::icon(QStringLiteral("view-sort")));
     sortByActionMenu->setText(i18nc("@action:inmenu View", "Sort By"));
     sortByActionMenu->setPopupMode(QToolButton::InstantPopup);
 
@@ -318,7 +319,7 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
 
     KActionMenu *visibleRolesMenu = m_actionCollection->add<KActionMenu>(QStringLiteral("additional_info"));
     visibleRolesMenu->setText(i18nc("@action:inmenu View", "Show Additional Information"));
-    visibleRolesMenu->setIcon(QIcon::fromTheme(QStringLiteral("documentinfo")));
+    visibleRolesMenu->setIcon(Aero7Icons::icon(QStringLiteral("documentinfo")));
     visibleRolesMenu->setPopupMode(QToolButton::InstantPopup);
 
     const auto visibleRolesGroupActions = visibleRolesGroup->actions();
@@ -327,13 +328,13 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
     }
 
     KToggleAction *showInGroups = m_actionCollection->add<KToggleAction>(QStringLiteral("show_in_groups"));
-    showInGroups->setIcon(QIcon::fromTheme(QStringLiteral("view-group")));
+    showInGroups->setIcon(Aero7Icons::icon(QStringLiteral("view-group")));
     showInGroups->setText(i18nc("@action:inmenu View", "Show in Groups"));
     showInGroups->setWhatsThis(i18nc("@info:whatsthis", "This groups files and folders by their first letter."));
     connect(showInGroups, &KToggleAction::triggered, this, &DolphinViewActionHandler::toggleGroupedSorting);
 
     KToggleAction *showHiddenFiles = m_actionCollection->add<KToggleAction>(QStringLiteral("show_hidden_files"));
-    showHiddenFiles->setIcon(QIcon::fromTheme(QStringLiteral("view-visible")));
+    showHiddenFiles->setIcon(Aero7Icons::icon(QStringLiteral("view-visible")));
     showHiddenFiles->setText(i18nc("@action:inmenu View", "Show Hidden Files"));
     showHiddenFiles->setWhatsThis(xi18nc("@info:whatsthis",
                                          "<para>When "
@@ -351,7 +352,7 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
 
     QAction *adjustViewProps = m_actionCollection->addAction(QStringLiteral("view_properties"));
     adjustViewProps->setText(i18nc("@action:inmenu View", "Adjust View Display Style…"));
-    adjustViewProps->setIcon(QIcon::fromTheme(QStringLiteral("view-choose")));
+    adjustViewProps->setIcon(Aero7Icons::icon(QStringLiteral("view-choose")));
     adjustViewProps->setWhatsThis(i18nc("@info:whatsthis",
                                         "This opens a window "
                                         "in which all folder view properties can be adjusted."));
@@ -687,7 +688,7 @@ KToggleAction *DolphinViewActionHandler::iconsModeAction()
     iconsView->setText(i18nc("@action:inmenu View Mode", "Icons"));
     iconsView->setToolTip(i18nc("@info", "Icons view mode"));
     m_actionCollection->setDefaultShortcut(iconsView, Qt::CTRL | Qt::Key_1);
-    iconsView->setIcon(QIcon::fromTheme(QStringLiteral("view-list-icons")));
+    iconsView->setIcon(Aero7Icons::icon(QStringLiteral("view-list-icons")));
     iconsView->setData(QVariant::fromValue(DolphinView::IconsView));
     return iconsView;
 }
@@ -698,7 +699,7 @@ KToggleAction *DolphinViewActionHandler::compactModeAction()
     iconsView->setText(i18nc("@action:inmenu View Mode", "Compact"));
     iconsView->setToolTip(i18nc("@info", "Compact view mode"));
     m_actionCollection->setDefaultShortcut(iconsView, Qt::CTRL | Qt::Key_2);
-    iconsView->setIcon(QIcon::fromTheme(QStringLiteral("view-list-details"))); // TODO: discuss with Oxygen-team the wrong (?) name
+    iconsView->setIcon(Aero7Icons::icon(QStringLiteral("view-list-details"))); // TODO: discuss with Oxygen-team the wrong (?) name
     iconsView->setData(QVariant::fromValue(DolphinView::CompactView));
     return iconsView;
 }
@@ -709,7 +710,7 @@ KToggleAction *DolphinViewActionHandler::detailsModeAction()
     detailsView->setText(i18nc("@action:inmenu View Mode", "Details"));
     detailsView->setToolTip(i18nc("@info", "Details view mode"));
     m_actionCollection->setDefaultShortcut(detailsView, Qt::CTRL | Qt::Key_3);
-    detailsView->setIcon(QIcon::fromTheme(QStringLiteral("view-list-tree")));
+    detailsView->setIcon(Aero7Icons::icon(QStringLiteral("view-list-tree")));
     detailsView->setData(QVariant::fromValue(DolphinView::DetailsView));
     return detailsView;
 }

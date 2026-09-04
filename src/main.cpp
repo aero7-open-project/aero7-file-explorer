@@ -7,6 +7,7 @@
  */
 
 #include "admin/workerintegration.h"
+#include "aero7icons.h"
 #include "config-dolphin.h"
 #include "dbusinterface.h"
 #include "dolphin_generalsettings.h"
@@ -77,7 +78,7 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
     app.setDesktopFileName(QString::fromLatin1(aero7ApplicationId));
     app.setApplicationDisplayName(QStringLiteral("File Explorer"));
-    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("system-file-manager"), app.windowIcon()));
+    app.setWindowIcon(Aero7Icons::icon(QStringLiteral("system-file-manager")));
 
 #if HAVE_STYLE_MANAGER
     /**

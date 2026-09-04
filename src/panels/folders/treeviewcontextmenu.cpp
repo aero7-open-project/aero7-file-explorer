@@ -6,6 +6,7 @@
  */
 
 #include "treeviewcontextmenu.h"
+#include "aero7icons.h"
 
 #include "folderspanel.h"
 #include "global.h"
@@ -45,17 +46,17 @@ void TreeViewContextMenu::open(const QPoint &pos)
         KFileItemListProperties capabilities(KFileItemList() << m_fileItem);
 
         // insert 'Cut', 'Copy' and 'Paste'
-        QAction *cutAction = new QAction(QIcon::fromTheme(QStringLiteral("edit-cut")), i18nc("@action:inmenu", "Cut"), this);
+        QAction *cutAction = new QAction(Aero7Icons::icon(QStringLiteral("edit-cut")), i18nc("@action:inmenu", "Cut"), this);
         cutAction->setEnabled(capabilities.supportsMoving());
         connect(cutAction, &QAction::triggered, this, &TreeViewContextMenu::cut);
 
-        QAction *copyAction = new QAction(QIcon::fromTheme(QStringLiteral("edit-copy")), i18nc("@action:inmenu", "Copy"), this);
+        QAction *copyAction = new QAction(Aero7Icons::icon(QStringLiteral("edit-copy")), i18nc("@action:inmenu", "Copy"), this);
         connect(copyAction, &QAction::triggered, this, &TreeViewContextMenu::copy);
 
         const QMimeData *mimeData = QApplication::clipboard()->mimeData();
         bool canPaste;
         const QString text = KIO::pasteActionText(mimeData, &canPaste, m_fileItem);
-        QAction *pasteAction = new QAction(QIcon::fromTheme(QStringLiteral("edit-paste")), text, this);
+        QAction *pasteAction = new QAction(Aero7Icons::icon(QStringLiteral("edit-paste")), text, this);
         connect(pasteAction, &QAction::triggered, this, &TreeViewContextMenu::paste);
         pasteAction->setEnabled(canPaste);
 
@@ -67,7 +68,7 @@ void TreeViewContextMenu::open(const QPoint &pos)
         // insert 'Rename'
         QAction *renameAction = new QAction(i18nc("@action:inmenu", "Rename…"), this);
         renameAction->setEnabled(capabilities.supportsMoving());
-        renameAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-rename")));
+        renameAction->setIcon(Aero7Icons::icon(QStringLiteral("edit-rename")));
         connect(renameAction, &QAction::triggered, this, &TreeViewContextMenu::rename);
         popup->addAction(renameAction);
 
@@ -78,7 +79,7 @@ void TreeViewContextMenu::open(const QPoint &pos)
 
         const QUrl url = m_fileItem.url();
         if (url.isLocalFile()) {
-            QAction *moveToTrashAction = new QAction(QIcon::fromTheme(QStringLiteral("user-trash")), i18nc("@action:inmenu", "Move to Trash"), this);
+            QAction *moveToTrashAction = new QAction(Aero7Icons::icon(QStringLiteral("user-trash")), i18nc("@action:inmenu", "Move to Trash"), this);
             const bool enableMoveToTrash = capabilities.isLocal() && capabilities.supportsMoving();
             moveToTrashAction->setEnabled(enableMoveToTrash);
             connect(moveToTrashAction, &QAction::triggered, this, &TreeViewContextMenu::moveToTrash);
@@ -88,7 +89,7 @@ void TreeViewContextMenu::open(const QPoint &pos)
         }
 
         if (showDeleteCommand) {
-            QAction *deleteAction = new QAction(QIcon::fromTheme(QStringLiteral("edit-delete")), i18nc("@action:inmenu", "Delete"), this);
+            QAction *deleteAction = new QAction(Aero7Icons::icon(QStringLiteral("edit-delete")), i18nc("@action:inmenu", "Delete"), this);
             deleteAction->setEnabled(capabilities.supportsDeleting());
             connect(deleteAction, &QAction::triggered, this, &TreeViewContextMenu::deleteItem);
             popup->addAction(deleteAction);
@@ -128,7 +129,7 @@ void TreeViewContextMenu::open(const QPoint &pos)
     if (!m_fileItem.isNull()) {
         // insert 'Properties' entry
         QAction *propertiesAction = new QAction(i18nc("@action:inmenu", "Properties"), this);
-        propertiesAction->setIcon(QIcon::fromTheme(QStringLiteral("document-properties")));
+        propertiesAction->setIcon(Aero7Icons::icon(QStringLiteral("document-properties")));
         connect(propertiesAction, &QAction::triggered, this, &TreeViewContextMenu::showProperties);
         popup->addAction(propertiesAction);
     }

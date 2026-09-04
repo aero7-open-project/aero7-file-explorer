@@ -6,6 +6,7 @@
 */
 
 #include "tagsselector.h"
+#include "aero7icons.h"
 
 #include "../chip.h"
 #include "../dolphinquery.h"
@@ -144,7 +145,7 @@ void TagsSelector::updateMenu(const std::shared_ptr<const DolphinQuery> &dolphin
     const bool onlyOneTagExists = tags->count() == 1;
 
     for (const QString &tag : *tags) {
-        QAction *tagAction = new QAction{QIcon::fromTheme(QStringLiteral("tag")), tag, menu()};
+        QAction *tagAction = new QAction{Aero7Icons::icon(QStringLiteral("tag")), tag, menu()};
         tagAction->setCheckable(true);
         tagAction->setChecked(dolphinQuery->requiredTags().contains(tag));
         tagAction->setEnabled(/* When in a Chip, at least one tags needs to stay checked or the Chip will unexepectedly remove itself. */
@@ -187,7 +188,7 @@ void TagsSelector::updateMenu(const std::shared_ptr<const DolphinQuery> &dolphin
 void TagsSelector::updateState(const std::shared_ptr<const DolphinQuery> &dolphinQuery)
 {
     if (dolphinQuery->requiredTags().count()) {
-        setIcon(QIcon::fromTheme(QStringLiteral("tag")));
+        setIcon(Aero7Icons::icon(QStringLiteral("tag")));
         setText(dolphinQuery->requiredTags().join(i18nc("list separator for file tags e.g. all images tagged 'family & party & 2025'", " && ")));
     } else {
         setIcon(QIcon{}); // No icon for the empty state

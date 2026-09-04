@@ -5,6 +5,7 @@
 */
 
 #include "dateselector.h"
+#include "aero7icons.h"
 
 #include "../chip.h"
 #include "../dolphinquery.h"
@@ -59,7 +60,7 @@ void DateSelector::updateState(const std::shared_ptr<const DolphinQuery> &dolphi
         setText(i18nc("@item:inlistbox", "Any Date"));
         return;
     }
-    setIcon(QIcon::fromTheme(QStringLiteral("view-calendar")));
+    setIcon(Aero7Icons::icon(QStringLiteral("view-calendar")));
     QLocale local;
     KFormat formatter(local);
     setText(formatter.formatRelativeDate(dolphinQuery->modifiedSinceDate(), QLocale::ShortFormat));

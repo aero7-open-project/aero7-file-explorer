@@ -5,6 +5,7 @@
  */
 
 #include "contextmenusettingspage.h"
+#include "aero7icons.h"
 
 #include "dolphin_contextmenusettings.h"
 #include "dolphin_versioncontrolsettings.h"
@@ -76,7 +77,7 @@ ContextMenuSettingsPage::ContextMenuSettingsPage(QWidget *parent, const KActionC
 #endif // Q_OS_WIN
 
 #if KIO_VERSION >= QT_VERSION_CHECK(6, 24, 0)
-    auto *shortcutsButton = new QPushButton(QIcon::fromTheme(QStringLiteral("configure-shortcuts")), i18nc("@action:button", "Shortcuts…"), this);
+    auto *shortcutsButton = new QPushButton(Aero7Icons::icon(QStringLiteral("configure-shortcuts")), i18nc("@action:button", "Shortcuts…"), this);
     connect(shortcutsButton, &QPushButton::clicked, this, [this] {
         if (auto *action = m_actions->action(KStandardAction::name(KStandardAction::KeyBindings))) {
             action->trigger();

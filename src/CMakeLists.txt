@@ -280,6 +280,8 @@ install(FILES dolphinpartactions.desktop DESTINATION "${KDE_INSTALL_DATADIR}/dol
 
 add_library(aero7shellui STATIC)
 target_sources(aero7shellui PRIVATE
+    aero7/aero7icons.cpp
+    aero7/aero7icons.h
     aero7/aero7libraries.cpp
     aero7/aero7libraries.h
     aero7/aero7commondialog.cpp
@@ -292,6 +294,12 @@ target_sources(aero7shellui PRIVATE
     aero7/aero7computerdialog.h
 )
 target_include_directories(aero7shellui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/aero7)
+file(GLOB_RECURSE AERO7_PACK_ICON_FILES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/aero7/icons/pack/*.png")
+qt_add_resources(aero7shellui "aero7-file-explorer-pack-icons"
+    PREFIX "/aero7/pack"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}/aero7/icons/pack"
+    FILES ${AERO7_PACK_ICON_FILES})
 target_link_libraries(aero7shellui PUBLIC Qt6::Widgets Aero7Qt::Aero7Qt)
 target_link_libraries(dolphinprivate PUBLIC aero7shellui)
 
@@ -536,7 +544,19 @@ ecm_add_app_icon(aero7-file-explorer
         icons/64-apps-org.kde.dolphin.png
 )
 
-install(FILES icons/org.kde.dolphin.svg DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps)
+foreach(size 16 24 32 48 64 128 256)
+    install(FILES aero7/icons/pack/${size}/system-file-manager.png
+        DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/${size}x${size}/apps
+        RENAME aero7-file-explorer.png)
+endforeach()
+install(FILES
+    aero7/icons/actions/aero7-file-explorer-view-icons.png
+    aero7/icons/actions/aero7-file-explorer-view-compact.png
+    aero7/icons/actions/aero7-file-explorer-view-details.png
+    DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/32x32/apps)
+install(FILES aero7/icons/LICENSES.md aero7/icons/pack/UPSTREAM-LICENSE
+    aero7/icons/pack/UPSTREAM-README.md
+    DESTINATION ${KDE_INSTALL_DATADIR}/doc/aero7-file-explorer)
 
 target_link_libraries(aero7-file-explorer
     PRIVATE

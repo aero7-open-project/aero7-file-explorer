@@ -5,6 +5,7 @@
  */
 
 #include "generalviewsettingspage.h"
+#include "aero7icons.h"
 #include "dolphin_generalsettings.h"
 #include "dolphindebug.h"
 #include "dolphinmainwindow.h"
@@ -127,8 +128,8 @@ GeneralViewSettingsPage::GeneralViewSettingsPage(const QUrl &url, QWidget *paren
     m_doubleClickViewComboBox->setAccessibleDescription(i18nc("Accessible description for combobox with actions of double click view background setting",
                                                               "Action to trigger when double clicking view background"));
     // i18n: Completes the sentence "Double-click triggers [Nothing]".
-    m_doubleClickViewComboBox->addItem(QIcon::fromTheme("empty"), i18nc("@item:inlistbox", "Nothing"), QStringLiteral("none"));
-    m_doubleClickViewComboBox->addItem(QIcon::fromTheme("list-add"), i18nc("@item:inlistbox", "Custom Command"), customCommand);
+    m_doubleClickViewComboBox->addItem(Aero7Icons::icon(QStringLiteral("empty")), i18nc("@item:inlistbox", "Nothing"), QStringLiteral("none"));
+    m_doubleClickViewComboBox->addItem(Aero7Icons::icon(QStringLiteral("list-add")), i18nc("@item:inlistbox", "Custom Command"), customCommand);
     m_doubleClickViewComboBox->insertSeparator(2);
 
     DolphinMainWindow *mainWindow = qobject_cast<DolphinMainWindow *>(QApplication::activeWindow());

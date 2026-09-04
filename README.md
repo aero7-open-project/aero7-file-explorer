@@ -35,6 +35,18 @@ group of companies.**
 > Aero7 package repository. Compatibility commands are provided for existing
 > integrations, but the public application identity is File Explorer.
 
+## Beta 2 integration status
+
+The Beta 2 package uses the stable **File Explorer** launcher, window title,
+Wayland application id, and taskbar grouping identity. Its approved
+AeroThemePlasma application and interface icons are embedded in the executable,
+so a system icon-theme change cannot turn it back into a generic Dolphin
+application. Recycle Bin settings now expose the supported size and deletion
+behavior through the Aero7 settings interface.
+
+The source and package recipe are ready on the `beta` branches. The Beta 2 ISO
+remains a separate, explicitly tested release artifact.
+
 [![Aero7 File Explorer Documents view](docs/screenshots/file-explorer-documents.png)](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Screenshots)
 
 See the [File Explorer screenshot gallery](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Screenshots)

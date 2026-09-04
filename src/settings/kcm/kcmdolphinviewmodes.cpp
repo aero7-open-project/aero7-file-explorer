@@ -5,6 +5,7 @@
  */
 
 #include "kcmdolphinviewmodes.h"
+#include "aero7icons.h"
 
 #include "settings/viewmodes/viewsettingstab.h"
 
@@ -35,17 +36,17 @@ DolphinViewModesConfigModule::DolphinViewModesConfigModule(QObject *parent, cons
 
     // Initialize 'Icons' tab
     ViewSettingsTab *iconsTab = new ViewSettingsTab(ViewSettingsTab::IconsMode, tabWidget);
-    tabWidget->addTab(iconsTab, QIcon::fromTheme(QStringLiteral("view-list-icons")), i18nc("@title:tab", "Icons"));
+    tabWidget->addTab(iconsTab, Aero7Icons::icon(QStringLiteral("view-list-icons")), i18nc("@title:tab", "Icons"));
     connect(iconsTab, &ViewSettingsTab::changed, this, &DolphinViewModesConfigModule::viewModeChanged);
 
     // Initialize 'Compact' tab
     ViewSettingsTab *compactTab = new ViewSettingsTab(ViewSettingsTab::CompactMode, tabWidget);
-    tabWidget->addTab(compactTab, QIcon::fromTheme(QStringLiteral("view-list-details")), i18nc("@title:tab", "Compact"));
+    tabWidget->addTab(compactTab, Aero7Icons::icon(QStringLiteral("view-list-details")), i18nc("@title:tab", "Compact"));
     connect(compactTab, &ViewSettingsTab::changed, this, &DolphinViewModesConfigModule::viewModeChanged);
 
     // Initialize 'Details' tab
     ViewSettingsTab *detailsTab = new ViewSettingsTab(ViewSettingsTab::DetailsMode, tabWidget);
-    tabWidget->addTab(detailsTab, QIcon::fromTheme(QStringLiteral("view-list-tree")), i18nc("@title:tab", "Details"));
+    tabWidget->addTab(detailsTab, Aero7Icons::icon(QStringLiteral("view-list-tree")), i18nc("@title:tab", "Details"));
     connect(detailsTab, &ViewSettingsTab::changed, this, &DolphinViewModesConfigModule::viewModeChanged);
 
     m_tabs.append(iconsTab);

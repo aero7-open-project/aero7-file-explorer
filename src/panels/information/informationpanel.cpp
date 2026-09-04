@@ -5,6 +5,7 @@
  */
 
 #include "informationpanel.h"
+#include "aero7icons.h"
 
 #include "informationpanelcontent.h"
 
@@ -157,28 +158,28 @@ void InformationPanel::showContextMenu(const QPoint &pos)
     QMenu popup(this);
 
     QAction *previewAction = popup.addAction(i18nc("@action:inmenu", "Preview"));
-    previewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-preview")));
+    previewAction->setIcon(Aero7Icons::icon(QStringLiteral("view-preview")));
     previewAction->setCheckable(true);
     previewAction->setChecked(InformationPanelSettings::previewsShown());
 
     QAction *previewAutoPlayAction = popup.addAction(i18nc("@action:inmenu", "Auto-Play media files"));
-    previewAutoPlayAction->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
+    previewAutoPlayAction->setIcon(Aero7Icons::icon(QStringLiteral("media-playback-start")));
     previewAutoPlayAction->setCheckable(true);
     previewAutoPlayAction->setChecked(InformationPanelSettings::previewsAutoPlay());
 
     QAction *showHoveredAction = popup.addAction(i18nc("@action:inmenu", "Show item on hover"));
-    showHoveredAction->setIcon(QIcon::fromTheme(QStringLiteral("followmouse")));
+    showHoveredAction->setIcon(Aero7Icons::icon(QStringLiteral("followmouse")));
     showHoveredAction->setCheckable(true);
     showHoveredAction->setChecked(InformationPanelSettings::showHovered());
 
     QAction *configureAction = popup.addAction(i18nc("@action:inmenu", "Configure…"));
-    configureAction->setIcon(QIcon::fromTheme(QStringLiteral("configure")));
+    configureAction->setIcon(Aero7Icons::icon(QStringLiteral("configure")));
     if (m_inConfigurationMode) {
         configureAction->setEnabled(false);
     }
 
     QAction *dateformatAction = popup.addAction(i18nc("@action:inmenu", "Condensed Date"));
-    dateformatAction->setIcon(QIcon::fromTheme(QStringLiteral("change-date-symbolic")));
+    dateformatAction->setIcon(Aero7Icons::icon(QStringLiteral("change-date")));
     dateformatAction->setCheckable(true);
     dateformatAction->setChecked(InformationPanelSettings::dateFormat() == static_cast<int>(Baloo::DateFormats::ShortFormat));
 

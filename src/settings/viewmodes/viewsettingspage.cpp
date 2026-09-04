@@ -5,6 +5,7 @@
  */
 
 #include "viewsettingspage.h"
+#include "aero7icons.h"
 
 #include "contentdisplaytab.h"
 #include "generalviewsettingspage.h"
@@ -28,29 +29,29 @@ ViewSettingsPage::ViewSettingsPage(const QUrl &url, QWidget *parent)
 
     // General View tab
     GeneralViewSettingsPage *generalViewPage = new GeneralViewSettingsPage(url, tabWidget);
-    tabWidget->addTab(generalViewPage, QIcon::fromTheme(QStringLiteral("description")), i18nc("@title:tab General View settings", "General"));
+    tabWidget->addTab(generalViewPage, Aero7Icons::icon(QStringLiteral("description")), i18nc("@title:tab General View settings", "General"));
     connect(generalViewPage, &GeneralViewSettingsPage::changed, this, &ViewSettingsPage::changed);
 
     // Content Display Tab
     contentDisplayTab = new ContentDisplayTab(tabWidget);
     tabWidget->addTab(contentDisplayTab,
-                      QIcon::fromTheme(QStringLiteral("view-choose")),
+                      Aero7Icons::icon(QStringLiteral("view-choose")),
                       i18nc("@title:tab how file items columns are displayed", "Content Display"));
     connect(contentDisplayTab, &SettingsPageBase::changed, this, &ViewSettingsPage::changed);
 
     // Initialize 'Icons' tab
     ViewSettingsTab *iconsTab = new ViewSettingsTab(ViewSettingsTab::IconsMode, tabWidget);
-    tabWidget->addTab(iconsTab, QIcon::fromTheme(QStringLiteral("view-list-icons")), i18nc("@title:tab", "Icons"));
+    tabWidget->addTab(iconsTab, Aero7Icons::icon(QStringLiteral("view-list-icons")), i18nc("@title:tab", "Icons"));
     connect(iconsTab, &ViewSettingsTab::changed, this, &ViewSettingsPage::changed);
 
     // Initialize 'Compact' tab
     ViewSettingsTab *compactTab = new ViewSettingsTab(ViewSettingsTab::CompactMode, tabWidget);
-    tabWidget->addTab(compactTab, QIcon::fromTheme(QStringLiteral("view-list-details")), i18nc("@title:tab", "Compact"));
+    tabWidget->addTab(compactTab, Aero7Icons::icon(QStringLiteral("view-list-details")), i18nc("@title:tab", "Compact"));
     connect(compactTab, &ViewSettingsTab::changed, this, &ViewSettingsPage::changed);
 
     // Initialize 'Details' tab
     ViewSettingsTab *detailsTab = new ViewSettingsTab(ViewSettingsTab::DetailsMode, tabWidget);
-    tabWidget->addTab(detailsTab, QIcon::fromTheme(QStringLiteral("view-list-tree")), i18nc("@title:tab", "Details"));
+    tabWidget->addTab(detailsTab, Aero7Icons::icon(QStringLiteral("view-list-tree")), i18nc("@title:tab", "Details"));
     connect(detailsTab, &ViewSettingsTab::changed, this, &ViewSettingsPage::changed);
 
     m_tabs.append(generalViewPage);

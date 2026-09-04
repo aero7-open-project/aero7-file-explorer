@@ -25,6 +25,7 @@ public:
     void setNameFilters(const QStringList &filters);
     void setSuggestedFileName(const QString &name);
     void setDefaultSuffix(const QString &suffix);
+    void setInitialDirectory(const QString &path);
     QStringList selectedFiles() const;
 
 private Q_SLOTS:

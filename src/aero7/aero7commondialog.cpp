@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "aero7commondialog.h"
+#include "aero7icons.h"
 #include "aero7libraries.h"
 
 #include <QComboBox>
@@ -56,6 +57,7 @@ Aero7CommonDialog::Aero7CommonDialog(Mode mode, const QString &applicationId,
     setWindowTitle(mode == Mode::SaveFile ? QStringLiteral("Save As")
                    : mode == Mode::ChooseFolder ? QStringLiteral("Select Folder")
                                                 : QStringLiteral("Open"));
+    setWindowIcon(Aero7Icons::icon(QStringLiteral("system-file-manager")));
     resize(820, 560);
 
     auto *outer = new QVBoxLayout(this);
@@ -64,9 +66,9 @@ Aero7CommonDialog::Aero7CommonDialog(Mode mode, const QString &applicationId,
 
     auto *navigationRow = new QHBoxLayout;
     navigationRow->setSpacing(4);
-    m_back = new QPushButton(style()->standardIcon(QStyle::SP_ArrowBack), QString());
-    m_forward = new QPushButton(style()->standardIcon(QStyle::SP_ArrowForward), QString());
-    m_up = new QPushButton(style()->standardIcon(QStyle::SP_ArrowUp), QString());
+    m_back = new QPushButton(Aero7Icons::icon(QStringLiteral("back")), QString());
+    m_forward = new QPushButton(Aero7Icons::icon(QStringLiteral("forward")), QString());
+    m_up = new QPushButton(Aero7Icons::icon(QStringLiteral("up")), QString());
     for (QPushButton *button : {m_back, m_forward, m_up})
         button->setFixedSize(30, 27);
     navigationRow->addWidget(m_back);
@@ -240,6 +242,12 @@ void Aero7CommonDialog::setSuggestedFileName(const QString &name)
 void Aero7CommonDialog::setDefaultSuffix(const QString &suffix)
 {
     m_defaultSuffix = suffix;
+}
+
+void Aero7CommonDialog::setInitialDirectory(const QString &path)
+{
+    if (QFileInfo(path).isDir())
+        setDirectory(path);
 }
 
 QStringList Aero7CommonDialog::selectedFiles() const

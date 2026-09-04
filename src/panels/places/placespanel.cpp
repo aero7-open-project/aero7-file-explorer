@@ -10,6 +10,7 @@
  */
 
 #include "placespanel.h"
+#include "aero7icons.h"
 
 #include "dolphin_generalsettings.h"
 #include "dolphin_placespanelsettings.h"
@@ -48,7 +49,7 @@ PlacesPanel::PlacesPanel(QWidget *parent)
         slotTearDownRequested(index);
     });
 
-    m_openInSplitView = std::make_unique<QAction>(QIcon::fromTheme(QStringLiteral("view-split-left-right")), i18nc("@action:inmenu", "Open in Split View"));
+    m_openInSplitView = std::make_unique<QAction>(Aero7Icons::icon(QStringLiteral("view-split-left-right")), i18nc("@action:inmenu", "Open in Split View"));
     m_openInSplitView->setPriority(QAction::HighPriority);
     connect(m_openInSplitView.get(), &QAction::triggered, this, [this]() {
         const QUrl url = currentIndex().data(KFilePlacesModel::UrlRole).toUrl();
@@ -56,7 +57,7 @@ PlacesPanel::PlacesPanel(QWidget *parent)
     });
     addAction(m_openInSplitView.get());
 
-    m_configureTrashAction = std::make_unique<QAction>(QIcon::fromTheme(QStringLiteral("configure")), i18nc("@action:inmenu", "Configure Trash…"));
+    m_configureTrashAction = std::make_unique<QAction>(Aero7Icons::icon(QStringLiteral("configure")), i18nc("@action:inmenu", "Configure Trash…"));
     m_configureTrashAction->setPriority(QAction::HighPriority);
     connect(m_configureTrashAction.get(), &QAction::triggered, this, &PlacesPanel::slotConfigureTrash);
     addAction(m_configureTrashAction.get());
@@ -366,10 +367,10 @@ void PlacesPanel::contextMenuEvent(QContextMenuEvent *event)
 
     const QUrl url = index.data(KFilePlacesModel::UrlRole).toUrl();
     QMenu menu(this);
-    QAction *open = menu.addAction(QIcon::fromTheme(QStringLiteral("document-open-folder")),
+    QAction *open = menu.addAction(Aero7Icons::icon(QStringLiteral("document-open-folder")),
                                    QStringLiteral("Open"));
     connect(open, &QAction::triggered, this, [this, url]() { Q_EMIT placeActivated(url); });
-    QAction *newWindow = menu.addAction(QIcon::fromTheme(QStringLiteral("window-new")),
+    QAction *newWindow = menu.addAction(Aero7Icons::icon(QStringLiteral("window-new")),
                                        QStringLiteral("Open in new window"));
     connect(newWindow, &QAction::triggered, this, [this, url]() { Q_EMIT newWindowRequested(url); });
 
@@ -377,7 +378,7 @@ void PlacesPanel::contextMenuEvent(QContextMenuEvent *event)
         const QString id = Aero7Libraries::instance().libraryIdForPath(url.toLocalFile());
         if (!id.isEmpty()) {
             menu.addSeparator();
-            QAction *properties = menu.addAction(QIcon::fromTheme(QStringLiteral("document-properties")),
+            QAction *properties = menu.addAction(Aero7Icons::icon(QStringLiteral("document-properties")),
                                                  QStringLiteral("Properties"));
             connect(properties, &QAction::triggered, this,
                     [this, id]() { Aero7Properties::showLibrary(id, this); });
@@ -419,7 +420,7 @@ void PlacesPanel::slotContextMenuAboutToShow(const QModelIndex &index, QMenu *me
             && QDir::cleanPath(url.toLocalFile())
                 == QDir::cleanPath(Aero7Libraries::instance().materializedPath(id))) {
             menu->addSeparator();
-            QAction *properties = menu->addAction(QIcon::fromTheme(QStringLiteral("document-properties")),
+            QAction *properties = menu->addAction(Aero7Icons::icon(QStringLiteral("document-properties")),
                                                   QStringLiteral("Properties"));
             connect(properties, &QAction::triggered, this,
                     [this, id]() { Aero7Properties::showLibrary(id, this); });

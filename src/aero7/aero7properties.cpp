@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "aero7properties.h"
+#include "aero7icons.h"
 #include "aero7commondialog.h"
 #include "aero7libraries.h"
 
@@ -146,6 +147,7 @@ void Aero7Properties::showLibrary(const QString &id, QWidget *parent)
 
     QDialog dialog(parent);
     dialog.setWindowTitle(QStringLiteral("%1 Properties").arg(library.name));
+    dialog.setWindowIcon(Aero7Icons::icon(QStringLiteral("system-file-manager")));
     dialog.resize(530, 470);
     auto *outer = new QVBoxLayout(&dialog);
     auto *tabs = new QTabWidget;
@@ -158,7 +160,8 @@ void Aero7Properties::showLibrary(const QString &id, QWidget *parent)
         for (const QString &path : std::as_const(library.locations)) {
             const bool available = QFileInfo(path).isDir();
             auto *item = new QListWidgetItem(
-                QIcon::fromTheme(available ? QStringLiteral("folder") : QStringLiteral("dialog-warning")),
+                available ? QIcon::fromTheme(QStringLiteral("folder"))
+                          : Aero7Icons::icon(QStringLiteral("warning")),
                 available ? path : QStringLiteral("%1 — unavailable").arg(path));
             item->setData(Qt::UserRole, path);
             if (path == library.saveLocation)

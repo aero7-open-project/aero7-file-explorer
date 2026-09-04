@@ -6,6 +6,7 @@ kcoreaddons_add_plugin(movetonewfolderitemaction
     INSTALL_NAMESPACE "kf6/kfileitemaction")
 
 target_link_libraries(movetonewfolderitemaction
+    aero7shellui
     KF6::I18n
     KF6::KIOCore
     KF6::KIOWidgets
@@ -17,6 +18,7 @@ kcoreaddons_add_plugin(hidefileitemaction
     INSTALL_NAMESPACE "kf6/kfileitemaction")
 
 target_link_libraries(hidefileitemaction
+    aero7shellui
     KF6::CoreAddons
     KF6::I18n
     KF6::KIOCore
@@ -34,4 +36,3 @@ if(NOT WIN32)
         KF6::KIOCore
         KF6::KIOWidgets)
 endif()
-

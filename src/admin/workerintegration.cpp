@@ -6,6 +6,7 @@
 */
 
 #include "workerintegration.h"
+#include "aero7icons.h"
 
 #include "config-dolphin.h"
 #include "dolphinmainwindow.h"
@@ -128,7 +129,7 @@ void WorkerIntegration::createActAsAdminAction(KActionCollection *actionCollecti
     if (isWorkerInstalled()) {
         QAction *actAsAdminAction = actionCollection->addAction(QStringLiteral("act_as_admin"));
         actAsAdminAction->setText(actionName());
-        actAsAdminAction->setIcon(QIcon::fromTheme(QStringLiteral("system-switch-user")));
+        actAsAdminAction->setIcon(Aero7Icons::icon(QStringLiteral("administrator")));
         actAsAdminAction->setCheckable(true);
         actionCollection->setDefaultShortcut(actAsAdminAction, actionDefaultShortcut());
 
@@ -159,7 +160,7 @@ void WorkerIntegration::toggleActAsAdmin()
     if (!risksAccepted) {
         KMessageDialog warningDialog{KMessageDialog::QuestionTwoActions, warningMessage(), dolphinMainWindow};
         warningDialog.setCaption(i18nc("@title:window", "Risks of Acting as an Administrator"));
-        warningDialog.setIcon(QIcon::fromTheme(QStringLiteral("security-low")));
+        warningDialog.setIcon(Aero7Icons::icon(QStringLiteral("warning")));
         warningDialog.setButtons(KGuiItem{i18nc("@action:button", "I Understand and Accept These Risks"), QStringLiteral("data-warning")},
                                  KStandardGuiItem::cancel());
         warningDialog.setDontAskAgainText(i18nc("@option:check", "Do not warn me about these risks again"));

@@ -6,6 +6,7 @@
  */
 
 #include "viewpropertiesdialog.h"
+#include "aero7icons.h"
 
 #include "dolphin_generalsettings.h"
 #include "global.h"
@@ -68,9 +69,9 @@ ViewPropertiesDialog::ViewPropertiesDialog(DolphinView *dolphinView)
 
     // create 'Properties' group containing view mode, sorting, sort order and show hidden files
     m_viewMode = new QComboBox();
-    m_viewMode->addItem(QIcon::fromTheme(QStringLiteral("view-list-icons")), i18nc("@item:inlistbox", "Icons"), DolphinView::IconsView);
-    m_viewMode->addItem(QIcon::fromTheme(QStringLiteral("view-list-details")), i18nc("@item:inlistbox", "Compact"), DolphinView::CompactView);
-    m_viewMode->addItem(QIcon::fromTheme(QStringLiteral("view-list-tree")), i18nc("@item:inlistbox", "Details"), DolphinView::DetailsView);
+    m_viewMode->addItem(Aero7Icons::icon(QStringLiteral("view-list-icons")), i18nc("@item:inlistbox", "Icons"), DolphinView::IconsView);
+    m_viewMode->addItem(Aero7Icons::icon(QStringLiteral("view-list-details")), i18nc("@item:inlistbox", "Compact"), DolphinView::CompactView);
+    m_viewMode->addItem(Aero7Icons::icon(QStringLiteral("view-list-tree")), i18nc("@item:inlistbox", "Details"), DolphinView::DetailsView);
 
     m_sortOrder = new QComboBox();
     m_sortOrder->addItem(i18nc("@item:inlistbox Sort", "Ascending"));

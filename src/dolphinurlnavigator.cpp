@@ -6,6 +6,7 @@
 */
 
 #include "dolphinurlnavigator.h"
+#include "aero7icons.h"
 
 #include "dolphin_generalsettings.h"
 #include "dolphinplacesmodelsingleton.h"
@@ -79,7 +80,7 @@ DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
     updateAero7Breadcrumbs();
 
     auto readOnlyBadge = new QLabel();
-    readOnlyBadge->setPixmap(QIcon::fromTheme(QStringLiteral("emblem-readonly")).pixmap(12, 12));
+    readOnlyBadge->setPixmap(Aero7Icons::icon(QStringLiteral("emblem-readonly")).pixmap(12, 12));
     readOnlyBadge->setToolTip(i18nc("@info:tooltip of a 'locked' symbol in url navigator", "This folder is not writable for you."));
     readOnlyBadge->hide();
     setBadgeWidget(readOnlyBadge);

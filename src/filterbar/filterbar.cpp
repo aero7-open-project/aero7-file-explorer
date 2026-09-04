@@ -8,6 +8,7 @@
  */
 
 #include "filterbar.h"
+#include "aero7icons.h"
 
 #include <KConfigGroup>
 #include <KLocalizedString>
@@ -32,7 +33,7 @@ FilterBar::FilterBar(QWidget *parent)
     m_lockButton = new QToolButton(contentsContainer);
     m_lockButton->setAutoRaise(true);
     m_lockButton->setCheckable(true);
-    m_lockButton->setIcon(QIcon::fromTheme(QStringLiteral("object-unlocked")));
+    m_lockButton->setIcon(Aero7Icons::icon(QStringLiteral("object-unlocked")));
     m_lockButton->setToolTip(i18nc("@info:tooltip", "Keep Filter When Changing Folders"));
     connect(m_lockButton, &QToolButton::toggled, this, &FilterBar::slotToggleLockButton);
 
@@ -47,7 +48,7 @@ FilterBar::FilterBar(QWidget *parent)
 
     m_invalidPatternAction = new QAction(m_filterInput);
     m_invalidPatternAction->setCheckable(false);
-    m_invalidPatternAction->setIcon(QIcon::fromTheme(QStringLiteral("error-symbolic")));
+    m_invalidPatternAction->setIcon(Aero7Icons::icon(QStringLiteral("error")));
     m_invalidPatternAction->setToolTip(i18n("Invalid expression"));
     m_filterInput->addAction(m_invalidPatternAction, QLineEdit::TrailingPosition);
     m_invalidPatternAction->setVisible(false);
@@ -56,7 +57,7 @@ FilterBar::FilterBar(QWidget *parent)
     m_caseSensitiveButton = new QToolButton(contentsContainer);
     m_caseSensitiveButton->setAutoRaise(true);
     m_caseSensitiveButton->setCheckable(true);
-    m_caseSensitiveButton->setIcon(QIcon::fromTheme(QStringLiteral("format-text-superscript"), QIcon::fromTheme(QStringLiteral("format-text-bold"))));
+    m_caseSensitiveButton->setIcon(Aero7Icons::icon(QStringLiteral("case-sensitive")));
     m_caseSensitiveButton->setToolTip(i18nc("@info:tooltip", "Match case"));
     connect(m_caseSensitiveButton, &QToolButton::toggled, this, &FilterBar::caseSensitiveChanged);
     connect(m_caseSensitiveButton, &QToolButton::toggled, this, &FilterBar::updateInvalidPatternView);
@@ -74,7 +75,7 @@ FilterBar::FilterBar(QWidget *parent)
     // Create close button
     QToolButton *closeButton = new QToolButton(contentsContainer);
     closeButton->setAutoRaise(true);
-    closeButton->setIcon(QIcon::fromTheme(QStringLiteral("dialog-close")));
+    closeButton->setIcon(Aero7Icons::icon(QStringLiteral("dialog-close")));
     closeButton->setToolTip(i18nc("@info:tooltip", "Hide Filter Bar"));
     connect(closeButton, &QToolButton::clicked, this, &FilterBar::closeRequest);
 
@@ -142,9 +143,9 @@ void FilterBar::clearIfUnlocked()
 void FilterBar::slotToggleLockButton(bool checked)
 {
     if (checked) {
-        m_lockButton->setIcon(QIcon::fromTheme(QStringLiteral("object-locked")));
+        m_lockButton->setIcon(Aero7Icons::icon(QStringLiteral("object-locked")));
     } else {
-        m_lockButton->setIcon(QIcon::fromTheme(QStringLiteral("object-unlocked")));
+        m_lockButton->setIcon(Aero7Icons::icon(QStringLiteral("object-unlocked")));
         clear();
     }
 }

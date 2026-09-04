@@ -5,6 +5,7 @@
 */
 
 #include "chip.h"
+#include "aero7icons.h"
 
 #include <KColorUtils>
 #include <KLocalizedString>
@@ -19,7 +20,7 @@ ChipBase::ChipBase(std::shared_ptr<const DolphinQuery> dolphinQuery, QWidget *pa
 {
     m_removeButton = new QToolButton{this};
     m_removeButton->setText(i18nc("@action:button", "Remove Filter"));
-    m_removeButton->setIcon(QIcon::fromTheme("list-remove"));
+    m_removeButton->setIcon(Aero7Icons::icon(QStringLiteral("list-remove")));
     m_removeButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
     m_removeButton->setAutoRaise(true);
 

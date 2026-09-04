@@ -6,6 +6,7 @@
 */
 
 #include "popup.h"
+#include "aero7icons.h"
 
 #include "config-dolphin.h"
 #include "dolphinpackageinstaller.h"
@@ -164,7 +165,7 @@ QWidget *Popup::init()
 
     auto balooSettingsButton = new QToolButton{containerWidget};
     balooSettingsButton->setText(i18nc("@action:button %1 is software name", "Configure %1…", balooUiName()));
-    balooSettingsButton->setIcon(QIcon::fromTheme("configure"));
+    balooSettingsButton->setIcon(Aero7Icons::icon(QStringLiteral("configure")));
     balooSettingsButton->setToolTip(balooSettingsButton->text());
     balooSettingsButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
     balooSettingsButton->setAutoRaise(true);

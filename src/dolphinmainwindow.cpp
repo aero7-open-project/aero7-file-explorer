@@ -7,6 +7,7 @@
  */
 
 #include "dolphinmainwindow.h"
+#include "aero7icons.h"
 
 #include "admin/workerintegration.h"
 #include "dolphin_generalsettings.h"
@@ -170,13 +171,11 @@ DolphinMainWindow::DolphinMainWindow()
 #endif
     setComponentName(QStringLiteral("aero7-file-explorer"), QGuiApplication::applicationDisplayName());
     setObjectName(QStringLiteral("Aero7FileExplorer"));
-    // Windows 7 Explorer deliberately leaves the decoration's system-menu
-    // slot blank, while the taskbar still resolves the application icon from
-    // org.aero7.FileExplorer.desktop.  A transparent per-window icon gives
-    // SMOD that same title-bar treatment without changing launcher identity.
-    QPixmap blankTitleBarIcon(16, 16);
-    blankTitleBarIcon.fill(Qt::transparent);
-    setWindowIcon(QIcon(blankTitleBarIcon));
+    // Keep the running window associated with the same Windows-style folder
+    // icon as its taskbar launcher.  The icon is embedded from the pinned
+    // aerothemeplasma-icons pack, so this does not depend on the active Plasma
+    // icon theme and never falls back to a blank taskbar button.
+    setWindowIcon(Aero7Icons::icon(QStringLiteral("system-file-manager")));
     // Windows 7 separates the navigation pane from the folder view with one
     // quiet blue-grey pixel.  The platform style's default dock separator is
     // six black pixels wide, which made the pane look like a KDE splitter.
@@ -858,8 +857,8 @@ void DolphinMainWindow::closeEvent(QCloseEvent *event)
         QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Yes | QDialogButtonBox::No | QDialogButtonBox::Cancel);
         KGuiItem::assign(buttons->button(QDialogButtonBox::Yes),
                          KGuiItem(i18nc("@action:button 'Quit Dolphin' button", "&Quit %1", QGuiApplication::applicationDisplayName()),
-                                  QIcon::fromTheme(QStringLiteral("application-exit"))));
-        KGuiItem::assign(buttons->button(QDialogButtonBox::No), KGuiItem(i18n("C&lose Current Tab"), QIcon::fromTheme(QStringLiteral("tab-close"))));
+                                  Aero7Icons::icon(QStringLiteral("application-exit"))));
+        KGuiItem::assign(buttons->button(QDialogButtonBox::No), KGuiItem(i18n("C&lose Current Tab"), Aero7Icons::icon(QStringLiteral("tab-close"))));
         KGuiItem::assign(buttons->button(QDialogButtonBox::Cancel), KStandardGuiItem::cancel());
         buttons->button(QDialogButtonBox::Yes)->setDefault(true);
 
@@ -908,7 +907,7 @@ void DolphinMainWindow::closeEvent(QCloseEvent *event)
         QDialogButtonBox *buttons = new QDialogButtonBox(standardButtons);
         KGuiItem::assign(buttons->button(QDialogButtonBox::Yes), KStandardGuiItem::quit());
         if (!m_terminalPanel->isVisible()) {
-            KGuiItem::assign(buttons->button(QDialogButtonBox::No), KGuiItem(i18n("Show &Terminal Panel"), QIcon::fromTheme(QStringLiteral("dialog-scripts"))));
+            KGuiItem::assign(buttons->button(QDialogButtonBox::No), KGuiItem(i18n("Show &Terminal Panel"), Aero7Icons::icon(QStringLiteral("terminal"))));
         }
         KGuiItem::assign(buttons->button(QDialogButtonBox::Cancel), KStandardGuiItem::cancel());
 
@@ -1564,7 +1563,7 @@ void DolphinMainWindow::updateOpenPreferredSearchToolAction()
         openPreferredSearchTool->setVisible(false);
         // still visible in Shortcuts configuration window
         openPreferredSearchTool->setText(i18nc("@action:inmenu Tools", "Open Preferred Search Tool"));
-        openPreferredSearchTool->setIcon(QIcon::fromTheme(QStringLiteral("search")));
+    openPreferredSearchTool->setIcon(Aero7Icons::icon(QStringLiteral("search")));
     }
 }
 
@@ -1804,7 +1803,7 @@ void DolphinMainWindow::updateHamburgerMenu()
 
     // The "Configure" menu is not added to the actionCollection() because there is hardly
     // a good reason for users to put it on their toolbar.
-    auto configureMenu = menu->addMenu(QIcon::fromTheme(QStringLiteral("configure")), i18nc("@action:inmenu menu for configure actions", "Configure"));
+    auto configureMenu = menu->addMenu(Aero7Icons::icon(QStringLiteral("configure")), i18nc("@action:inmenu menu for configure actions", "Configure"));
     configureMenu->addAction(actionCollection()->action(QStringLiteral("window_color_sheme")));
     configureMenu->addSeparator();
     configureMenu->addAction(ac->action(KStandardAction::name(KStandardAction::Preferences)));
@@ -1878,7 +1877,7 @@ void DolphinMainWindow::showAero7Computer()
     m_aero7ContentStack->setCurrentWidget(m_aero7ComputerView);
     m_winHeader->setComputerMode(true);
     activeViewContainer()->statusBarWidget()->setComputerMode(true);
-    setWindowTitle(QString(QChar(0x200B)));
+    setWindowTitle(QStringLiteral("File Explorer"));
 
     // Keep the existing Dolphin view alive behind the Computer surface. Only
     // the visible breadcrumb is changed, with signals blocked so KIO never
@@ -1998,9 +1997,9 @@ void DolphinMainWindow::tabCountChanged(int count)
 
 void DolphinMainWindow::updateWindowTitle()
 {
-    // Stock Windows 7 Explorer leaves its glass title strip visually blank;
-    // the current location is communicated by the breadcrumb instead.
-    setWindowTitle(QString(QChar(0x200B)));
+    // Use one stable application caption so KWin and the taskbar expose the
+    // product name even for virtual shell locations with no filesystem title.
+    setWindowTitle(QStringLiteral("File Explorer"));
 }
 
 void DolphinMainWindow::slotStorageTearDownFromPlacesRequested(const QString &mountPath)
@@ -2062,7 +2061,7 @@ void DolphinMainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("new_menu"), m_newFileMenu);
     QMenu *menu = m_newFileMenu->menu();
     menu->setTitle(i18nc("@title:menu Create new folder, file, link, etc.", "Create New"));
-    menu->setIcon(QIcon::fromTheme(QStringLiteral("list-add")));
+    menu->setIcon(Aero7Icons::icon(QStringLiteral("list-add")));
     m_newFileMenu->setPopupMode(QToolButton::InstantPopup);
     connect(menu, &QMenu::aboutToShow, this, &DolphinMainWindow::updateNewMenu);
     connect(m_newFileMenu, &KNewFileMenu::directoryCreated, this, [this](const QUrl &createdDirectory) {
@@ -2076,10 +2075,10 @@ void DolphinMainWindow::setupActions()
                                    "This opens a new "
                                    "window just like this one with the current location."
                                    "<nl/>You can drag and drop items between windows."));
-    newWindow->setIcon(QIcon::fromTheme(QStringLiteral("window-new")));
+    newWindow->setIcon(Aero7Icons::icon(QStringLiteral("window-new")));
 
     QAction *newTab = actionCollection()->addAction(QStringLiteral("new_tab"));
-    newTab->setIcon(QIcon::fromTheme(QStringLiteral("tab-new")));
+    newTab->setIcon(Aero7Icons::icon(QStringLiteral("tab-new")));
     newTab->setText(i18nc("@action:inmenu File", "New Tab"));
     newTab->setWhatsThis(xi18nc("@info:whatsthis",
                                 "This opens a new "
@@ -2090,7 +2089,7 @@ void DolphinMainWindow::setupActions()
     connect(newTab, &QAction::triggered, this, &DolphinMainWindow::openNewActivatedTab);
 
     QAction *addToPlaces = actionCollection()->addAction(QStringLiteral("add_to_places"));
-    addToPlaces->setIcon(QIcon::fromTheme(QStringLiteral("bookmark-new")));
+    addToPlaces->setIcon(Aero7Icons::icon(QStringLiteral("bookmark-new")));
     addToPlaces->setText(i18nc("@action:inmenu Add current folder to places", "Add to Places"));
     addToPlaces->setWhatsThis(xi18nc("@info:whatsthis",
                                      "This adds the selected folder "
@@ -2159,7 +2158,7 @@ void DolphinMainWindow::setupActions()
                                                "This copies the selected items from "
                                                "the view in focus to the other view. "
                                                "(Only available while in Split View mode.)"));
-    copyToOtherViewAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-copy")));
+    copyToOtherViewAction->setIcon(Aero7Icons::icon(QStringLiteral("edit-copy")));
     copyToOtherViewAction->setIconText(i18nc("@action:inmenu Edit", "Copy to Other View"));
     actionCollection()->setDefaultShortcut(copyToOtherViewAction, Qt::SHIFT | Qt::Key_F5);
     connect(copyToOtherViewAction, &QAction::triggered, this, &DolphinMainWindow::copyToInactiveSplitView);
@@ -2171,7 +2170,7 @@ void DolphinMainWindow::setupActions()
                                                "This moves the selected items from "
                                                "the view in focus to the other view. "
                                                "(Only available while in Split View mode.)"));
-    moveToOtherViewAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-cut")));
+    moveToOtherViewAction->setIcon(Aero7Icons::icon(QStringLiteral("edit-cut")));
     moveToOtherViewAction->setIconText(i18nc("@action:inmenu Edit", "Move to Other View"));
     actionCollection()->setDefaultShortcut(moveToOtherViewAction, Qt::SHIFT | Qt::Key_F6);
     connect(moveToOtherViewAction, &QAction::triggered, this, &DolphinMainWindow::moveToInactiveSplitView);
@@ -2184,7 +2183,7 @@ void DolphinMainWindow::setupActions()
                                        "<emphasis>Filter Bar</emphasis> at the bottom of the window.<nl/> "
                                        "There you can enter text to filter the files and folders currently displayed. "
                                        "Only those that contain the text in their name will be kept in view."));
-    showFilterBar->setIcon(QIcon::fromTheme(QStringLiteral("view-filter")));
+    showFilterBar->setIcon(Aero7Icons::icon(QStringLiteral("view-filter")));
     actionCollection()->setDefaultShortcuts(showFilterBar, {Qt::CTRL | Qt::Key_I, Qt::Key_Slash});
     connect(showFilterBar, &QAction::triggered, this, &DolphinMainWindow::showFilterBar);
 
@@ -2239,7 +2238,7 @@ void DolphinMainWindow::setupActions()
         " <emphasis>selected</emphasis> first. Press this to toggle a <emphasis>Selection Mode</emphasis> which makes selecting and deselecting as easy as "
         "pressing an item once.</para><para>While in this mode, a quick access bar at the bottom shows available actions for the currently selected items."
         "</para>"));
-    toggleSelectionModeAction->setIcon(QIcon::fromTheme(QStringLiteral("quickwizard")));
+    toggleSelectionModeAction->setIcon(Aero7Icons::icon(QStringLiteral("selection")));
     toggleSelectionModeAction->setCheckable(true);
     actionCollection()->setDefaultShortcut(toggleSelectionModeAction, Qt::Key_Space);
     connect(toggleSelectionModeAction, &QAction::triggered, this, &DolphinMainWindow::toggleSelectionMode);
@@ -2266,7 +2265,7 @@ void DolphinMainWindow::setupActions()
     invertSelection->setWhatsThis(xi18nc("@info:whatsthis invert",
                                          "This selects all "
                                          "items that you have currently <emphasis>not</emphasis> selected instead."));
-    invertSelection->setIcon(QIcon::fromTheme(QStringLiteral("edit-select-invert")));
+    invertSelection->setIcon(Aero7Icons::icon(QStringLiteral("selection-invert")));
     actionCollection()->setDefaultShortcut(invertSelection, Qt::CTRL | Qt::SHIFT | Qt::Key_A);
     connect(invertSelection, &QAction::triggered, this, &DolphinMainWindow::invertSelection);
 
@@ -2301,7 +2300,7 @@ void DolphinMainWindow::setupActions()
     popoutSplit->setWhatsThis(xi18nc("@info:whatsthis",
                                      "If the view has been split, this will pop the view in focus "
                                      "out into a new window."));
-    popoutSplit->setIcon(QIcon::fromTheme(QStringLiteral("window-new")));
+    popoutSplit->setIcon(Aero7Icons::icon(QStringLiteral("window-new")));
     actionCollection()->setDefaultShortcut(popoutSplit, Qt::SHIFT | Qt::Key_F3);
     connect(popoutSplit, &QAction::triggered, this, &DolphinMainWindow::popoutSplitView);
 
@@ -2309,7 +2308,7 @@ void DolphinMainWindow::setupActions()
     actionCollection()->setDefaultShortcut(stashSplit, Qt::CTRL | Qt::Key_S);
     stashSplit->setText(i18nc("@action:intoolbar Stash", "Stash"));
     stashSplit->setToolTip(i18nc("@info", "Opens the stash virtual directory in a split window"));
-    stashSplit->setIcon(QIcon::fromTheme(QStringLiteral("folder-stash")));
+    stashSplit->setIcon(Aero7Icons::icon(QStringLiteral("folder-stash")));
     stashSplit->setCheckable(false);
     QDBusConnectionInterface *sessionInterface = QDBusConnection::sessionBus().interface();
     stashSplit->setVisible(sessionInterface && sessionInterface->isServiceRegistered(QStringLiteral("org.kde.kio.StashNotifier")));
@@ -2329,7 +2328,7 @@ void DolphinMainWindow::setupActions()
     stop->setText(i18nc("@action:inmenu View", "Stop"));
     stop->setToolTip(i18nc("@info", "Stop loading"));
     stop->setWhatsThis(i18nc("@info", "This stops the loading of the contents of the current folder."));
-    stop->setIcon(QIcon::fromTheme(QStringLiteral("process-stop")));
+    stop->setIcon(Aero7Icons::icon(QStringLiteral("process-stop")));
     connect(stop, &QAction::triggered, this, &DolphinMainWindow::stopLoading);
 
     KToggleAction *editableLocation = actionCollection()->add<KToggleAction>(QStringLiteral("editable_location"));
@@ -2371,7 +2370,7 @@ void DolphinMainWindow::setupActions()
     undoCloseTab->setText(i18nc("@action:inmenu File", "Undo close tab"));
     undoCloseTab->setWhatsThis(i18nc("@info:whatsthis undo close tab", "This returns you to the previously closed tab."));
     actionCollection()->setDefaultShortcut(undoCloseTab, Qt::CTRL | Qt::SHIFT | Qt::Key_T);
-    undoCloseTab->setIcon(QIcon::fromTheme(QStringLiteral("edit-undo")));
+    undoCloseTab->setIcon(Aero7Icons::icon(QStringLiteral("edit-undo")));
     undoCloseTab->setEnabled(false);
     connect(undoCloseTab, &QAction::triggered, recentTabsMenu, &DolphinRecentTabsMenu::undoCloseTab);
 
@@ -2441,7 +2440,7 @@ void DolphinMainWindow::setupActions()
     openPreferredSearchTool->setWhatsThis(xi18nc("@info:whatsthis",
                                                  "<para>This opens a preferred search tool for the viewed location.</para>"
                                                  "<para>Use <emphasis>More Search Tools</emphasis> menu to configure it.</para>"));
-    openPreferredSearchTool->setIcon(QIcon::fromTheme(QStringLiteral("search")));
+        openPreferredSearchTool->setIcon(Aero7Icons::icon(QStringLiteral("search")));
     actionCollection()->setDefaultShortcut(openPreferredSearchTool, Qt::CTRL | Qt::SHIFT | Qt::Key_F);
     connect(openPreferredSearchTool, &QAction::triggered, this, &DolphinMainWindow::openPreferredSearchTool);
 
@@ -2474,7 +2473,7 @@ void DolphinMainWindow::setupActions()
 
     // setup 'Bookmarks' menu
     KActionMenu *bookmarkMenu = new KActionMenu(i18nc("@title:menu", "&Bookmarks"), this);
-    bookmarkMenu->setIcon(QIcon::fromTheme(QStringLiteral("bookmarks")));
+    bookmarkMenu->setIcon(Aero7Icons::icon(QStringLiteral("bookmarks")));
     // Make the toolbar button version work properly on click
     bookmarkMenu->setPopupMode(QToolButton::InstantPopup);
     m_bookmarkHandler = new DolphinBookmarkHandler(this, actionCollection(), bookmarkMenu->menu(), this);
@@ -2544,35 +2543,35 @@ void DolphinMainWindow::setupActions()
     // for context menu
     QAction *showTarget = actionCollection()->addAction(QStringLiteral("show_target"));
     showTarget->setText(i18nc("@action:inmenu", "Show Target"));
-    showTarget->setIcon(QIcon::fromTheme(QStringLiteral("document-open-folder")));
+    showTarget->setIcon(Aero7Icons::icon(QStringLiteral("document-open-folder")));
     showTarget->setEnabled(false);
     connect(showTarget, &QAction::triggered, this, &DolphinMainWindow::showTarget);
 
     QAction *openInNewTab = actionCollection()->addAction(QStringLiteral("open_in_new_tab"));
     openInNewTab->setText(i18nc("@action:inmenu", "Open in New Tab"));
-    openInNewTab->setIcon(QIcon::fromTheme(QStringLiteral("tab-new")));
+    openInNewTab->setIcon(Aero7Icons::icon(QStringLiteral("tab-new")));
     connect(openInNewTab, &QAction::triggered, this, &DolphinMainWindow::openInNewTab);
 
     QAction *openInNewTabs = actionCollection()->addAction(QStringLiteral("open_in_new_tabs"));
     openInNewTabs->setText(i18nc("@action:inmenu", "Open in New Tabs"));
-    openInNewTabs->setIcon(QIcon::fromTheme(QStringLiteral("tab-new")));
+    openInNewTabs->setIcon(Aero7Icons::icon(QStringLiteral("tab-new")));
     connect(openInNewTabs, &QAction::triggered, this, &DolphinMainWindow::openInNewTab);
 
     QAction *openInNewWindow = actionCollection()->addAction(QStringLiteral("open_in_new_window"));
     openInNewWindow->setText(i18nc("@action:inmenu", "Open in New Window"));
-    openInNewWindow->setIcon(QIcon::fromTheme(QStringLiteral("window-new")));
+    openInNewWindow->setIcon(Aero7Icons::icon(QStringLiteral("window-new")));
     connect(openInNewWindow, &QAction::triggered, this, &DolphinMainWindow::openInNewWindow);
 
     QAction *openInSplitViewAction = actionCollection()->addAction(QStringLiteral("open_in_split_view"));
     openInSplitViewAction->setText(i18nc("@action:inmenu", "Open in Split View"));
-    openInSplitViewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-split-left-right")));
+    openInSplitViewAction->setIcon(Aero7Icons::icon(QStringLiteral("view-split-left-right")));
     connect(openInSplitViewAction, &QAction::triggered, this, [this]() {
         openInSplitView(QUrl());
     });
 
     auto *windowColor = actionCollection()->addAction(QStringLiteral("window_color_sheme"));
     windowColor->setText(QStringLiteral("Window Color and Appearance"));
-    windowColor->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-color")));
+    windowColor->setIcon(Aero7Icons::icon(QStringLiteral("window-color")));
     connect(windowColor, &QAction::triggered, this, []() {
         QProcess::startDetached(QStringLiteral("control"),
                                 {QStringLiteral("--page"), QStringLiteral("personalization")});
@@ -2586,7 +2585,7 @@ void DolphinMainWindow::setupActions()
     helpMenuAction->setToolTip(i18nc("@action:inmenu Help", "Help"));
     helpMenuAction->setText(i18nc("@action:inmenu Help", "Help"));
     helpMenuAction->setIconText(QString());
-    helpMenuAction->setIcon(QIcon::fromTheme(QStringLiteral("browser-help")));
+    helpMenuAction->setIcon(Aero7Icons::icon(QStringLiteral("browser-help")));
 
     auto *tb = new QToolButton();
     tb->setDefaultAction(helpMenuAction);
@@ -2607,9 +2606,9 @@ void DolphinMainWindow::setupDockWidgets()
 
     KDualAction *lockLayoutAction = actionCollection()->add<KDualAction>(QStringLiteral("lock_panels"));
     lockLayoutAction->setActiveText(i18nc("@action:inmenu Panels", "Unlock Panels"));
-    lockLayoutAction->setActiveIcon(QIcon::fromTheme(QStringLiteral("object-unlocked")));
+    lockLayoutAction->setActiveIcon(Aero7Icons::icon(QStringLiteral("object-unlocked")));
     lockLayoutAction->setInactiveText(i18nc("@action:inmenu Panels", "Lock Panels"));
-    lockLayoutAction->setInactiveIcon(QIcon::fromTheme(QStringLiteral("object-locked")));
+    lockLayoutAction->setInactiveIcon(Aero7Icons::icon(QStringLiteral("object-locked")));
     lockLayoutAction->setWhatsThis(xi18nc("@info:whatsthis",
                                           "This "
                                           "switches between having panels <emphasis>locked</emphasis> or "
@@ -2631,7 +2630,7 @@ void DolphinMainWindow::setupDockWidgets()
     connect(infoPanel, &InformationPanel::urlActivated, this, &DolphinMainWindow::handleUrl);
     infoDock->setWidget(infoPanel);
 
-    createPanelAction(QIcon::fromTheme(QStringLiteral("documentinfo")), Qt::Key_F11, infoDock, QStringLiteral("show_information_panel"));
+    createPanelAction(Aero7Icons::icon(QStringLiteral("documentinfo")), Qt::Key_F11, infoDock, QStringLiteral("show_information_panel"));
 
     addDockWidget(Qt::RightDockWidgetArea, infoDock);
     connect(this, &DolphinMainWindow::urlChanged, infoPanel, &InformationPanel::setUrl);
@@ -2675,7 +2674,7 @@ void DolphinMainWindow::setupDockWidgets()
     foldersPanel->setCustomContextMenuActions({lockLayoutAction});
     foldersDock->setWidget(foldersPanel);
 
-    createPanelAction(QIcon::fromTheme(QStringLiteral("folder")), Qt::Key_F7, foldersDock, QStringLiteral("show_folders_panel"));
+    createPanelAction(Aero7Icons::icon(QStringLiteral("folder")), Qt::Key_F7, foldersDock, QStringLiteral("show_folders_panel"));
 
     addDockWidget(Qt::LeftDockWidgetArea, foldersDock);
     connect(this, &DolphinMainWindow::urlChanged, foldersPanel, &FoldersPanel::setUrl);
@@ -2715,7 +2714,7 @@ void DolphinMainWindow::setupDockWidgets()
         connect(terminalDock, &DolphinDockWidget::visibilityChanged, m_terminalPanel, &TerminalPanel::dockVisibilityChanged);
         connect(terminalDock, &DolphinDockWidget::visibilityChanged, this, &DolphinMainWindow::slotTerminalPanelVisibilityChanged);
 
-        createPanelAction(QIcon::fromTheme(QStringLiteral("dialog-scripts")), Qt::Key_F4, terminalDock, QStringLiteral("show_terminal_panel"));
+        createPanelAction(Aero7Icons::icon(QStringLiteral("terminal")), Qt::Key_F4, terminalDock, QStringLiteral("show_terminal_panel"));
 
         addDockWidget(Qt::BottomDockWidgetArea, terminalDock);
         connect(this, &DolphinMainWindow::urlChanged, m_terminalPanel, &TerminalPanel::setUrl);
@@ -2748,7 +2747,7 @@ void DolphinMainWindow::setupDockWidgets()
         QAction *focusTerminalPanel = actionCollection()->addAction(QStringLiteral("focus_terminal_panel"));
         focusTerminalPanel->setText(i18nc("@action:inmenu Tools", "Focus Terminal Panel"));
         focusTerminalPanel->setToolTip(i18nc("@info:tooltip", "Move keyboard focus to and from the Terminal panel."));
-        focusTerminalPanel->setIcon(QIcon::fromTheme(QStringLiteral("swap-panels")));
+        focusTerminalPanel->setIcon(Aero7Icons::icon(QStringLiteral("swap-panels")));
         actionCollection()->setDefaultShortcut(focusTerminalPanel, Qt::CTRL | Qt::SHIFT | Qt::Key_F4);
         connect(focusTerminalPanel, &QAction::triggered, this, &DolphinMainWindow::toggleTerminalPanelFocus);
 
@@ -2782,7 +2781,7 @@ void DolphinMainWindow::setupDockWidgets()
     m_placesPanel->setCustomContextMenuActions({lockLayoutAction});
     placesDock->setWidget(m_placesPanel);
 
-    createPanelAction(QIcon::fromTheme(QStringLiteral("compass")), Qt::Key_F9, placesDock, QStringLiteral("show_places_panel"));
+    createPanelAction(Aero7Icons::icon(QStringLiteral("places")), Qt::Key_F9, placesDock, QStringLiteral("show_places_panel"));
 
     addDockWidget(Qt::LeftDockWidgetArea, placesDock);
     resizeDocks({placesDock}, {133}, Qt::Horizontal);
@@ -2802,7 +2801,7 @@ void DolphinMainWindow::setupDockWidgets()
     connect(m_placesPanel, &PlacesPanel::storageTearDownExternallyRequested, this, &DolphinMainWindow::slotStorageTearDownExternallyRequested);
     DolphinUrlNavigatorsController::slotPlacesPanelVisibilityChanged(m_placesPanel->isVisible());
 
-    auto actionShowAllPlaces = new QAction(QIcon::fromTheme(QStringLiteral("view-hidden")), i18nc("@item:inmenu", "Show Hidden Places"), this);
+    auto actionShowAllPlaces = new QAction(Aero7Icons::icon(QStringLiteral("view-hidden")), i18nc("@item:inmenu", "Show Hidden Places"), this);
     actionShowAllPlaces->setCheckable(true);
     actionShowAllPlaces->setDisabled(true);
     actionShowAllPlaces->setWhatsThis(i18nc("@info:whatsthis",
@@ -2841,14 +2840,14 @@ void DolphinMainWindow::setupDockWidgets()
     QAction *focusPlacesPanel = actionCollection()->addAction(QStringLiteral("focus_places_panel"));
     focusPlacesPanel->setText(i18nc("@action:inmenu View", "Focus Places Panel"));
     focusPlacesPanel->setToolTip(i18nc("@info:tooltip", "Move keyboard focus to and from the Places panel."));
-    focusPlacesPanel->setIcon(QIcon::fromTheme(QStringLiteral("swap-panels")));
+    focusPlacesPanel->setIcon(Aero7Icons::icon(QStringLiteral("swap-panels")));
     actionCollection()->setDefaultShortcut(focusPlacesPanel, Qt::CTRL | Qt::Key_P);
     connect(focusPlacesPanel, &QAction::triggered, this, &DolphinMainWindow::togglePlacesPanelFocus);
 
     // Add actions into the "Panels" menu
     KActionMenu *panelsMenu = new KActionMenu(i18nc("@action:inmenu View", "Show Panels"), this);
     actionCollection()->addAction(QStringLiteral("panels"), panelsMenu);
-    panelsMenu->setIcon(QIcon::fromTheme(QStringLiteral("view-sidetree")));
+    panelsMenu->setIcon(Aero7Icons::icon(QStringLiteral("view-sidetree")));
     panelsMenu->setPopupMode(QToolButton::InstantPopup);
     const KActionCollection *ac = actionCollection();
     panelsMenu->addAction(ac->action(QStringLiteral("show_places_panel")));
@@ -2909,7 +2908,7 @@ void DolphinMainWindow::setupWindowHeader()
     auto *libraryMenu = new QMenu(m_winHeader->m_include);
     for (Aero7Library library : Aero7Libraries::instance().libraries()) {
         libraryMenu->addAction(
-            QIcon::fromTheme(QStringLiteral("folder-%1").arg(library.id)),
+            Aero7Icons::icon(QStringLiteral("folder-%1").arg(library.id)),
             library.name, this, [this, library]() mutable {
                 const KFileItemList selected = activeViewContainer()->view()->selectedItems();
                 QString folder;
@@ -3173,7 +3172,7 @@ void DolphinMainWindow::setupWindowHeader()
     locationIcon->setObjectName(QStringLiteral("aero7LocationIcon"));
     locationIcon->setFixedSize(21, 21);
     locationIcon->setAlignment(Qt::AlignCenter);
-    locationIcon->setPixmap(QIcon::fromTheme(QStringLiteral("folder-download")).pixmap(16, 16));
+    locationIcon->setPixmap(Aero7Icons::icon(QStringLiteral("folder-download")).pixmap(16, 16));
     d->primaryNavHole->layout()->addWidget(locationIcon);
     DolphinUrlNavigator *primaryNavigator = m_navigatorsWidgetAction->stealPrimaryUrlNavigator();
     primaryNavigator->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -3229,7 +3228,7 @@ void DolphinMainWindow::setupWindowHeader()
     refreshButton->setFixedSize(24, 21);
     refreshButton->setAutoRaise(true);
     refreshButton->setFocusPolicy(Qt::NoFocus);
-    refreshButton->setIcon(QIcon::fromTheme(QStringLiteral("view-refresh")));
+    refreshButton->setIcon(Aero7Icons::icon(QStringLiteral("view-refresh")));
     refreshButton->setIconSize(QSize(22, 22));
     refreshButton->setToolTip(QStringLiteral("Refresh"));
     connect(refreshButton, &QToolButton::clicked, this, [this]() {
@@ -3535,7 +3534,7 @@ void DolphinMainWindow::updateSplitActions()
             if (tabPage->primaryViewActive()) {
                 m_splitViewAction->setText(i18nc("@action:intoolbar Close left view", "Close"));
                 m_splitViewAction->setToolTip(i18nc("@info View refer here to split view", "Close Left View"));
-                m_splitViewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-left-close")));
+                m_splitViewAction->setIcon(Aero7Icons::icon(QStringLiteral("view-left-close")));
                 m_splitViewMenuAction->setText(i18nc("@action:inmenu View refer here to split view", "Close Left View"));
 
                 popoutSplitAction->setText(i18nc("@action:intoolbar Move left split view to a new window", "Pop out Left View"));
@@ -3543,7 +3542,7 @@ void DolphinMainWindow::updateSplitActions()
             } else {
                 m_splitViewAction->setText(i18nc("@action:intoolbar Close right view", "Close"));
                 m_splitViewAction->setToolTip(i18nc("@info View refer here to split view", "Close Right View"));
-                m_splitViewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-right-close")));
+                m_splitViewAction->setIcon(Aero7Icons::icon(QStringLiteral("view-right-close")));
                 m_splitViewMenuAction->setText(i18nc("@action:inmenu View refer here to split view", "Close Right View"));
 
                 popoutSplitAction->setText(i18nc("@action:intoolbar Move right split view to a new window", "Pop out Right View"));
@@ -3554,7 +3553,7 @@ void DolphinMainWindow::updateSplitActions()
             if (!tabPage->primaryViewActive()) {
                 m_splitViewAction->setText(i18nc("@action:intoolbar Close left view", "Close"));
                 m_splitViewAction->setToolTip(i18nc("@info View refer here to split view", "Close Left View"));
-                m_splitViewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-left-close")));
+                m_splitViewAction->setIcon(Aero7Icons::icon(QStringLiteral("view-left-close")));
                 m_splitViewMenuAction->setText(i18nc("@action:inmenu View refer here to split view", "Close Left View"));
 
                 popoutSplitAction->setText(i18nc("@action:intoolbar Move left split view to a new window", "Pop out Left View"));
@@ -3562,7 +3561,7 @@ void DolphinMainWindow::updateSplitActions()
             } else {
                 m_splitViewAction->setText(i18nc("@action:intoolbar Close right view", "Close"));
                 m_splitViewAction->setToolTip(i18nc("@info View refer here to split view", "Close Right View"));
-                m_splitViewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-right-close")));
+                m_splitViewAction->setIcon(Aero7Icons::icon(QStringLiteral("view-right-close")));
                 m_splitViewMenuAction->setText(i18nc("@action:inmenu View refer here to split view", "Close Right View"));
 
                 popoutSplitAction->setText(i18nc("@action:intoolbar Move right split view to a new window", "Pop out Right View"));
@@ -3572,7 +3571,7 @@ void DolphinMainWindow::updateSplitActions()
         case Choice::RightView:
             m_splitViewAction->setText(i18nc("@action:intoolbar Close right view", "Close"));
             m_splitViewAction->setToolTip(i18nc("@info View refer here to split view", "Close Right View"));
-            m_splitViewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-right-close")));
+            m_splitViewAction->setIcon(Aero7Icons::icon(QStringLiteral("view-right-close")));
             m_splitViewMenuAction->setText(i18nc("@action:inmenu View refer here to split view", "Close Right View"));
 
             popoutSplitAction->setText(i18nc("@action:intoolbar Move right split view to a new window", "Pop out Right View"));
@@ -3591,7 +3590,7 @@ void DolphinMainWindow::updateSplitActions()
         m_splitViewAction->setText(QString()/*i18nc("@action:intoolbar Split view", "Split")*/);      // Don't clutter the toolbar, icons only like in W7
         m_splitViewMenuAction->setText(m_splitViewAction->text());
         m_splitViewAction->setToolTip(i18nc("@info", "Split view"));
-        m_splitViewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-split-left-right")));
+        m_splitViewAction->setIcon(Aero7Icons::icon(QStringLiteral("view-split-left-right")));
         popoutSplitAction->setText(i18nc("@action:intoolbar Move view in focus to a new window", "Pop out"));
         popoutSplitAction->setEnabled(false);
         if (m_splitViewAction->menu()) {

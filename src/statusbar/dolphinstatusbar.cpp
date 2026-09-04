@@ -5,6 +5,7 @@
  */
 
 #include "dolphinstatusbar.h"
+#include "aero7icons.h"
 
 #include "dolphin_generalsettings.h"
 #include "statusbarspaceinfo.h"
@@ -139,7 +140,7 @@ DolphinStatusBar::DolphinStatusBar(QWidget *parent)
 
     // Initialize progress information
     m_stopButton = new QToolButton(contentsContainer);
-    m_stopButton->setIcon(QIcon::fromTheme(QStringLiteral("process-stop")));
+    m_stopButton->setIcon(Aero7Icons::icon(QStringLiteral("process-stop")));
     m_stopButton->setAccessibleName(i18n("Stop"));
     m_stopButton->setAutoRaise(true);
     m_stopButton->setToolTip(i18nc("@tooltip", "Stop loading"));
@@ -324,7 +325,7 @@ void DolphinStatusBar::setComputerMode(bool enabled)
     m_computerMode = enabled;
     if (enabled) {
         m_updateLabelTextTimer->stop();
-        m_locationIcon->setPixmap(QIcon::fromTheme(QStringLiteral("computer")).pixmap(42, 42));
+        m_locationIcon->setPixmap(Aero7Icons::icon(QStringLiteral("computer")).pixmap(42, 42));
         m_defaultText = QStringLiteral("%1    Workgroup: WORKGROUP    Memory: %2\nProcessor: %3")
                             .arg(QSysInfo::machineHostName().toUpper(), aero7MemoryText(),
                                  aero7ProcessorText());

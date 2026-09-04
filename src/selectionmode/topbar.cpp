@@ -6,6 +6,7 @@
 */
 
 #include "topbar.h"
+#include "aero7icons.h"
 
 #include "backgroundcolorhelper.h"
 
@@ -49,7 +50,7 @@ TopBar::TopBar(QWidget *parent)
         nullptr,
         contentsContainer};
 
-    m_closeButton = new QPushButton(QIcon::fromTheme(QStringLiteral("window-close-symbolic")), "", contentsContainer);
+    m_closeButton = new QPushButton(Aero7Icons::icon(QStringLiteral("window-close")), "", contentsContainer);
     m_closeButton->setText(i18nc("@action:button", "Exit Selection Mode"));
     m_closeButton->setFlat(true);
     connect(m_closeButton, &QAbstractButton::clicked, this, &TopBar::selectionModeLeavingRequested);

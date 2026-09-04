@@ -6,6 +6,7 @@
 */
 
 #include "dolphinnavigatorswidgetaction.h"
+#include "aero7icons.h"
 
 #include "trash/dolphintrash.h"
 
@@ -30,7 +31,7 @@ DolphinNavigatorsWidgetAction::DolphinNavigatorsWidgetAction(QWidget *parent)
     , m_viewGeometriesHelper{m_splitter.get(), this}
 {
     updateText();
-    setIcon(QIcon::fromTheme(QStringLiteral("dialog-scripts")));
+    setIcon(Aero7Icons::icon(QStringLiteral("terminal")));
 
     m_splitter->setChildrenCollapsible(false);
 
@@ -254,7 +255,7 @@ QPushButton *DolphinNavigatorsWidgetAction::emptyTrashButton(DolphinNavigatorsWi
 
 QPushButton *DolphinNavigatorsWidgetAction::newEmptyTrashButton(const DolphinUrlNavigator *urlNavigator, QWidget *parent) const
 {
-    auto emptyTrashButton = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), i18nc("@action:button", "Empty Trash"), parent);
+    auto emptyTrashButton = new QPushButton(Aero7Icons::icon(QStringLiteral("edit-delete")), i18nc("@action:button", "Empty Trash"), parent);
     emptyTrashButton->setToolTip(i18n("Empties Trash to create free space"));
 
     emptyTrashButton->setFlat(true);
@@ -281,7 +282,7 @@ QPushButton *DolphinNavigatorsWidgetAction::networkFolderButton(DolphinNavigator
 
 QPushButton *DolphinNavigatorsWidgetAction::newNetworkFolderButton(const DolphinUrlNavigator *urlNavigator, QWidget *parent) const
 {
-    auto networkFolderButton = new QPushButton(QIcon::fromTheme(QStringLiteral("folder-add")), i18nc("@action:button", "Add Network Folder"), parent);
+    auto networkFolderButton = new QPushButton(Aero7Icons::icon(QStringLiteral("folder-add")), i18nc("@action:button", "Add Network Folder"), parent);
     networkFolderButton->setFlat(true);
     connect(networkFolderButton, &QPushButton::clicked, this, [networkFolderButton]() {
         const KService::Ptr service = KService::serviceByDesktopName(QStringLiteral("org.kde.knetattach"));

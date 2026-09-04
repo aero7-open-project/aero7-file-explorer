@@ -5,6 +5,7 @@
  */
 
 #include "dolphinrecenttabsmenu.h"
+#include "aero7icons.h"
 #include "search/dolphinquery.h"
 
 #include <KAcceleratorManager>
@@ -15,13 +16,13 @@
 #include <QUrlQuery>
 
 DolphinRecentTabsMenu::DolphinRecentTabsMenu(QObject *parent)
-    : KActionMenu(QIcon::fromTheme(QStringLiteral("edit-undo")), i18n("Recently Closed Tabs"), parent)
+    : KActionMenu(Aero7Icons::icon(QStringLiteral("edit-undo")), i18n("Recently Closed Tabs"), parent)
 {
     setPopupMode(QToolButton::InstantPopup);
     setEnabled(false);
 
     m_clearListAction = new QAction(i18n("Empty Recently Closed Tabs"), this);
-    m_clearListAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-clear-history")));
+    m_clearListAction->setIcon(Aero7Icons::icon(QStringLiteral("edit-clear-history")));
     addAction(m_clearListAction);
 
     addSeparator();

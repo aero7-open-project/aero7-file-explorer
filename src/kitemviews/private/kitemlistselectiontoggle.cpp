@@ -5,6 +5,7 @@
  */
 
 #include "kitemlistselectiontoggle.h"
+#include "aero7icons.h"
 
 #include <KIconLoader>
 
@@ -76,7 +77,7 @@ void KItemListSelectionToggle::resizeEvent(QGraphicsSceneResizeEvent *event)
 void KItemListSelectionToggle::updatePixmap()
 {
     const QString icon = m_checked ? QStringLiteral("emblem-remove") : QStringLiteral("emblem-added");
-    m_pixmap = QIcon::fromTheme(icon).pixmap(iconSize(), m_hovered ? QIcon::Active : QIcon::Disabled);
+    m_pixmap = Aero7Icons::icon(icon).pixmap(iconSize(), m_hovered ? QIcon::Active : QIcon::Disabled);
 }
 
 int KItemListSelectionToggle::iconSize() const

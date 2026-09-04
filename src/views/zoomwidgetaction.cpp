@@ -5,6 +5,7 @@
  */
 
 #include "zoomwidgetaction.h"
+#include "aero7icons.h"
 
 #include <KLocalizedString>
 
@@ -37,7 +38,7 @@ protected:
         option.menuHasCheckableItems = true;
         option.checkType = QStyleOptionMenuItem::NotCheckable;
         option.text = i18nc("@action:inmenu", "Zoom");
-        option.icon = QIcon::fromTheme(QStringLiteral("zoom"));
+        option.icon = Aero7Icons::icon(QStringLiteral("zoom"));
         option.reservedShortcutWidth = 0;
         option.menuItemType = QStyleOptionMenuItem::Normal;
 
@@ -54,7 +55,7 @@ protected:
 };
 
 ZoomWidgetAction::ZoomWidgetAction(QAction *zoomInAction, QAction *zoomResetAction, QAction *zoomOutAction, QObject *parent)
-    : KToolBarPopupAction(QIcon::fromTheme(QStringLiteral("zoom")), i18nc("@action:intoolbar", "Zoom"), parent)
+    : KToolBarPopupAction(Aero7Icons::icon(QStringLiteral("zoom")), i18nc("@action:intoolbar", "Zoom"), parent)
     , m_zoomInAction(zoomInAction)
     , m_zoomResetAction(zoomResetAction)
     , m_zoomOutAction(zoomOutAction)

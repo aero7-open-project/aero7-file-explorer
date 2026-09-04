@@ -66,7 +66,7 @@ Name[uk]=Піктограми
 Name[vi]=Biểu tượng
 Name[zh_CN]=图标
 Name[zh_TW]=圖示
-Icon=view-list-icons
+Icon=aero7-file-explorer-view-icons
 # Dummy
 Exec=dolphin
 
@@ -129,7 +129,7 @@ Name[uk]=Компактний
 Name[vi]=Gọn
 Name[zh_CN]=紧凑
 Name[zh_TW]=簡潔模式
-Icon=view-list-details
+Icon=aero7-file-explorer-view-compact
 # Dummy
 Exec=dolphin
 
@@ -193,6 +193,6 @@ Name[uk]=Подробиці
 Name[vi]=Chi tiết
 Name[zh_CN]=详情
 Name[zh_TW]=詳細模式
-Icon=view-list-tree
+Icon=aero7-file-explorer-view-details
 # Dummy
 Exec=dolphin

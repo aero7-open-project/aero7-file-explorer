@@ -6,6 +6,7 @@
 */
 
 #include "bar.h"
+#include "aero7icons.h"
 #include "global.h"
 
 #include "barsecondrowflowlayout.h"
@@ -59,7 +60,7 @@ Bar::Bar(const std::shared_ptr<const DolphinQuery> &dolphinQuery, QWidget *paren
 
     // Add "Save search" button inside search box
     m_saveSearchAction = new QAction(this);
-    m_saveSearchAction->setIcon(QIcon::fromTheme(QStringLiteral("document-save-symbolic")));
+    m_saveSearchAction->setIcon(Aero7Icons::icon(QStringLiteral("document-save")));
     m_saveSearchAction->setText(i18nc("action:button", "Save search"));
     m_saveSearchAction->setToolTip(i18nc("action:button", "Save this search to quickly access it again in the future"));
     m_searchTermEditor->addAction(m_saveSearchAction, QLineEdit::TrailingPosition);
@@ -67,7 +68,7 @@ Bar::Bar(const std::shared_ptr<const DolphinQuery> &dolphinQuery, QWidget *paren
 
     // Filter button
     auto filterButton = new QToolButton(contentsContainer);
-    filterButton->setIcon(QIcon::fromTheme(QStringLiteral("view-filter")));
+    filterButton->setIcon(Aero7Icons::icon(QStringLiteral("view-filter")));
     filterButton->setText(i18nc("@action:button for changing search options", "Filter"));
     filterButton->setAutoRaise(true);
     filterButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -85,7 +86,7 @@ Bar::Bar(const std::shared_ptr<const DolphinQuery> &dolphinQuery, QWidget *paren
     // Create close button
     QToolButton *closeButton = new QToolButton(contentsContainer);
     closeButton->setAutoRaise(true);
-    closeButton->setIcon(QIcon::fromTheme(QStringLiteral("dialog-close")));
+    closeButton->setIcon(Aero7Icons::icon(QStringLiteral("dialog-close")));
     closeButton->setToolTip(i18nc("@info:tooltip", "Quit searching"));
     connect(closeButton, &QToolButton::clicked, this, [this]() {
         setVisible(false, WithAnimation);

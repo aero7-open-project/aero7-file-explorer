@@ -5,9 +5,11 @@
  */
 
 #include "folderstabssettingspage.h"
+#include "aero7icons.h"
 #include "dolphinmainwindow.h"
 #include "dolphinviewcontainer.h"
 #include "global.h"
+#include "aero7/aero7commondialog.h"
 
 #include <KLocalizedString>
 #include <KMessageBox>
@@ -19,7 +21,6 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QFileDialog>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -68,7 +69,7 @@ FoldersTabsSettingsPage::FoldersTabsSettingsPage(QWidget *parent)
     homeUrlBoxLayout->addWidget(m_homeUrl, 0, topLayout->formAlignment());
     m_homeUrl->setMinimumWidth(m_homeUrl->fontMetrics().horizontalAdvance(m_homeUrl->placeholderText()) * 2);
 
-    QPushButton *selectHomeUrlButton = new QPushButton(QIcon::fromTheme(QStringLiteral("folder-open")), QString());
+    QPushButton *selectHomeUrlButton = new QPushButton(Aero7Icons::icon(QStringLiteral("folder-open")), QString());
     homeUrlBoxLayout->addWidget(selectHomeUrlButton);
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -280,9 +281,11 @@ void FoldersTabsSettingsPage::updateInitialViewOptions()
 void FoldersTabsSettingsPage::selectHomeUrl()
 {
     const QUrl homeUrl(QUrl::fromUserInput(m_homeUrl->text(), QString(), QUrl::AssumeLocalFile));
-    QUrl url = QFileDialog::getExistingDirectoryUrl(this, QString(), homeUrl);
-    if (!url.isEmpty()) {
-        m_homeUrl->setText(url.toDisplayString(QUrl::PreferLocalFile));
+    Aero7CommonDialog dialog(Aero7CommonDialog::Mode::ChooseFolder,
+                             QStringLiteral("aero7-file-explorer-settings"), this);
+    dialog.setInitialDirectory(homeUrl.toLocalFile());
+    if (dialog.exec() == QDialog::Accepted && !dialog.selectedFiles().isEmpty()) {
+        m_homeUrl->setText(dialog.selectedFiles().constFirst());
         slotSettingsChanged();
     }
 }

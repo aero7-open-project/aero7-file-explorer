@@ -5,6 +5,7 @@
  */
 
 #include "dolphintabbar.h"
+#include "aero7icons.h"
 #include "dolphin_generalsettings.h"
 #include <KLocalizedString>
 
@@ -183,12 +184,12 @@ void DolphinTabBar::contextMenuEvent(QContextMenuEvent *event)
         // Tab context menu
         QMenu menu(this);
 
-        QAction *newTabAction = menu.addAction(QIcon::fromTheme(QStringLiteral("tab-new")), i18nc("@action:inmenu", "New Tab"));
-        QAction *detachTabAction = menu.addAction(QIcon::fromTheme(QStringLiteral("tab-detach")), i18nc("@action:inmenu", "Detach Tab"));
-        QAction *closeOtherTabsAction = menu.addAction(QIcon::fromTheme(QStringLiteral("tab-close-other")), i18nc("@action:inmenu", "Close Other Tabs"));
-        QAction *closeTabAction = menu.addAction(QIcon::fromTheme(QStringLiteral("tab-close")), i18nc("@action:inmenu", "Close Tab"));
+        QAction *newTabAction = menu.addAction(Aero7Icons::icon(QStringLiteral("tab-new")), i18nc("@action:inmenu", "New Tab"));
+        QAction *detachTabAction = menu.addAction(Aero7Icons::icon(QStringLiteral("tab-detach")), i18nc("@action:inmenu", "Detach Tab"));
+        QAction *closeOtherTabsAction = menu.addAction(Aero7Icons::icon(QStringLiteral("tab-close-other")), i18nc("@action:inmenu", "Close Other Tabs"));
+        QAction *closeTabAction = menu.addAction(Aero7Icons::icon(QStringLiteral("tab-close")), i18nc("@action:inmenu", "Close Tab"));
 
-        QAction *renameTabAction = menu.addAction(QIcon::fromTheme(QStringLiteral("edit-rename")), i18nc("@action:inmenu", "Rename Tab"));
+        QAction *renameTabAction = menu.addAction(Aero7Icons::icon(QStringLiteral("edit-rename")), i18nc("@action:inmenu", "Rename Tab"));
 
         QAction *selectedAction = menu.exec(event->globalPos());
         if (selectedAction == newTabAction) {

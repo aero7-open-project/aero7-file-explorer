@@ -6,6 +6,7 @@
 */
 
 #include "bar.h"
+#include "aero7icons.h"
 
 #include "dolphinviewcontainer.h"
 #include "workerintegration.h"
@@ -49,9 +50,9 @@ Bar::Bar(DolphinViewContainer *parentViewContainer)
     m_label->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByKeyboard); // for keyboard accessibility
 
     m_warningButton = new KContextualHelpButton(warningMessage(), nullptr, contenntsContainer);
-    m_warningButton->setIcon(QIcon::fromTheme(QStringLiteral("emblem-warning")));
+    m_warningButton->setIcon(Aero7Icons::icon(QStringLiteral("warning")));
 
-    m_closeButton = new QPushButton(QIcon::fromTheme(QStringLiteral("window-close-symbolic")),
+    m_closeButton = new QPushButton(Aero7Icons::icon(QStringLiteral("window-close")),
                                     i18nc("@action:button Finish/Stop/Done acting as an admin", "Finish"),
                                     contenntsContainer);
     m_closeButton->setToolTip(i18nc("@info:tooltip", "Finish acting as an administrator"));

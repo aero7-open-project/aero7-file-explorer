@@ -5,6 +5,7 @@
  */
 
 #include "dolphinsettingsdialog.h"
+#include "aero7icons.h"
 
 #include "config-dolphin.h"
 #include "contextmenu/contextmenusettingspage.h"
@@ -18,7 +19,6 @@
 #include "userfeedback/userfeedbacksettingspage.h"
 #endif
 
-#include <KAuthorized>
 #include <KLocalizedString>
 #include <KMessageBox>
 #include <KRuntimePlatform>
@@ -44,13 +44,13 @@ DolphinSettingsDialog::DolphinSettingsDialog(const QUrl &url, QWidget *parent, K
     // Interface
     InterfaceSettingsPage *interfaceSettingsPage = new InterfaceSettingsPage(this);
     KPageWidgetItem *interfaceSettingsFrame = addPage(interfaceSettingsPage, i18nc("@title:group Interface settings", "Interface"));
-    interfaceSettingsFrame->setIcon(QIcon::fromTheme(QStringLiteral("org.kde.dolphin")));
+    interfaceSettingsFrame->setIcon(Aero7Icons::icon(QStringLiteral("system-file-manager")));
     connect(interfaceSettingsPage, &InterfaceSettingsPage::changed, this, &DolphinSettingsDialog::enableApply);
 
     // View
     ViewSettingsPage *viewSettingsPage = new ViewSettingsPage(url, this);
     KPageWidgetItem *viewSettingsFrame = addPage(viewSettingsPage, i18nc("@title:group", "View"));
-    viewSettingsFrame->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-icons")));
+    viewSettingsFrame->setIcon(Aero7Icons::icon(QStringLiteral("view-settings")));
     connect(viewSettingsPage, &ViewSettingsPage::changed, this, &DolphinSettingsDialog::enableApply);
 
     // Context Menu
@@ -68,7 +68,7 @@ DolphinSettingsDialog::DolphinSettingsDialog(const QUrl &url, QWidget *parent, K
                                                                 QStringLiteral("copy_to_inactive_split_view"),
                                                                 QStringLiteral("move_to_inactive_split_view")});
     KPageWidgetItem *contextMenuSettingsFrame = addPage(contextMenuSettingsPage, i18nc("@title:group", "Context Menu"));
-    contextMenuSettingsFrame->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-menu-edit")));
+    contextMenuSettingsFrame->setIcon(Aero7Icons::icon(QStringLiteral("context-menu-settings")));
     connect(contextMenuSettingsPage, &ContextMenuSettingsPage::changed, this, &DolphinSettingsDialog::enableApply);
 
     // Trash
@@ -78,7 +78,7 @@ DolphinSettingsDialog::DolphinSettingsDialog(const QUrl &url, QWidget *parent, K
 #endif
     if (trashSettingsPage) {
         trashSettings = addPage(trashSettingsPage, i18nc("@title:group", "Trash"));
-        trashSettings->setIcon(QIcon::fromTheme(QStringLiteral("user-trash")));
+        trashSettings->setIcon(Aero7Icons::icon(QStringLiteral("user-trash")));
         connect(trashSettingsPage, &TrashSettingsPage::changed, this, &DolphinSettingsDialog::enableApply);
     }
 
@@ -88,7 +88,7 @@ DolphinSettingsDialog::DolphinSettingsDialog(const QUrl &url, QWidget *parent, K
     if (DolphinFeedbackProvider::instance()->isEnabled()) {
         feedbackSettingsPage = new UserFeedbackSettingsPage(this);
         auto feedbackSettingsFrame = addPage(feedbackSettingsPage, i18nc("@title:group", "User Feedback"));
-        feedbackSettingsFrame->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-locale")));
+        feedbackSettingsFrame->setIcon(Aero7Icons::icon(QStringLiteral("feedback")));
         connect(feedbackSettingsPage, &UserFeedbackSettingsPage::changed, this, &DolphinSettingsDialog::enableApply);
     }
 #endif
@@ -187,10 +187,6 @@ void DolphinSettingsDialog::closeEvent(QCloseEvent *event)
 
 SettingsPageBase *DolphinSettingsDialog::createTrashSettingsPage(QWidget *parent)
 {
-    if (!KAuthorized::authorizeControlModule(QStringLiteral("kcmtrash.desktop"))) {
-        return nullptr;
-    }
-
     return new TrashSettingsPage(parent);
 }
 

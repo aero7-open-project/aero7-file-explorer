@@ -6,6 +6,7 @@
  */
 
 #include "dolphinview.h"
+#include "aero7icons.h"
 
 #include "dolphin_detailsmodesettings.h"
 #include "dolphin_generalsettings.h"
@@ -916,7 +917,7 @@ void DolphinView::trashSelectedItems()
         auto *recycleIcon = new QLabel;
         recycleIcon->setFixedSize(64, 64);
         recycleIcon->setAlignment(Qt::AlignCenter);
-        recycleIcon->setPixmap(QIcon::fromTheme(QStringLiteral("user-trash")).pixmap(48, 48));
+        recycleIcon->setPixmap(Aero7Icons::icon(QStringLiteral("user-trash")).pixmap(48, 48));
         questionRow->addWidget(recycleIcon, 0, Qt::AlignTop);
 
         auto *questionColumn = new QVBoxLayout;
@@ -2439,7 +2440,7 @@ void DolphinView::slotRoleEditingFinished(int index, const QByteArray &role, con
 
                         const QIcon mimeTypeIcon = QIcon::fromTheme(newMimeType.iconName(), QIcon::fromTheme(QStringLiteral("unknown")));
                         // emblem-warning is non-standard, fall back to emblem-important if necessary.
-                        const QIcon warningBadge = QIcon::fromTheme(QStringLiteral("emblem-warning"), QIcon::fromTheme(QStringLiteral("emblem-important")));
+                        const QIcon warningBadge = Aero7Icons::icon(QStringLiteral("warning"));
 
                         const QIcon messageBoxIcon =
                             KIconUtils::addOverlay(mimeTypeIcon, warningBadge, isRightToLeft() ? Qt::BottomLeftCorner : Qt::BottomRightCorner);

@@ -5,6 +5,7 @@
  */
 
 #include "dolphincontextmenu.h"
+#include "aero7icons.h"
 
 #include "dolphin_contextmenusettings.h"
 #include "dolphin_generalsettings.h"
@@ -134,7 +135,7 @@ void DolphinContextMenu::addTrashContextMenu()
 
     Q_ASSERT(m_context & TrashContext);
 
-    QAction *restoreAllAction = addAction(QIcon::fromTheme(QStringLiteral("edit-reset")),
+    QAction *restoreAllAction = addAction(Aero7Icons::icon(QStringLiteral("edit-reset")),
                                           QStringLiteral("Restore all items"), this, [this]() {
         auto *job = KIO::listDir(QUrl(QStringLiteral("trash:/")), KIO::HideProgressInfo);
         auto *urls = new QList<QUrl>;
@@ -157,7 +158,7 @@ void DolphinContextMenu::addTrashContextMenu()
     });
     restoreAllAction->setEnabled(!Trash::isEmpty());
 
-    QAction *emptyTrashAction = addAction(QIcon::fromTheme(QStringLiteral("edit-delete")), i18nc("@action:inmenu", "Empty Recycle Bin"), this, [this]() {
+    QAction *emptyTrashAction = addAction(Aero7Icons::icon(QStringLiteral("edit-delete")), i18nc("@action:inmenu", "Empty Recycle Bin"), this, [this]() {
         Trash::empty(m_mainWindow);
     });
     emptyTrashAction->setEnabled(!Trash::isEmpty());
@@ -168,7 +169,7 @@ void DolphinContextMenu::addTrashContextMenu()
 
     addSeparator();
 
-    auto *configureTrashAction = new QAction(QIcon::fromTheme(QStringLiteral("configure")), i18nc("@action:inmenu", "Recycle Bin Properties…"), this);
+    auto *configureTrashAction = new QAction(Aero7Icons::icon(QStringLiteral("configure")), i18nc("@action:inmenu", "Recycle Bin Properties…"), this);
     connect(configureTrashAction, &QAction::triggered, this, &DolphinContextMenu::configureTrash);
     addAction(configureTrashAction);
 }
@@ -183,7 +184,7 @@ void DolphinContextMenu::addTrashItemContextMenu()
     Q_ASSERT(m_context & TrashContext);
     Q_ASSERT(m_context & ItemContext);
 
-    addAction(QIcon::fromTheme(QStringLiteral("edit-reset")),
+    addAction(Aero7Icons::icon(QStringLiteral("edit-reset")),
               i18ncp("@action:inmenu Restore the selected files that are in the trash to the place they lived at the moment they were trashed. Minimize the "
                      "length of this string if possible.",
                      "Restore to Former Location",
@@ -219,7 +220,7 @@ void DolphinContextMenu::addTrashItemContextMenu()
 
 void DolphinContextMenu::addDirectoryItemContextMenu()
 {
-    QAction *openAction = addAction(QIcon::fromTheme(QStringLiteral("document-open-folder")),
+    QAction *openAction = addAction(Aero7Icons::icon(QStringLiteral("document-open-folder")),
                                     QStringLiteral("Open"));
     connect(openAction, &QAction::triggered, this, [this]() {
         m_mainWindow->changeUrl(DolphinView::openItemAsFolderUrl(m_fileInfo));
@@ -232,7 +233,7 @@ void DolphinContextMenu::addDirectoryItemContextMenu()
 
 void DolphinContextMenu::addOpenParentFolderActions()
 {
-    addAction(QIcon::fromTheme(QStringLiteral("document-open-folder")), i18nc("@action:inmenu", "Open Path"), [this]() {
+    addAction(Aero7Icons::icon(QStringLiteral("document-open-folder")), i18nc("@action:inmenu", "Open Path"), [this]() {
         const QUrl url = m_fileInfo.targetUrl();
         const QUrl parentUrl = KIO::upUrl(url);
         m_mainWindow->changeUrl(parentUrl);
@@ -240,7 +241,7 @@ void DolphinContextMenu::addOpenParentFolderActions()
         m_mainWindow->activeViewContainer()->view()->markUrlAsCurrent(url);
     });
 
-    addAction(QIcon::fromTheme(QStringLiteral("tab-new")), i18nc("@action:inmenu", "Open Path in New Tab"), [this]() {
+    addAction(Aero7Icons::icon(QStringLiteral("tab-new")), i18nc("@action:inmenu", "Open Path in New Tab"), [this]() {
         const QUrl url = m_fileInfo.targetUrl();
         const QUrl parentUrl = KIO::upUrl(url);
         DolphinTabPage *tabPage = m_mainWindow->openNewTab(parentUrl);
@@ -248,7 +249,7 @@ void DolphinContextMenu::addOpenParentFolderActions()
         tabPage->activeViewContainer()->view()->markUrlAsCurrent(url);
     });
 
-    addAction(QIcon::fromTheme(QStringLiteral("window-new")), i18nc("@action:inmenu", "Open Path in New Window"), [this]() {
+    addAction(Aero7Icons::icon(QStringLiteral("window-new")), i18nc("@action:inmenu", "Open Path in New Window"), [this]() {
         Dolphin::openNewWindow({m_fileInfo.targetUrl()}, m_mainWindow, Dolphin::OpenNewWindowFlag::Select);
     });
 }
@@ -273,7 +274,7 @@ void DolphinContextMenu::addItemContextMenu()
 
             addSeparator();
         } else {
-            QAction *openAction = addAction(QIcon::fromTheme(QStringLiteral("document-open")),
+            QAction *openAction = addAction(Aero7Icons::icon(QStringLiteral("document-open")),
                                             QStringLiteral("Open"));
             connect(openAction, &QAction::triggered, this, [this]() {
                 m_mainWindow->openFiles({m_fileInfo.url()}, false);
@@ -417,7 +418,7 @@ QAction *DolphinContextMenu::createPasteAction()
         if (canPaste) {
             if (destItem == m_fileInfo) {
                 // if paste destination is a selected folder
-                action = new QAction(QIcon::fromTheme(QStringLiteral("edit-paste")), text, this);
+                action = new QAction(Aero7Icons::icon(QStringLiteral("edit-paste")), text, this);
                 connect(action, &QAction::triggered, m_mainWindow, &DolphinMainWindow::pasteIntoFolder);
             } else {
                 action = m_mainWindow->actionCollection()->action(KStandardAction::name(KStandardAction::Paste));

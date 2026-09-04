@@ -8,10 +8,12 @@
 
 #include "settings/settingspagebase.h"
 
-class KCModule;
+class QCheckBox;
+class QLabel;
+class QSpinBox;
 
 /**
- * @brief Tab page for the 'Trash' settings of the Dolphin settings dialog, it uses the KCM.
+ * @brief Native Aero7 Recycle Bin settings page.
  */
 class TrashSettingsPage : public SettingsPageBase
 {
@@ -29,7 +31,13 @@ public:
 
 private:
     void loadSettings();
-    KCModule *m_kcm;
+
+    QCheckBox *m_customSize = nullptr;
+    QSpinBox *m_maximumSize = nullptr;
+    QCheckBox *m_deleteImmediately = nullptr;
+    QCheckBox *m_confirmDelete = nullptr;
+    QLabel *m_location = nullptr;
+    bool m_loading = false;
 };
 
 #endif

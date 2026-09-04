@@ -1,4 +1,5 @@
 #include "dolphinwindowheader.h"
+#include "aero7icons.h"
 
 #include <QHBoxLayout>
 #include <QIcon>
@@ -136,7 +137,7 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     commands->addStretch(1);
     m_views = makeButton(QString());
     m_views->setProperty("aero7IconCommand", true);
-    m_views->setIcon(QIcon::fromTheme(QStringLiteral("view-list-details")));
+    m_views->setIcon(Aero7Icons::icon(QStringLiteral("view-list-details")));
     m_views->setIconSize(QSize(16, 16));
     m_views->setToolButtonStyle(Qt::ToolButtonIconOnly);
     m_views->setToolTip(QStringLiteral("Change your view"));
@@ -144,14 +145,14 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     m_preview = makeButton(QString());
     m_preview->setProperty("aero7IconCommand", true);
     m_preview->setCheckable(true);
-    m_preview->setIcon(QIcon::fromTheme(QStringLiteral("view-right-new")));
+    m_preview->setIcon(Aero7Icons::icon(QStringLiteral("view-right-new")));
     m_preview->setIconSize(QSize(16, 16));
     m_preview->setToolButtonStyle(Qt::ToolButtonIconOnly);
     m_preview->setToolTip(QStringLiteral("Show the preview pane"));
     m_preview->setFixedWidth(38);
     auto *help = makeButton(QString());
     help->setProperty("aero7IconCommand", true);
-    help->setIcon(QIcon::fromTheme(QStringLiteral("dialog-question")));
+    help->setIcon(Aero7Icons::icon(QStringLiteral("dialog-question")));
     help->setIconSize(QSize(16, 16));
     help->setToolButtonStyle(Qt::ToolButtonIconOnly);
     help->setToolTip(QStringLiteral("Get help"));
@@ -163,7 +164,7 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     searchIcon->setFixedSize(22, 22);
     searchIcon->setAlignment(Qt::AlignCenter);
     searchIcon->setAttribute(Qt::WA_TransparentForMouseEvents);
-    searchIcon->setPixmap(QIcon::fromTheme(QStringLiteral("edit-find")).pixmap(22, 22));
+    searchIcon->setPixmap(Aero7Icons::icon(QStringLiteral("edit-find")).pixmap(22, 22));
     auto *searchChrome = new QHBoxLayout(ui->searchBar);
     searchChrome->setContentsMargins(0, 0, 2, 0);
     searchChrome->setSpacing(0);
@@ -334,7 +335,7 @@ void DolphinWindowHeader::updateShellMode()
             iconName = QStringLiteral("computer");
         else if (m_recycleBinMode)
             iconName = QStringLiteral("user-trash");
-        icon->setPixmap(QIcon::fromTheme(iconName).pixmap(16, 16));
+        icon->setPixmap(Aero7Icons::icon(iconName).pixmap(16, 16));
     }
 }
 
