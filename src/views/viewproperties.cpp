@@ -563,15 +563,24 @@ void ViewProperties::save()
         qCWarning(DolphinDebug) << "Could not create fake directory to store metadata";
     }
 
+    auto saveDotDirectory = [this]() {
+        const QString settingsFile = m_filePath + QDir::separator() + ViewPropertiesFileName;
+        auto fileConfig = std::make_unique<KConfig>(settingsFile, KConfig::SimpleConfig);
+        // Merge into the existing file, retaining unrelated groups such as
+        // Desktop Entry. The in-memory backend alone cannot be a disk fallback.
+        fileConfig->copyFrom(*m_node->config());
+        m_node->setConfig(std::move(fileConfig));
+        m_node->setVersion(CurrentViewPropertiesVersion);
+        if (m_node->save()) {
+            m_changedProps = false;
+        } else {
+            qCWarning(DolphinDebug) << "Could not save viewproperties fallback" << settingsFile;
+        }
+    };
+
     KFileMetaData::UserMetaData metaData(m_filePath);
     if (!metaData.isSupported()) {
-        // save to dotDirectory file as fallback
-        QDir dir;
-        dir.mkpath(m_filePath);
-        m_node->setVersion(CurrentViewPropertiesVersion);
-        m_node->save();
-
-        m_changedProps = false;
+        saveDotDirectory();
         return;
     }
     const auto items = m_node->items();
@@ -617,21 +626,18 @@ void ViewProperties::save()
     // until KConfig / KCoreSkeletonConfig can expose its internal QIODevice we have to copy the config
     config->copyFrom(*m_node->config());
 
-    // if we are using a different filePath as m_filePath
-    // it means we are using fallback code path, the dir is a special case
-    if (!m_node->config()->name().startsWith(m_filePath)) {
-        m_node->setConfig(std::move(config));
-
-        // save config to disk
-        if (!m_node->save()) {
-            qCWarning(DolphinDebug) << "could not save viewproperties" << m_node->config()->name();
-            return;
-        }
+    // Always serialize into this buffer, including after a previous disk
+    // fallback. Otherwise a second save can write an empty xattr and remove
+    // the only persistent copy of the folder's settings.
+    m_node->setConfig(std::move(config));
+    if (!m_node->save()) {
+        qCWarning(DolphinDebug) << "could not serialize viewproperties";
+        return;
     }
 
     // load config from buffer
     buffer->seek(0);
-    const QString viewPropertiesString = buffer->readAll();
+    const QString viewPropertiesString = QString::fromUtf8(buffer->readAll());
 
     // save to xattr
     const auto result = metaData.setAttribute(MetaDataKey, viewPropertiesString);
@@ -643,7 +649,9 @@ void ViewProperties::save()
         } else {
             qCWarning(DolphinDebug) << "could not save viewproperties to extended attributes for dir " << m_filePath << "error:" << result;
         }
-        // keep .directory file
+        // Writing the buffer to extended attributes failed. Persist it to a
+        // real file before discarding the in-memory settings.
+        saveDotDirectory();
         return;
     }
     cleanDotDirectoryFile();

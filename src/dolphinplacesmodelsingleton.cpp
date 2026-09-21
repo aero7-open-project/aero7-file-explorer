@@ -8,14 +8,23 @@
 #include "trash/dolphintrash.h"
 #include "views/draganddrophelper.h"
 #include "aero7libraries.h"
+#include "aero7storage.h"
+#include "aero7/aero7devicevisibility.h"
+
+#include <Solid/StorageAccess>
+#include <Solid/StorageDrive>
+#include <Solid/StorageVolume>
 
 #include <KAboutData>
 
+#include <QCoreApplication>
 #include <QIcon>
 #include <QDir>
 #include <QMimeData>
 #include <QSet>
 #include <QStandardPaths>
+#include <QTimer>
+#include "aero7/aero7mountwatcher.h"
 
 namespace {
 QString specialPlacePath(const QString &name)
@@ -55,7 +64,8 @@ DolphinPlacesModel::DolphinPlacesModel(QObject *parent)
     QDir().mkpath(recentPath);
     QDir().mkpath(computerPath);
     QDir().mkpath(localDiskPath);
-    QDir().mkpath(cdDrivePath);
+    // Remove the old synthetic bookmark below, but never delete its directory:
+    // users may have placed real files there in an earlier version.
     QDir().mkpath(networkPath);
     QSet<QString> managed;
     managed.insert(QStringLiteral("aero7recent:/"));
@@ -102,8 +112,6 @@ DolphinPlacesModel::DolphinPlacesModel(QObject *parent)
                QStringLiteral("computer"));
     addManaged(QStringLiteral("Local Disk (C:)"), QUrl::fromLocalFile(localDiskPath),
                QStringLiteral("drive-harddisk-root"));
-    addManaged(QStringLiteral("CD Drive (D:)"), QUrl::fromLocalFile(cdDrivePath),
-               QStringLiteral("drive-optical"));
     addManaged(QStringLiteral("Network"), QUrl::fromLocalFile(networkPath),
                QStringLiteral("network-workgroup"));
 
@@ -126,8 +134,8 @@ DolphinPlacesModel::DolphinPlacesModel(QObject *parent)
 
     setGroupHidden(KFilePlacesModel::RecentlySavedType, true);
     setGroupHidden(KFilePlacesModel::SearchForType, true);
-    setGroupHidden(KFilePlacesModel::DevicesType, true);
-    setGroupHidden(KFilePlacesModel::RemovableDevicesType, true);
+    setGroupHidden(KFilePlacesModel::DevicesType, false);
+    setGroupHidden(KFilePlacesModel::RemovableDevicesType, false);
     setGroupHidden(KFilePlacesModel::RemoteType, true);
     QSet<QString> visible;
     visible.insert(QUrl::fromLocalFile(QStandardPaths::writableLocation(
@@ -137,7 +145,6 @@ DolphinPlacesModel::DolphinPlacesModel(QObject *parent)
     visible.insert(QUrl::fromLocalFile(recentPath).toString());
     visible.insert(QUrl::fromLocalFile(computerPath).toString());
     visible.insert(QUrl::fromLocalFile(localDiskPath).toString());
-    visible.insert(QUrl::fromLocalFile(cdDrivePath).toString());
     visible.insert(QUrl::fromLocalFile(networkPath).toString());
     for (const Aero7Library &library : Aero7Libraries::instance().libraries())
         if (library.shownInNavigationPane)
@@ -147,9 +154,63 @@ DolphinPlacesModel::DolphinPlacesModel(QObject *parent)
         const QModelIndex item = index(row, 0);
         setPlaceHidden(item, !visible.contains(url(item).toString()));
     }
+    refreshStoragePlaces();
+    // Native KIO device entries retain mount/eject actions. Re-evaluate their
+    // visibility after mount changes, without persisting synthetic drive links.
+    new Aero7Storage::MountWatcher(this, [this] { refreshStoragePlaces(); });
+    connect(this, &QAbstractItemModel::rowsInserted, this, [this] {
+        QTimer::singleShot(0, this, &DolphinPlacesModel::refreshStoragePlaces);
+    });
+    // Solid may update a device URL after the kernel mount notification. Retry
+    // on the native model update as well, retaining its real mount/eject entry.
+    connect(this, &QAbstractItemModel::dataChanged, this, [this] {
+        QTimer::singleShot(0, this, &DolphinPlacesModel::refreshStoragePlaces);
+    });
+    connect(this, &QAbstractItemModel::modelReset, this, [this] {
+        QTimer::singleShot(0, this, &DolphinPlacesModel::refreshStoragePlaces);
+    });
 }
 
 DolphinPlacesModel::~DolphinPlacesModel() = default;
+
+void DolphinPlacesModel::refreshStoragePlaces()
+{
+    QHash<QString, QString> names;
+    for (const auto &entry : Aero7Storage::mounted())
+        if (entry.root != QLatin1String("/")) names.insert(entry.root, entry.name);
+    const bool namesChanged = names != m_storageNames;
+    m_storageNames = names;
+    for (int row = 0; row < rowCount(); ++row) {
+        const QModelIndex item = index(row, 0);
+        if (!isDevice(item)) continue;
+        const QUrl deviceUrl = url(item);
+        const bool visibleMount = deviceUrl.isLocalFile()
+            && names.contains(QDir::cleanPath(deviceUrl.toLocalFile()));
+        const Solid::Device device = deviceForIndex(item);
+        const auto *access = device.as<Solid::StorageAccess>();
+        const auto *volume = device.as<Solid::StorageVolume>();
+        bool removable = false;
+        // Partition devices may have more than one parent before the drive.
+        // Bound the traversal in case a backend reports malformed ancestry.
+        Solid::Device ancestor = device;
+        for (int depth = 0; ancestor.isValid() && depth < 16; ++depth) {
+            if (const auto *drive = ancestor.as<Solid::StorageDrive>()) {
+                removable = drive->isRemovable() || drive->isHotpluggable();
+                break;
+            }
+            ancestor = ancestor.parent();
+        }
+        const bool ignored = Aero7Storage::deviceIgnored(access, access && access->isAccessible(),
+            access && access->isIgnored(), volume, volume && volume->isIgnored());
+        const bool filesystem = volume && volume->usage() == Solid::StorageVolume::FileSystem;
+        const bool hidden = !Aero7Storage::deviceVisible(access && access->isAccessible(),
+                                                       visibleMount, ignored, filesystem, removable);
+        if (isHidden(item) != hidden) setPlaceHidden(item, hidden);
+    }
+    if (namesChanged && rowCount() > 0)
+        Q_EMIT dataChanged(index(0, 0), index(rowCount() - 1, 0),
+                           {Qt::DisplayRole, KFilePlacesModel::GroupRole});
+}
 
 bool DolphinPlacesModel::panelsLocked() const
 {
@@ -199,6 +260,12 @@ bool DolphinPlacesModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 QVariant DolphinPlacesModel::data(const QModelIndex &index, int role) const
 {
     switch (role) {
+    case Qt::DisplayRole:
+        if (isDevice(index) && url(index).isLocalFile()) {
+            const auto name = m_storageNames.constFind(QDir::cleanPath(url(index).toLocalFile()));
+            if (name != m_storageNames.cend()) return *name;
+        }
+        break;
     case Qt::DecorationRole:
         if (url(index).isLocalFile()
             && url(index).toLocalFile() == specialPlacePath(QStringLiteral("Local Disk (C:)"))) {
@@ -223,8 +290,7 @@ QVariant DolphinPlacesModel::data(const QModelIndex &index, int role) const
             && itemUrl.toLocalFile() == specialPlacePath(QStringLiteral("Computer")))
             return QStringLiteral("Computer");
         if (itemUrl.isLocalFile()
-            && (itemUrl.toLocalFile() == specialPlacePath(QStringLiteral("Local Disk (C:)"))
-                || itemUrl.toLocalFile() == specialPlacePath(QStringLiteral("CD Drive (D:)"))))
+            && itemUrl.toLocalFile() == specialPlacePath(QStringLiteral("Local Disk (C:)")))
             return QStringLiteral("Computer");
         if (itemUrl.isLocalFile()
             && itemUrl.toLocalFile() == specialPlacePath(QStringLiteral("Network")))
@@ -290,6 +356,11 @@ bool DolphinPlacesModel::isTrash(const QModelIndex &index) const
 DolphinPlacesModelSingleton::DolphinPlacesModelSingleton()
     : m_placesModel(new DolphinPlacesModel())
 {
+    // KIO jobs owned by this model hold event-loop locks. Release them while
+    // QCoreApplication still exists, not from the process-static destructor.
+    qAddPostRoutine([]() {
+        DolphinPlacesModelSingleton::instance().m_placesModel.reset();
+    });
 }
 
 DolphinPlacesModelSingleton &DolphinPlacesModelSingleton::instance()

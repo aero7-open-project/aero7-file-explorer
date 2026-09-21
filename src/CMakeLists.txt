@@ -278,29 +278,65 @@ install(FILES dolphinpartactions.desktop DESTINATION "${KDE_INSTALL_DATADIR}/dol
 
 ##########################################
 
-add_library(aero7shellui STATIC)
-target_sources(aero7shellui PRIVATE
+add_library(aero7commondialogs SHARED)
+add_library(Aero7::CommonDialogs ALIAS aero7commondialogs)
+set_target_properties(aero7commondialogs PROPERTIES
+    EXPORT_NAME CommonDialogs VERSION 1.0.0 SOVERSION 1)
+generate_export_header(aero7commondialogs
+    EXPORT_FILE_NAME aero7commondialogs_export.h)
+target_sources(aero7commondialogs PRIVATE
     aero7/aero7icons.cpp
     aero7/aero7icons.h
     aero7/aero7libraries.cpp
     aero7/aero7libraries.h
     aero7/aero7commondialog.cpp
     aero7/aero7commondialog.h
-    aero7/aero7properties.cpp
-    aero7/aero7properties.h
-    aero7/aero7fileoperations.cpp
-    aero7/aero7fileoperations.h
+    aero7/aero7dialogsearch.cpp
+    aero7/aero7dialogsearch.h
     aero7/aero7computerdialog.cpp
     aero7/aero7computerdialog.h
+    aero7/aero7storage.h
+    aero7/aero7storagedevices.cpp
+    aero7/aero7storagedevices.h
 )
-target_include_directories(aero7shellui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/aero7)
+target_include_directories(aero7commondialogs PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/aero7>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+    $<INSTALL_INTERFACE:${KDE_INSTALL_INCLUDEDIR}/Aero7CommonDialogs>)
 file(GLOB_RECURSE AERO7_PACK_ICON_FILES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/aero7/icons/pack/*.png")
-qt_add_resources(aero7shellui "aero7-file-explorer-pack-icons"
+qt_add_resources(aero7commondialogs "aero7-file-explorer-pack-icons"
     PREFIX "/aero7/pack"
     BASE "${CMAKE_CURRENT_SOURCE_DIR}/aero7/icons/pack"
     FILES ${AERO7_PACK_ICON_FILES})
-target_link_libraries(aero7shellui PUBLIC Qt6::Widgets Aero7Qt::Aero7Qt)
+target_link_libraries(aero7commondialogs PUBLIC Qt6::Widgets)
+target_link_libraries(aero7commondialogs PRIVATE KF6::KIOFileWidgets KF6::Solid)
+configure_package_config_file(aero7/Aero7CommonDialogsConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Aero7CommonDialogsConfig.cmake
+    INSTALL_DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/Aero7CommonDialogs)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/Aero7CommonDialogsConfigVersion.cmake
+    VERSION 1.0.0 COMPATIBILITY SameMajorVersion)
+install(TARGETS aero7commondialogs EXPORT Aero7CommonDialogsTargets
+    LIBRARY DESTINATION ${KDE_INSTALL_LIBDIR} COMPONENT Aero7CommonDialogs
+    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR} COMPONENT Aero7CommonDialogs
+    ARCHIVE DESTINATION ${KDE_INSTALL_LIBDIR} COMPONENT Aero7CommonDialogs)
+install(EXPORT Aero7CommonDialogsTargets NAMESPACE Aero7::
+    DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/Aero7CommonDialogs COMPONENT Aero7CommonDialogs)
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/Aero7CommonDialogsConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/Aero7CommonDialogsConfigVersion.cmake
+    DESTINATION ${KDE_INSTALL_LIBDIR}/cmake/Aero7CommonDialogs COMPONENT Aero7CommonDialogs)
+install(FILES aero7/aero7commondialog.h
+    ${CMAKE_CURRENT_BINARY_DIR}/aero7commondialogs_export.h
+    DESTINATION ${KDE_INSTALL_INCLUDEDIR}/Aero7CommonDialogs COMPONENT Aero7CommonDialogs)
+
+# Keep file-operation UI internal; consumers share the same library state and
+# embedded icon resources instead of each linking a private static copy.
+add_library(aero7shellui STATIC
+    aero7/aero7properties.cpp aero7/aero7properties.h
+    aero7/aero7fileoperations.cpp aero7/aero7fileoperations.h)
+target_link_libraries(aero7shellui PUBLIC aero7commondialogs Aero7Qt::Aero7Qt)
 target_link_libraries(dolphinprivate PUBLIC aero7shellui)
 
 add_executable(aero7-file-dialog aero7/aero7filedialogmain.cpp)

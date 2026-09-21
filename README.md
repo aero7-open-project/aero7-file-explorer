@@ -44,8 +44,12 @@ so a system icon-theme change cannot turn it back into a generic Dolphin
 application. Recycle Bin settings now expose the supported size and deletion
 behavior through the Aero7 settings interface.
 
-The source and package recipe are ready on the `beta` branches. The Beta 2 ISO
-remains a separate, explicitly tested release artifact.
+The source and package recipe are prepared on the release branches. On
+21 September 2026, package `25.12.3-55` passed clean online and disconnected
+offline test-candidate installation. The factory taskbar shortcut opened the
+correct File Explorer title and packaged icon; the exported logs contained no
+old Explorer D-Bus filename mismatch or implicit-handler QML warning. The Beta 2
+ISO remains a separate artifact that is not published until owner approval.
 
 [![Aero7 File Explorer Documents view](docs/screenshots/file-explorer-documents.png)](https://github.com/aero7-open-project/aero7-file-explorer/wiki/Screenshots)
 

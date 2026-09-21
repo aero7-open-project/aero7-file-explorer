@@ -1,27 +1,27 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #include "aero7computerdialog.h"
+#include "aero7storage.h"
+#include "aero7storagedevices.h"
+#include "aero7mountwatcher.h"
 
 #include <QDir>
+#include <QApplication>
 #include <QFileInfo>
 #include <QFrame>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
+#include <QMessageBox>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QScrollBar>
 #include <QVBoxLayout>
 
 #include <functional>
 
 namespace {
-
-QString sizeText(qint64 bytes)
-{
-    const double gib = bytes / (1024.0 * 1024.0 * 1024.0);
-    return QStringLiteral("%1 GB").arg(gib, 0, 'f', gib < 10.0 ? 1 : 0);
-}
 
 QLabel *sectionTitle(const QString &title, int count)
 {
@@ -33,7 +33,7 @@ QLabel *sectionTitle(const QString &title, int count)
 }
 
 QWidget *driveTile(const QStorageInfo &storage, const QString &displayName,
-                   const QString &iconName, QObject *context,
+                   const QString &iconName, const QString &deviceId, QObject *context,
                    const std::function<void()> &open)
 {
     auto *tile = new QWidget;
@@ -45,6 +45,8 @@ QWidget *driveTile(const QStorageInfo &storage, const QString &displayName,
 
     auto *drive = new QPushButton;
     drive->setObjectName(QStringLiteral("computerDrive"));
+    drive->setProperty("storageRoot", storage.rootPath());
+    drive->setProperty("deviceId", deviceId);
     drive->setFlat(true);
     drive->setCursor(Qt::PointingHandCursor);
     drive->setIcon(QIcon::fromTheme(iconName, QIcon::fromTheme(QStringLiteral("drive-harddisk"))));
@@ -59,6 +61,8 @@ QWidget *driveTile(const QStorageInfo &storage, const QString &displayName,
     details->setContentsMargins(0, 0, 0, 0);
     details->setSpacing(3);
     auto *name = new QPushButton(displayName);
+    name->setProperty("storageRoot", storage.rootPath());
+    name->setProperty("deviceId", deviceId);
     name->setFlat(true);
     name->setCursor(Qt::PointingHandCursor);
     name->setStyleSheet(
@@ -81,9 +85,13 @@ QWidget *driveTile(const QStorageInfo &storage, const QString &displayName,
         details->addWidget(capacity);
 
         auto *free = new QLabel(QStringLiteral("%1 free of %2")
-            .arg(sizeText(storage.bytesAvailable()), sizeText(storage.bytesTotal())));
+            .arg(Aero7Storage::sizeText(storage.bytesAvailable()), Aero7Storage::sizeText(storage.bytesTotal())));
         free->setStyleSheet("color: #4a4a4a; background: transparent;");
         details->addWidget(free);
+    } else if (!deviceId.isEmpty()) {
+        auto *hint = new QLabel(QStringLiteral("Click to open"));
+        hint->setStyleSheet("color: #4a4a4a; background: transparent;");
+        details->addWidget(hint);
     }
     row->addLayout(details, 1);
     return tile;
@@ -105,23 +113,30 @@ Aero7ComputerView::Aero7ComputerView(QWidget *parent)
     m_content->setStyleSheet("background: white;");
     scroll->setWidget(m_content);
     outer->addWidget(scroll);
+    auto *devices = new Aero7StorageDevices(this);
+    connect(devices, &Aero7StorageDevices::changed, this, &Aero7ComputerView::refresh);
+    connect(devices, &Aero7StorageDevices::opened, this, &Aero7ComputerView::openRequested);
+    connect(devices, &Aero7StorageDevices::failed, this, [this](const QString &message) {
+        QMessageBox::warning(this, QStringLiteral("Open drive"), message);
+    });
     refresh();
+    new Aero7Storage::MountWatcher(this, [this] { refresh(); });
 }
 
 bool Aero7ComputerView::isUserVisibleStorage(const QStorageInfo &storage)
 {
-    if (!storage.isValid() || !storage.isReady() || storage.bytesTotal() <= 0)
-        return false;
-    const QString root = QDir::cleanPath(storage.rootPath());
-    if (root == QLatin1String("/"))
-        return true;
-    const QString user = qEnvironmentVariable("USER");
-    return root.startsWith(QStringLiteral("/run/media/%1/").arg(user))
-        || root.startsWith(QStringLiteral("/media/%1/").arg(user));
+    return Aero7Storage::visible(storage);
 }
 
 void Aero7ComputerView::refresh()
 {
+    auto *scroll = findChild<QScrollArea *>();
+    const int scrollPosition = scroll->verticalScrollBar()->value();
+    const QWidget *focused = QApplication::focusWidget();
+    const QString focusedRoot = focused && isAncestorOf(focused)
+        ? focused->property("storageRoot").toString() : QString();
+    const QString focusedId = focused && isAncestorOf(focused)
+        ? focused->property("deviceId").toString() : QString();
     if (QLayout *old = m_content->layout()) {
         while (QLayoutItem *item = old->takeAt(0)) {
             delete item->widget();
@@ -133,21 +148,22 @@ void Aero7ComputerView::refresh()
     layout->setContentsMargins(8, 15, 12, 14);
     layout->setSpacing(10);
 
-    QList<QStorageInfo> hard;
-    QList<QStorageInfo> removable;
-    for (const QStorageInfo &storage : QStorageInfo::mountedVolumes()) {
-        if (!isUserVisibleStorage(storage))
-            continue;
-        (QDir::cleanPath(storage.rootPath()) == QLatin1String("/") ? hard : removable)
-            .append(storage);
+    struct Drive { Aero7Storage::Entry entry; QString id; };
+    QList<Drive> hard;
+    QList<Drive> removable;
+    for (const auto &entry : Aero7Storage::mounted()) {
+        (entry.root == QLatin1String("/") ? hard : removable).append({entry, {}});
     }
-    if (removable.isEmpty())
-        removable.append(QStorageInfo());
+    auto *devices = findChild<Aero7StorageDevices *>();
+    for (const auto &device : devices->unmounted()) {
+        Aero7Storage::Entry entry;
+        entry.name = device.name;
+        entry.icon = device.icon;
+        removable.append({entry, device.id});
+    }
 
-    int nextLetter = 3; // C is the system disk; removable media starts at D.
-    auto addGroup = [this, layout, &nextLetter](const QString &title,
-                                                const QList<QStorageInfo> &volumes,
-                                                bool local) {
+    auto addGroup = [this, layout, devices](const QString &title,
+                                  const QList<Drive> &volumes) {
         layout->addWidget(sectionTitle(title, volumes.size()));
         auto *gridWidget = new QWidget;
         auto *grid = new QGridLayout(gridWidget);
@@ -155,28 +171,15 @@ void Aero7ComputerView::refresh()
         grid->setHorizontalSpacing(28);
         grid->setVerticalSpacing(2);
         for (int index = 0; index < volumes.size(); ++index) {
-            const QStorageInfo storage = volumes.at(index);
-            QString volumeName;
-            if (!storage.isValid()) {
-                volumeName = QStringLiteral("CD Drive (D:)");
-            } else if (local) {
-                volumeName = QStringLiteral("Local Disk (C:)");
-            } else {
-                QString label = storage.displayName().trimmed();
-                if (label.isEmpty())
-                    label = QStringLiteral("Removable Disk");
-                volumeName = QStringLiteral("%1 (%2:)")
-                    .arg(label, QString(QChar('A' + nextLetter++)));
-            }
-            const QString root = local ? QDir::homePath() : storage.rootPath();
-            grid->addWidget(driveTile(storage, volumeName,
-                                      local ? QStringLiteral("drive-harddisk-root")
-                                            : (storage.isValid()
-                                                   ? QStringLiteral("drive-removable-media")
-                                                   : QStringLiteral("drive-optical")),
-                                      this, [this, root]() {
-                                          if (!root.isEmpty())
+            const auto &entry = volumes.at(index).entry;
+            const QString id = volumes.at(index).id;
+            grid->addWidget(driveTile(entry.storage, entry.name, entry.icon, id,
+                                      this, [this, devices, id, root = entry.root]() {
+                                          if (!id.isEmpty()) devices->openDevice(id);
+                                          else {
+                                              devices->cancelPending();
                                               Q_EMIT openRequested(root);
+                                          }
                                       }),
                             index / 2, index % 2);
         }
@@ -190,8 +193,24 @@ void Aero7ComputerView::refresh()
         layout->addWidget(gridWidget);
     };
 
-    addGroup(QStringLiteral("Hard Disk Drives"), hard, true);
-    addGroup(QStringLiteral("Devices with Removable Storage"), removable, false);
+    addGroup(QStringLiteral("Hard Disk Drives"), hard);
+    if (!removable.isEmpty())
+        addGroup(QStringLiteral("Devices with Removable Storage"), removable);
     layout->addStretch(1);
-
+    if (!focusedRoot.isEmpty() || !focusedId.isEmpty()) {
+        bool restored = false;
+        for (auto *button : m_content->findChildren<QPushButton *>(QStringLiteral("computerDrive"))) {
+            if (button->property("storageRoot").toString() == focusedRoot
+                && button->property("deviceId").toString() == focusedId) {
+                button->setFocus(Qt::OtherFocusReason);
+                restored = true;
+                break;
+            }
+        }
+        if (!restored) scroll->setFocus(Qt::OtherFocusReason);
+    }
+    // Restore after the replacement layout has updated the scroll range.
+    QTimer::singleShot(0, this, [scroll, scrollPosition] {
+        scroll->verticalScrollBar()->setValue(scrollPosition);
+    });
 }

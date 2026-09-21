@@ -5,6 +5,7 @@
   <project_license>GPL-2.0-or-later</project_license>
   <name>File Explorer</name>
   <summary>Browse and manage files with the Aero7 desktop</summary>
+  <url type="homepage">https://github.com/aero7-open-project/aero7-file-explorer</url>
   <description>
     <p>Aero7 File Explorer provides Windows 7-style navigation, libraries, computer storage, search, previews, and file operations on the Linux desktop.</p>
   </description>

@@ -1,12 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
+#include "aero7commondialogs_export.h"
 
 #include <QStorageInfo>
 #include <QWidget>
 
 // An Explorer-native Computer surface.  The historical file name is retained
 // to keep packaging patches small, but this is intentionally not a dialog.
-class Aero7ComputerView final : public QWidget
+class AERO7COMMONDIALOGS_EXPORT Aero7ComputerView final : public QWidget
 {
     Q_OBJECT
 public:

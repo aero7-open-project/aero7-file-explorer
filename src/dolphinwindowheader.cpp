@@ -32,6 +32,7 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     , ui(new Ui::DolphinWindowHeader)
 {
     ui->setupUi(this);
+    ui->searchBar->setAccessibleName(tr("Search files and folders"));
     setObjectName(QStringLiteral("aero7ExplorerHeader"));
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     setFixedHeight(65);
@@ -141,6 +142,7 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     m_views->setIconSize(QSize(16, 16));
     m_views->setToolButtonStyle(Qt::ToolButtonIconOnly);
     m_views->setToolTip(QStringLiteral("Change your view"));
+    m_views->setAccessibleName(tr("Change your view"));
     m_views->setFixedWidth(50);
     m_preview = makeButton(QString());
     m_preview->setProperty("aero7IconCommand", true);
@@ -149,6 +151,7 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     m_preview->setIconSize(QSize(16, 16));
     m_preview->setToolButtonStyle(Qt::ToolButtonIconOnly);
     m_preview->setToolTip(QStringLiteral("Show the preview pane"));
+    m_preview->setAccessibleName(tr("Show the preview pane"));
     m_preview->setFixedWidth(38);
     auto *help = makeButton(QString());
     help->setProperty("aero7IconCommand", true);
@@ -156,6 +159,7 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     help->setIconSize(QSize(16, 16));
     help->setToolButtonStyle(Qt::ToolButtonIconOnly);
     help->setToolTip(QStringLiteral("Get help"));
+    help->setAccessibleName(tr("Get help"));
     help->setFixedWidth(30);
     outer->addWidget(commandBar);
 
@@ -187,6 +191,9 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     ui->primaryNavHole->setFixedHeight(23);
     ui->secondaryNavHole->setFixedHeight(23);
     ui->navs->setFixedHeight(28);
+    ui->navs->back()->setAccessibleName(tr("Back"));
+    ui->navs->forward()->setAccessibleName(tr("Forward"));
+    ui->navs->menuButton()->setAccessibleName(tr("Navigation history"));
     ui->navs->back()->setFixedSize(27, 25);
     ui->navs->forward()->setFixedSize(24, 25);
     ui->navs->menuButton()->setFixedSize(13, 25);

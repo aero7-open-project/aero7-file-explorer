@@ -22,6 +22,8 @@
 #include "search/bar.h"
 #include "selectionmode/topbar.h"
 #include "statusbar/dolphinstatusbar.h"
+#include "aero7/aero7computerdialog.h"
+#include "aero7/aero7storage.h"
 
 #include <KActionCollection>
 #include <KApplicationTrader>
@@ -46,6 +48,7 @@
 #include <QRegularExpression>
 #include <QScrollBar>
 #include <QStyle>
+#include <QStackedWidget>
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
@@ -184,7 +187,19 @@ DolphinViewContainer::DolphinViewContainer(const QUrl &url, QWidget *parent)
     connect(undoManager, &KIO::FileUndoManager::jobRecordingFinished, this, &DolphinViewContainer::delayedStatusBarUpdate);
 
     m_topLayout->addWidget(m_messageWidget, positionFor.messageWidget, 0);
-    m_topLayout->addWidget(m_view, positionFor.view, 0);
+    m_aero7ContentStack = new QStackedWidget(this);
+    m_aero7ContentStack->setFrameShape(QFrame::NoFrame);
+    m_aero7ContentStack->setStyleSheet(QStringLiteral(
+        "QStackedWidget { border: 0; background: white; }"));
+    m_aero7ContentStack->addWidget(m_view);
+    m_aero7ComputerView = new Aero7ComputerView(m_aero7ContentStack);
+    m_aero7ContentStack->addWidget(m_aero7ComputerView);
+    connect(m_aero7ComputerView, &Aero7ComputerView::openRequested,
+            this, [this](const QString &rootPath) {
+                activate();
+                setUrl(QUrl::fromLocalFile(rootPath));
+            });
+    m_topLayout->addWidget(m_aero7ContentStack, positionFor.view, 0);
     m_topLayout->addWidget(m_filterBar, positionFor.filterBar, 0);
     if (GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::FullWidth) {
         m_topLayout->addWidget(m_statusBar, positionFor.statusBar, 0);
@@ -192,7 +207,7 @@ DolphinViewContainer::DolphinViewContainer(const QUrl &url, QWidget *parent)
     connect(m_statusBar, &DolphinStatusBar::modeUpdated, this, [this]() {
         const bool statusBarInLayout = m_topLayout->itemAtPosition(positionFor.statusBar, 0);
         if (GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::FullWidth
-            && !m_statusBarExternallyHosted) {
+            && !m_statusBarManagedByWindow) {
             if (!statusBarInLayout) {
                 m_topLayout->addWidget(m_statusBar, positionFor.statusBar, 0);
                 m_statusBar->setUrl(m_view->url());
@@ -201,6 +216,9 @@ DolphinViewContainer::DolphinViewContainer(const QUrl &url, QWidget *parent)
             if (statusBarInLayout) {
                 m_topLayout->removeWidget(m_statusBar);
             }
+        }
+        if (m_statusBarManagedByWindow && !m_statusBarExternallyHosted) {
+            m_statusBar->setVisible(false, WithoutAnimation);
         }
         updateStatusBarGeometry();
     });
@@ -295,16 +313,19 @@ DolphinStatusBar *DolphinViewContainer::statusBarWidget() const
 
 void DolphinViewContainer::setStatusBarExternallyHosted(bool externallyHosted)
 {
-    if (m_statusBarExternallyHosted == externallyHosted)
+    if (m_statusBarManagedByWindow && m_statusBarExternallyHosted == externallyHosted)
         return;
 
+    m_statusBarManagedByWindow = true;
     m_statusBarExternallyHosted = externallyHosted;
     m_topLayout->removeWidget(m_statusBar);
-    if (!externallyHosted
-        && GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::FullWidth) {
-        m_topLayout->addWidget(m_statusBar, positionFor.statusBar, 0);
+    if (!externallyHosted) {
+        // Return ownership to this container without inserting a second details
+        // row into an inactive split pane. Only the window's active bar is shown.
+        m_statusBar->setParent(this);
     }
-    m_statusBar->setVisible(true, WithoutAnimation);
+    m_statusBar->setVisible(externallyHosted, WithoutAnimation);
+    updateStatusBarGeometry();
 }
 
 void DolphinViewContainer::connectUrlNavigator(DolphinUrlNavigator *urlNavigator)
@@ -1121,7 +1142,8 @@ void DolphinViewContainer::slotCurrentDirectoryRemoved()
     const QString location(url().toDisplayString(QUrl::PreferLocalFile));
     if (url().isLocalFile()) {
         const QString dirPath = url().toLocalFile();
-        const QString newPath = getNearestExistingAncestorOfPath(dirPath);
+        const QString newPath = Aero7Storage::recoveryPath(dirPath,
+            getNearestExistingAncestorOfPath(dirPath), qEnvironmentVariable("USER"), QDir::homePath());
         const QUrl newUrl = QUrl::fromLocalFile(newPath);
         // #473377: Delay changing the url to avoid modifying KCoreDirLister before KCoreDirListerCache::deleteDir() returns.
         QTimer::singleShot(0, this, [&, newUrl, location] {
@@ -1170,6 +1192,10 @@ void DolphinViewContainer::updateStatusBarGeometry()
 {
     if (!m_statusBar) {
         return;
+    }
+    if (m_statusBarManagedByWindow) {
+        m_view->setStatusBarOffset(0);
+        return; // The full-window host, not a split pane, owns this geometry.
     }
     if (GeneralSettings::showStatusBar() == GeneralSettings::EnumShowStatusBar::Small) {
         QRect statusBarRect(preferredSmallStatusBarGeometry());

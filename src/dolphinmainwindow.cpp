@@ -107,7 +107,6 @@
 #include <QScreen>
 #include <QSharedPointer>
 #include <QShowEvent>
-#include <QSignalBlocker>
 #include <QStackedWidget>
 #include <QStandardPaths>
 #include <QStatusBar>
@@ -137,6 +136,18 @@ const int CurrentDolphinVersion = 202;
 const int MaxNumberOfNavigationentries = 12;
 // The maximum number of "Go to Tab" shortcuts
 const int MaxActivateTabShortcuts = 9;
+
+QUrl aero7ComputerLocation()
+{
+    return QUrl::fromLocalFile(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+                                  .filePath(QStringLiteral("Aero7/Shell Places/Computer")));
+}
+
+bool isAero7ComputerLocation(const QUrl &url)
+{
+    return url.scheme() == QLatin1String("aero7computer") || url.scheme() == QLatin1String("computer")
+        || (url.isLocalFile() && QDir::cleanPath(url.toLocalFile()) == aero7ComputerLocation().toLocalFile());
+}
 }
 
 DolphinMainWindow::DolphinMainWindow()
@@ -278,7 +289,12 @@ DolphinMainWindow::DolphinMainWindow()
     setupFileItemActions();
 
     const bool usePhoneUi{KRuntimePlatform::runtimePlatform().contains(QLatin1String("phone"))};
-    setupGUI(Save | Create | ToolBar, usePhoneUi ? QStringLiteral("dolphinuiforphones.rc") : QString() /* load the default dolphinui.rc file */);
+    // The application identity is Aero7, but the inherited action layouts are
+    // bundled under Dolphin's resource prefix. Do not infer a nonexistent
+    // aero7-file-explorerui.rc from the renamed component.
+    setupGUI(Save | Create | ToolBar,
+             usePhoneUi ? QStringLiteral(":/kxmlgui5/dolphin/dolphinuiforphones.rc")
+                        : QStringLiteral(":/kxmlgui5/dolphin/dolphinui.rc"));
     stateChanged(QStringLiteral("new_file"));
 
     QClipboard *clipboard = QApplication::clipboard();
@@ -381,12 +397,10 @@ void DolphinMainWindow::openDirectories(const QList<QUrl> &dirs, bool splitView)
 {
     // Command-line and D-Bus launches reach openDirectories() directly rather
     // than changeUrl(). Seed Dolphin with a real backing directory so no KIO
-    // worker ever sees the Aero7-owned Computer URL, then reveal the integrated
-    // shell surface. This is the path used by the Start menu's Computer item.
-    if (dirs.size() == 1
-        && (dirs.constFirst().scheme() == QLatin1String("aero7computer")
-            || dirs.constFirst().scheme() == QLatin1String("computer"))) {
-        m_tabWidget->openDirectories({Dolphin::homeUrl()}, false);
+    // worker ever sees the Aero7-owned protocol. The real managed location
+    // also lets Dolphin retain Computer in its ordinary per-tab history.
+    if (dirs.size() == 1 && isAero7ComputerLocation(dirs.constFirst())) {
+        m_tabWidget->openDirectories({aero7ComputerLocation()}, false);
         // Run after the initial tab/window title synchronization so Computer's
         // breadcrumb, command bar and title remain the final visible state.
         QTimer::singleShot(0, this, &DolphinMainWindow::showAero7Computer);
@@ -456,8 +470,7 @@ void DolphinMainWindow::pasteIntoFolder()
 
 void DolphinMainWindow::changeUrl(const QUrl &url)
 {
-    if (url.scheme() == QLatin1String("aero7computer")
-        || url.scheme() == QLatin1String("computer")) {
+    if (isAero7ComputerLocation(url)) {
         showAero7Computer();
         return;
     }
@@ -1148,6 +1161,13 @@ void DolphinMainWindow::updateSearchAction()
 void DolphinMainWindow::updatePasteAction()
 {
     QAction *pasteAction = actionCollection()->action(KStandardAction::name(KStandardAction::Paste));
+    if (!pasteAction) return;
+    // Wayland clipboard changes can precede the first folder being opened.
+    // There is no paste destination until an active container exists.
+    if (!m_activeViewContainer) {
+        pasteAction->setEnabled(false);
+        return;
+    }
     QPair<bool, QString> pasteInfo = m_activeViewContainer->view()->pasteInfo();
     pasteAction->setEnabled(pasteInfo.first);
     m_disabledActionNotifier->setDisabledReason(pasteAction,
@@ -1816,10 +1836,7 @@ void DolphinMainWindow::slotPlaceActivated(const QUrl &url)
 
     const QString specialPlaces = QDir(QStandardPaths::writableLocation(
         QStandardPaths::GenericDataLocation)).filePath(QStringLiteral("Aero7/Shell Places"));
-    if (url.scheme() == QLatin1String("aero7computer")
-        || (url.isLocalFile()
-            && QDir::cleanPath(url.toLocalFile())
-                == QDir(specialPlaces).filePath(QStringLiteral("Computer")))) {
+    if (isAero7ComputerLocation(url)) {
         showAero7Computer();
         return;
     }
@@ -1832,19 +1849,16 @@ void DolphinMainWindow::slotPlaceActivated(const QUrl &url)
     if (url.isLocalFile()
         && QDir::cleanPath(url.toLocalFile())
             == QDir(specialPlaces).filePath(QStringLiteral("Local Disk (C:)"))) {
-        changeUrl(QUrl::fromLocalFile(QDir::homePath()));
+        changeUrl(QUrl::fromLocalFile(QDir::rootPath()));
+        m_activeViewContainer->view()->setFocus();
         return;
     }
     if (url.isLocalFile()
         && QDir::cleanPath(url.toLocalFile())
             == QDir(specialPlaces).filePath(QStringLiteral("CD Drive (D:)"))) {
-        for (const QStorageInfo &storage : QStorageInfo::mountedVolumes()) {
-            if (Aero7ComputerView::isUserVisibleStorage(storage)
-                && QDir::cleanPath(storage.rootPath()) != QLatin1String("/")) {
-                changeUrl(QUrl::fromLocalFile(storage.rootPath()));
-                return;
-            }
-        }
+        // Stale shortcuts from older versions must not open an unrelated USB
+        // drive. Show actual devices instead; leave any old folder files intact.
+        showAero7Computer();
         return;
     }
     if (url.isLocalFile()
@@ -1866,45 +1880,41 @@ void DolphinMainWindow::slotPlaceActivated(const QUrl &url)
         view->disableUrlNavigatorSelectionRequests();
         changeUrl(url);
         view->enableUrlNavigatorSelectionRequests();
+        m_activeViewContainer->view()->setFocus();
     }
 }
 
 void DolphinMainWindow::showAero7Computer()
 {
-    if (!m_aero7ContentStack || !m_aero7ComputerView)
+    if (!m_aero7ContentStack || !m_aero7ComputerView || !m_winHeader)
         return;
+    const QUrl computer = aero7ComputerLocation();
+    if (activeViewContainer()->urlNavigatorInternalWithHistory()->locationUrl() != computer) {
+        // Use the existing per-tab navigator rather than a second presentation-
+        // only history. Its normal location signal re-enters this method once
+        // the location has been adopted, just like ordinary folder navigation.
+        activeViewContainer()->setUrl(computer);
+        return;
+    }
     m_aero7ComputerView->refresh();
     m_aero7ContentStack->setCurrentWidget(m_aero7ComputerView);
     m_winHeader->setComputerMode(true);
     activeViewContainer()->statusBarWidget()->setComputerMode(true);
     setWindowTitle(QStringLiteral("File Explorer"));
 
-    // Keep the existing Dolphin view alive behind the Computer surface. Only
-    // the visible breadcrumb is changed, with signals blocked so KIO never
-    // attempts to resolve this Aero7-owned shell location.
-    if (DolphinUrlNavigator *navigator =
-            m_navigatorsWidgetAction->primaryUrlNavigator()) {
-        const QSignalBlocker blocker(navigator);
-        navigator->setLocationUrl(QUrl(QStringLiteral("aero7computer:/")));
-        navigator->updateAero7Breadcrumbs();
-    }
+    updateHistory();
+    Q_EMIT urlChanged(computer);
 }
 
 void DolphinMainWindow::hideAero7Computer()
 {
-    if (!m_aero7ContentStack || !m_aero7ComputerView
-        || m_aero7ContentStack->currentWidget() != m_aero7ComputerView)
+    if (!m_aero7ContentStack || !m_aero7ComputerView || !m_winHeader)
         return;
     m_aero7ContentStack->setCurrentIndex(0);
     m_winHeader->setComputerMode(false);
     activeViewContainer()->statusBarWidget()->setComputerMode(false);
-    activeViewContainer()->reload();
-    if (DolphinUrlNavigator *navigator =
-            m_navigatorsWidgetAction->primaryUrlNavigator()) {
-        const QSignalBlocker blocker(navigator);
-        navigator->setLocationUrl(activeViewContainer()->url());
-        navigator->updateAero7Breadcrumbs();
-    }
+    // Presentation only. History, URL synchronization and reloads belong to
+    // the normal Dolphin view transition; changing them here skips entries.
 }
 
 void DolphinMainWindow::closedTabsCountChanged(unsigned int count)
@@ -1918,11 +1928,13 @@ void DolphinMainWindow::activeViewChanged(DolphinViewContainer *viewContainer)
     Q_ASSERT(viewContainer);
 
     m_activeViewContainer = viewContainer;
+    m_aero7ContentStack = viewContainer->m_aero7ContentStack;
+    m_aero7ComputerView = viewContainer->m_aero7ComputerView;
 
     QStatusBar *explorerStatus = statusBar();
     explorerStatus->setObjectName(QStringLiteral("aero7ExplorerStatusHost"));
     explorerStatus->setSizeGripEnabled(false);
-    explorerStatus->setFixedHeight(54);
+    explorerStatus->setMinimumHeight(54);
     explorerStatus->setContentsMargins(0, 0, 0, 0);
     explorerStatus->layout()->setContentsMargins(0, 0, 0, 0);
     explorerStatus->layout()->setSpacing(0);
@@ -1980,7 +1992,12 @@ void DolphinMainWindow::activeViewChanged(DolphinViewContainer *viewContainer)
     connect(m_diskSpaceUsageMenu, &DiskSpaceUsageMenu::showInstallationProgress, viewContainer, &DolphinViewContainer::showProgress);
 
     const QUrl url = viewContainer->url();
-    Q_EMIT urlChanged(url);
+    if (isAero7ComputerLocation(url)) {
+        showAero7Computer();
+    } else {
+        hideAero7Computer();
+        Q_EMIT urlChanged(url);
+    }
     Q_EMIT selectionChanged(m_activeViewContainer->view()->selectedItems());
 }
 
@@ -2004,10 +2021,6 @@ void DolphinMainWindow::updateWindowTitle()
 
 void DolphinMainWindow::slotStorageTearDownFromPlacesRequested(const QString &mountPath)
 {
-    connect(m_placesPanel, &PlacesPanel::storageTearDownSuccessful, this, [this, mountPath]() {
-        setViewsToHomeIfMountPathOpen(mountPath);
-    });
-
     if (m_terminalPanel && m_terminalPanel->currentWorkingDirectoryIsChildOf(mountPath)) {
         m_tearDownFromPlacesRequested = true;
         m_terminalPanel->goHome();
@@ -2019,10 +2032,6 @@ void DolphinMainWindow::slotStorageTearDownFromPlacesRequested(const QString &mo
 
 void DolphinMainWindow::slotStorageTearDownExternallyRequested(const QString &mountPath)
 {
-    connect(m_placesPanel, &PlacesPanel::storageTearDownSuccessful, this, [this, mountPath]() {
-        setViewsToHomeIfMountPathOpen(mountPath);
-    });
-
     if (m_terminalPanel && m_terminalPanel->currentWorkingDirectoryIsChildOf(mountPath)) {
         m_tearDownFromPlacesRequested = false;
         m_terminalPanel->goHome();
@@ -2047,7 +2056,6 @@ void DolphinMainWindow::setViewsToHomeIfMountPathOpen(const QString &mountPath)
             viewContainer->setUrl(QUrl::fromLocalFile(QDir::homePath()));
         }
     }
-    disconnect(m_placesPanel, &PlacesPanel::storageTearDownSuccessful, nullptr, nullptr);
 }
 
 void DolphinMainWindow::setupActions()
@@ -2774,17 +2782,18 @@ void DolphinMainWindow::setupDockWidgets()
     placesDock->setLocked(lock);
     placesDock->setObjectName(QStringLiteral("placesDock"));
     placesDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    placesDock->setMinimumWidth(133);
-    placesDock->setMaximumWidth(220);
 
     m_placesPanel = new PlacesPanel(placesDock);
+    const int placesWidth = m_placesPanel->sizeHint().width();
+    placesDock->setMinimumWidth(placesWidth);
+    placesDock->setMaximumWidth(qMax(320, placesWidth));
     m_placesPanel->setCustomContextMenuActions({lockLayoutAction});
     placesDock->setWidget(m_placesPanel);
 
     createPanelAction(Aero7Icons::icon(QStringLiteral("places")), Qt::Key_F9, placesDock, QStringLiteral("show_places_panel"));
 
     addDockWidget(Qt::LeftDockWidgetArea, placesDock);
-    resizeDocks({placesDock}, {133}, Qt::Horizontal);
+    resizeDocks({placesDock}, {placesWidth}, Qt::Horizontal);
     connect(m_placesPanel, &PlacesPanel::placeActivated, this, &DolphinMainWindow::slotPlaceActivated);
     connect(m_placesPanel, &PlacesPanel::tabRequested, this, &DolphinMainWindow::openNewTab);
     connect(m_placesPanel, &PlacesPanel::activeTabRequested, this, &DolphinMainWindow::openNewTabAndActivate);
@@ -2799,6 +2808,7 @@ void DolphinMainWindow::setupDockWidgets()
     connect(this, &DolphinMainWindow::settingsChanged, m_placesPanel, &PlacesPanel::readSettings);
     connect(m_placesPanel, &PlacesPanel::storageTearDownRequested, this, &DolphinMainWindow::slotStorageTearDownFromPlacesRequested);
     connect(m_placesPanel, &PlacesPanel::storageTearDownExternallyRequested, this, &DolphinMainWindow::slotStorageTearDownExternallyRequested);
+    connect(m_placesPanel, &PlacesPanel::storageTearDownSuccessful, this, &DolphinMainWindow::setViewsToHomeIfMountPathOpen);
     DolphinUrlNavigatorsController::slotPlacesPanelVisibilityChanged(m_placesPanel->isVisible());
 
     auto actionShowAllPlaces = new QAction(Aero7Icons::icon(QStringLiteral("view-hidden")), i18nc("@item:inmenu", "Show Hidden Places"), this);
@@ -2883,11 +2893,11 @@ void DolphinMainWindow::setupWindowHeader()
             dock->hide();
     }
     // setupGUI() restores an upstream Dolphin dock width before this shell
-    // pass runs.  Reapply Explorer 7's 133-pixel navigation pane after the
-    // first event-loop layout, while keeping its normal resize affordance.
+    // pass runs. Reapply a font-aware default that fits the standard labels
+    // after the first layout, while keeping the normal resize affordance.
     QTimer::singleShot(0, this, [this]() {
         if (QDockWidget *placesDock = findChild<QDockWidget *>(QStringLiteral("placesDock"))) {
-            resizeDocks({placesDock}, {133}, Qt::Horizontal);
+            resizeDocks({placesDock}, {m_placesPanel->sizeHint().width()}, Qt::Horizontal);
         }
     });
 
@@ -3012,25 +3022,8 @@ void DolphinMainWindow::setupWindowHeader()
     m_winHeader->m_views->setMenu(viewsMenu);
     m_winHeader->m_views->setPopupMode(QToolButton::InstantPopup);
 
-    QWidget *viewContent = takeCentralWidget();
-    auto *central = new QWidget(this);
-    auto *centralLayout = new QVBoxLayout(central);
-    centralLayout->setContentsMargins(0, 0, 0, 0);
-    centralLayout->setSpacing(0);
-    m_aero7ContentStack = new QStackedWidget(central);
-    m_aero7ContentStack->setFrameShape(QFrame::NoFrame);
-    m_aero7ContentStack->setStyleSheet(QStringLiteral(
-        "QStackedWidget { border: 0; background: white; }"));
-    m_aero7ContentStack->addWidget(viewContent);
-    m_aero7ComputerView = new Aero7ComputerView(m_aero7ContentStack);
-    m_aero7ContentStack->addWidget(m_aero7ComputerView);
-    connect(m_aero7ComputerView, &Aero7ComputerView::openRequested,
-            this, [this](const QString &rootPath) {
-                hideAero7Computer();
-                changeUrl(QUrl::fromLocalFile(rootPath));
-            });
-    centralLayout->addWidget(m_aero7ContentStack, 1);
-    setCentralWidget(central);
+    // DolphinTabWidget remains the central widget. Each view owns its Computer
+    // surface, so changing content never hides the real tab bar or other panes.
     menuBar()->hide();
     toolBar()->hide();
     if (QAction *showMenu = actionCollection()->action(
@@ -3189,6 +3182,7 @@ void DolphinMainWindow::setupWindowHeader()
     addressHistory->setFocusPolicy(Qt::NoFocus);
     addressHistory->setArrowType(Qt::DownArrow);
     addressHistory->setToolTip(QStringLiteral("Recent locations"));
+    addressHistory->setAccessibleName(i18nc("@action:button", "Recent locations"));
     auto *addressHistoryMenu = new QMenu(addressHistory);
     addressHistory->setMenu(addressHistoryMenu);
     addressHistory->setPopupMode(QToolButton::InstantPopup);
@@ -3231,6 +3225,7 @@ void DolphinMainWindow::setupWindowHeader()
     refreshButton->setIcon(Aero7Icons::icon(QStringLiteral("view-refresh")));
     refreshButton->setIconSize(QSize(22, 22));
     refreshButton->setToolTip(QStringLiteral("Refresh"));
+    refreshButton->setAccessibleName(i18nc("@action:button", "Refresh"));
     connect(refreshButton, &QToolButton::clicked, this, [this]() {
         if (m_aero7ContentStack && m_aero7ComputerView
             && m_aero7ContentStack->currentWidget() == m_aero7ComputerView) {
@@ -3245,6 +3240,12 @@ void DolphinMainWindow::setupWindowHeader()
 
 
     d->separator->setVisible(false);
+    d->secondaryNavHole->setVisible(false);
+    connect(m_navigatorsWidgetAction, &DolphinNavigatorsWidgetAction::secondaryNavigatorVisibilityChanged,
+            this, [d](bool visible) {
+                d->separator->setVisible(visible);
+                d->secondaryNavHole->setVisible(visible);
+            });
 
     connect(m_navigatorsWidgetAction, &DolphinNavigatorsWidgetAction::secondaryUrlNavigatorChanged, [=, this]() {
         if (m_navigatorsWidgetAction->secondaryUrlNavigator() != nullptr)
@@ -3258,15 +3259,6 @@ void DolphinMainWindow::setupWindowHeader()
             m_navigatorsWidgetAction->secondaryUrlNavigator()->setBackgroundEnabled(false);
             m_navigatorsWidgetAction->secondaryUrlNavigator()->setFixedHeight(21);
 
-            // Separator visibility mirrors that of the second navigator
-            Aero7::onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Show, [=](QEvent *) {
-                d->separator->show();
-            });
-            Aero7::onEvent(m_navigatorsWidgetAction->secondaryUrlNavigator(), QEvent::Hide, [=](QEvent *) {
-                d->separator->hide();
-                d->separator->parentWidget()->layout()->invalidate();
-                d->separator->parentWidget()->layout()->activate();
-            });
         }
         else
         {

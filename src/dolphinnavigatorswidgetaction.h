@@ -125,18 +125,9 @@ public:
     DolphinUrlNavigator *secondaryUrlNavigator();
     DolphinUrlNavigator *m_secondaryUrlNavigator = nullptr;
     DolphinUrlNavigator *stealSecondaryUrlNavigator() {     // Only call once upon each secondaryUrlNavigatorChanged
-        QWidget *dummy = nullptr;
-        auto *secNav = replaceWithDummy(secondaryUrlNavigator(), &dummy);
-        Aero7::onEvent(dummy, QEvent::Show, [=](QEvent *) {
-            secNav->show();
-        });
-        Aero7::onEvent(dummy, QEvent::Hide, [=](QEvent *) {
-            secNav->hide();
-            secNav->parentWidget()->layout()->invalidate();
-            secNav->parentWidget()->layout()->activate();
-        });
-
-        return secNav;
+        // The original toolbar is hidden in Aero7. Its dummy widget therefore
+        // cannot supply reliable Show/Hide events for the visible header.
+        return replaceWithDummy(secondaryUrlNavigator());
     }
 
     /**
@@ -155,6 +146,7 @@ public:
 
 Q_SIGNALS:
     void secondaryUrlNavigatorChanged();
+    void secondaryNavigatorVisibilityChanged(bool visible);
 
 protected:
     /**

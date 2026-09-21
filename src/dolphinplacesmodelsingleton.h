@@ -9,6 +9,7 @@
 
 #include <QScopedPointer>
 #include <QString>
+#include <QHash>
 
 #include <KFilePlacesModel>
 
@@ -37,12 +38,14 @@ protected:
 
 private Q_SLOTS:
     void slotTrashEmptinessChanged(bool isEmpty);
+    void refreshStoragePlaces();
 
 private:
     bool isTrash(const QModelIndex &index) const;
 
     bool m_isEmpty = false;
     bool m_panelsLocked = true; // common-case, panels are locked
+    QHash<QString, QString> m_storageNames;
 };
 
 /**

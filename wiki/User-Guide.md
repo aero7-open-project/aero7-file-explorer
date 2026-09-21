@@ -78,6 +78,8 @@ expected from a normal Explorer window.
 
 ## Related pages
 
+- [Everyday Tasks](Everyday-Tasks) — practical workflows and their safety limits
+- [1920×1080 Screenshots](Screenshots) — real VM views with package provenance
 - [Libraries](Libraries)
 - [Computer and Navigation](Computer-and-Navigation)
 - [File Operations and Dialogs](File-Operations-and-Dialogs)

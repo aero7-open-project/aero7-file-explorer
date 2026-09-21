@@ -52,21 +52,9 @@ Aero7Libraries::Aero7Libraries()
         needsWrite = true;
     }
 
-    // The Windows 7 reference contains a user-created "New Library" between
-    // Music and Pictures. Seed the same functional library for existing Aero7
-    // profiles as a one-time migration.
-    const bool hasNewLibrary = std::any_of(m_libraries.cbegin(), m_libraries.cend(),
-                                           [](const Aero7Library &library) {
-        return library.id == QLatin1String("new-library");
-    });
-    if (!hasNewLibrary) {
-        const QString location = QDir::home().filePath(QStringLiteral("New Library"));
-        QDir().mkpath(location);
-        m_libraries.insert(qMin(2, m_libraries.size()),
-                           {QStringLiteral("new-library"), QStringLiteral("New Library"),
-                            {location}, location, QStringLiteral("General Items"), true});
-        needsWrite = true;
-    }
+    // Fresh profiles get the four standard libraries. Never add the
+    // user-created example from reference screenshots, or remove a library
+    // already saved by an existing profile.
     if (needsWrite)
         write(&ignored);
     refresh(&ignored);
@@ -277,7 +265,14 @@ QString Aero7Libraries::libraryIdForPath(const QString &path) const
 QString Aero7Libraries::saveLocationForPath(const QString &path) const
 {
     const Aero7Library value = library(libraryIdForPath(path));
-    return value.saveLocation;
+    if (value.id.isEmpty())
+        return {};
+    const QString candidate = QDir::cleanPath(QFileInfo(path).absoluteFilePath());
+    if (candidate == QDir::cleanPath(materializedPath(value.id)))
+        return value.saveLocation;
+    // Descendants are links to specific included locations. Respect the folder
+    // the user entered, rather than flattening every save to the library root.
+    return QFileInfo(path).isDir() ? QFileInfo(path).canonicalFilePath() : QString();
 }
 
 QStringList Aero7Libraries::searchRoots(const QString &id) const

@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(Qt6 @QT_MIN_VERSION@ CONFIG COMPONENTS Widgets)
+include("${CMAKE_CURRENT_LIST_DIR}/Aero7CommonDialogsTargets.cmake")
+check_required_components(Aero7CommonDialogs)

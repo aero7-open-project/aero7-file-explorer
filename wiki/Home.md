@@ -8,13 +8,14 @@ This Wiki belongs only to the File Explorer project. Documentation for the
 Aero7 operating system, installer, Control Panel, and package repository
 remains in each project's own repository.
 
-[![Aero7 File Explorer Documents view](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-documents.png)](Screenshots)
+[![Aero7 File Explorer Computer view at 1920×1080](images/beta2-1080p/explorer-computer.png)](Screenshots)
 
 ## Start here
 
 | I want to… | Read… |
 | --- | --- |
 | Learn the Explorer window and navigation model | [User Guide](User-Guide) |
+| Follow everyday workflows and understand their limits | [Everyday Tasks](Everyday-Tasks) |
 | Review every Aero7-owned feature | [Feature Reference](Feature-Reference) |
 | Configure Documents, Music, Pictures, or Videos | [Libraries](Libraries) |
 | Understand Computer and the navigation pane | [Computer and Navigation](Computer-and-Navigation) |
@@ -68,6 +69,12 @@ need to build the application manually.
 Current documentation and screenshots cover the installed application,
 Libraries, Computer, common dialogs, file operations, and the supported
 package transition from the retired `aero7-dolphin` name.
+
+The 21 September rebuilt online and disconnected offline test candidates both
+installed File Explorer `25.12.3-55`. In each fresh desktop the factory taskbar
+shortcut opened the correct File Explorer title and packaged icon, without the
+older D-Bus filename mismatch or implicit-handler warning in the collected
+logs. This is candidate evidence; Beta 2 publication still requires approval.
 
 The project is actively maintained. Features without a safe and complete
 backend are disabled or omitted instead of being presented as working. Review

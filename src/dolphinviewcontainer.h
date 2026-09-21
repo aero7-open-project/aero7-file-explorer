@@ -30,6 +30,8 @@ class Bar;
 class FilterBar;
 class QAction;
 class QGridLayout;
+class QStackedWidget;
+class Aero7ComputerView;
 class QUrl;
 namespace Search
 {
@@ -519,6 +521,9 @@ private:
     SelectionMode::TopBar *m_selectionModeTopBar;
 
     DolphinView *m_view;
+    // Alternate content belongs to this view, below the persistent tab bar.
+    QStackedWidget *m_aero7ContentStack = nullptr;
+    Aero7ComputerView *m_aero7ComputerView = nullptr;
 
     FilterBar *m_filterBar;
 
@@ -526,6 +531,7 @@ private:
     SelectionMode::BottomBar *m_selectionModeBottomBar;
 
     DolphinStatusBar *m_statusBar;
+    bool m_statusBarManagedByWindow = false;
     bool m_statusBarExternallyHosted = false;
     QTimer *m_statusBarTimer; // Triggers a delayed update
     QElapsedTimer m_statusBarTimestamp; // Time in ms since last update

@@ -46,6 +46,7 @@ public:
      * changed while navigator signals were blocked.
      */
     void updateAero7Breadcrumbs();
+    void updateAero7TabOrder();
 
     /**
      * Wraps the visual state of a DolphinUrlNavigator so it can be passed around.

@@ -2,6 +2,7 @@
 
 - [Home](Home)
 - [User Guide](User-Guide)
+- [Everyday Tasks](Everyday-Tasks)
 - [Feature Reference](Feature-Reference)
 - [Libraries](Libraries)
 - [Computer and Navigation](Computer-and-Navigation)

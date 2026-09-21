@@ -53,6 +53,7 @@ Bar::Bar(const std::shared_ptr<const DolphinQuery> &dolphinQuery, QWidget *paren
 
     // Create search box
     m_searchTermEditor = new QLineEdit(contentsContainer);
+    m_searchTermEditor->setAccessibleName(i18nc("@label", "Search files and folders"));
     m_searchTermEditor->setClearButtonEnabled(true);
     connect(m_searchTermEditor, &QLineEdit::returnPressed, this, &Bar::slotReturnPressed);
     connect(m_searchTermEditor, &QLineEdit::textEdited, this, &Bar::slotSearchTermEdited);
@@ -168,13 +169,14 @@ Bar::Bar(const std::shared_ptr<const DolphinQuery> &dolphinQuery, QWidget *paren
 
     updateStateToMatch(dolphinQuery);
 
-    // Vandalize this search bar (its invisible anyway) and move some widgets into the popup, which does still get shown, albeit from the WindowHeader.
-    Q_EMIT m_popup->aboutToShow();  // Some internal widgets dont init until this
-
-    auto hl = new QHBoxLayout;
-    m_popup->m_verticalMainLayout->insertLayout(0, hl);
-    hl->addWidget(m_fromHereButton);
-    hl->addWidget(m_everywhereButton);
+    // The header owns the visible search field. Move the scope controls into
+    // its popup only when it is first opened, after WidgetMenu creates its UI.
+    connect(m_popup, &QMenu::aboutToShow, this, [this]() {
+        auto *scopeLayout = new QHBoxLayout;
+        m_popup->m_verticalMainLayout->insertLayout(0, scopeLayout);
+        scopeLayout->addWidget(m_fromHereButton);
+        scopeLayout->addWidget(m_everywhereButton);
+    }, Qt::SingleShotConnection);
 }
 
 QString Bar::text() const

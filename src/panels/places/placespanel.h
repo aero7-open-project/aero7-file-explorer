@@ -12,6 +12,7 @@
 #include "panels/panel.h"
 
 #include <KFilePlacesView>
+#include <QHash>
 #include <QPersistentModelIndex>
 #include <QUrl>
 
@@ -33,6 +34,7 @@ class PlacesPanel : public KFilePlacesView
 public:
     explicit PlacesPanel(QWidget *parent);
     ~PlacesPanel() override;
+    QSize sizeHint() const override;
 
     void setUrl(const QUrl &url); // override
 
@@ -51,7 +53,7 @@ Q_SIGNALS:
     void errorMessage(const QString &error);
     void storageTearDownRequested(const QString &mountPath);
     void storageTearDownExternallyRequested(const QString &mountPath);
-    void storageTearDownSuccessful();
+    void storageTearDownSuccessful(const QString &mountPath);
     void openInSplitViewRequested(const QUrl &url);
 
 protected:
@@ -67,23 +69,31 @@ private Q_SLOTS:
     void slotTearDownRequested(const QModelIndex &index);
     void slotTearDownRequestedExternally(const QString &udi);
     void slotTearDownDone(const QModelIndex &index, Solid::ErrorType error, const QVariant &errorData);
+    void slotNativeTearDownDone(Solid::ErrorType error, const QVariant &errorData, const QString &udi);
+    void slotStorageAccessDestroyed(QObject *access);
     void slotRowsInserted(const QModelIndex &parent, int first, int last);
     void slotRowsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
 
 private:
+    friend class DolphinMainWindowTest;
     struct Aero7NavigationHit {
         QRect rect;
         QPersistentModelIndex index;
     };
 
     void connectDeviceSignals(const QModelIndex &idx);
+    void completeTearDown(const QObject *access, Solid::ErrorType error);
     QModelIndex aero7IndexForName(const QString &name) const;
     QModelIndex aero7IndexAt(const QPoint &position) const;
+    void activateAero7Place(const QModelIndex &index, bool newWindow = false);
+    void populateAero7ContextMenu(QMenu &menu, const QModelIndex &index);
 
     QList<QAction *> m_customContextMenuActions;
     QList<Aero7NavigationHit> m_aero7NavigationHits;
 
     QPersistentModelIndex m_indexToTearDown;
+    // Key by the actual access object: a hotplugged replacement may reuse a UDI.
+    QHash<const QObject *, QString> m_tearDownPaths;
 
     std::unique_ptr<QAction> m_configureTrashAction;
     std::unique_ptr<QAction> m_openInSplitView;

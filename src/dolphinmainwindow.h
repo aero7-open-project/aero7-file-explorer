@@ -790,6 +790,7 @@ private:
     DolphinTabWidget *m_tabWidget;
     DolphinViewContainer *m_activeViewContainer;
     DolphinWindowHeader *m_winHeader;
+    // Non-owning aliases to the active container's per-view content.
     QStackedWidget *m_aero7ContentStack = nullptr;
     Aero7ComputerView *m_aero7ComputerView = nullptr;
     QPointer<QScreen> m_aero7TrackedScreen;

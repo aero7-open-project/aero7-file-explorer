@@ -213,7 +213,6 @@ else()
         EXECUTABLE "${KDE_INSTALL_FULL_BINDIR}/aero7-file-explorer --daemon"
         SYSTEMD_SERVICE plasma-dolphin.service
         DESTINATION ${KDE_INSTALL_DBUSSERVICEDIR}
-        RENAME org.aero7.FileExplorer.FileManager1.service
     )
 endif()
 

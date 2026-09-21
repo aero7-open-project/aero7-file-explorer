@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
+#include "aero7commondialogs_export.h"
 
 #include <QList>
 #include <QString>
@@ -14,7 +15,7 @@ struct Aero7Library {
     bool shownInNavigationPane = true;
 };
 
-class Aero7Libraries final
+class AERO7COMMONDIALOGS_EXPORT Aero7Libraries final
 {
 public:
     static Aero7Libraries &instance();

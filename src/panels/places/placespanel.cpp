@@ -34,6 +34,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QShowEvent>
+#include <QTimer>
 
 #include <Solid/StorageAccess>
 
@@ -145,12 +146,18 @@ void PlacesPanel::setUrl(const QUrl &url)
                     break;
             }
         }
-        // KFilePlacesView otherwise keeps its closest hidden device row visible
-        // for ordinary folders, leaving an empty KDE device-section heading.
+        // Ordinary folders belong to Computer's visible disk entry. An empty
+        // URL leaves no keyboard-activatable place; a raw mount exposes hidden
+        // KDE device headings instead of the Aero7 navigation tree.
         if (!matchedVisiblePlace)
-            navigationUrl = QUrl();
+            navigationUrl = QUrl::fromLocalFile(QDir(
+                QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+                .filePath(QStringLiteral("Aero7/Shell Places/Local Disk (C:)")));
     }
     KFilePlacesView::setUrl(navigationUrl);
+    // Native KFilePlacesView invalidates its own row geometry. Aero7 paints
+    // a different grouped layout, so refresh the complete selection surface.
+    viewport()->update();
 }
 
 QList<QAction *> PlacesPanel::customContextMenuActions() const
@@ -241,6 +248,18 @@ QModelIndex PlacesPanel::aero7IndexForName(const QString &name) const
     return {};
 }
 
+QSize PlacesPanel::sizeHint() const
+{
+    QSize result = KFilePlacesView::sizeHint();
+    // Include the icon/indent and right margin, not just the text width.
+    int width = 160;
+    for (const auto &label : {QStringLiteral("Local Disk (C:)"), QStringLiteral("Recent Places"),
+                              QStringLiteral("Documents"), QStringLiteral("Downloads")})
+        width = qMax(width, fontMetrics().horizontalAdvance(label) + 54);
+    result.setWidth(width + 2 * frameWidth());
+    return result;
+}
+
 QModelIndex PlacesPanel::aero7IndexAt(const QPoint &position) const
 {
     for (const Aero7NavigationHit &hit : m_aero7NavigationHits) {
@@ -276,10 +295,10 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
         painter.drawRect(rect.adjusted(0, 0, -1, -1));
     };
 
-    const auto drawItem = [&](const QString &name, int itemY, bool showDisclosure) {
-        const QModelIndex index = aero7IndexForName(name);
+    const auto drawItem = [&](const QModelIndex &index, int itemY, bool showDisclosure) {
         if (!index.isValid())
             return;
+        const QString name = index.data(Qt::DisplayRole).toString();
         const QRect hitRect(1, itemY, qMax(0, width - 2), rowHeight);
         drawSelection(hitRect, selected == index);
         const int iconX = 29;
@@ -293,13 +312,15 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
         icon.paint(&painter, QRect(iconX, itemY + 2, iconSize, iconSize), Qt::AlignCenter,
                    selected == index ? QIcon::Selected : QIcon::Normal);
         painter.setPen(QColor(QStringLiteral("#111111")));
-        painter.drawText(QRect(iconX + 21, itemY, width - iconX - 24, rowHeight),
-                         Qt::AlignVCenter | Qt::AlignLeft, name);
+        const int textWidth = qMax(0, width - iconX - 24);
+        painter.drawText(QRect(iconX + 21, itemY, textWidth, rowHeight),
+                         Qt::AlignVCenter | Qt::AlignLeft,
+                         painter.fontMetrics().elidedText(name, Qt::ElideRight, textWidth));
         m_aero7NavigationHits.append({hitRect, index});
     };
 
     const auto drawGroup = [&](const QString &name, const QString &iconName,
-                               const QStringList &children, bool clickable,
+                               const QModelIndexList &children, bool clickable,
                                bool childDisclosures) {
         const QModelIndex groupIndex = clickable ? aero7IndexForName(name) : QModelIndex();
         const QRect groupRect(1, y, qMax(0, width - 2), groupHeight);
@@ -319,25 +340,77 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
             m_aero7NavigationHits.append({groupRect, groupIndex});
 
         y += groupHeight + 2;
-        for (const QString &child : children) {
+        for (const QModelIndex &child : children) {
+            if (!child.isValid()) continue;
             drawItem(child, y, childDisclosures);
             y += rowHeight;
         }
     };
 
+    QModelIndexList libraries;
+    QModelIndexList drives;
+    const auto *placesModel = DolphinPlacesModelSingleton::instance().placesModel();
+    for (int row = 0; row < placesModel->rowCount(); ++row) {
+        const QModelIndex item = placesModel->index(row, 0);
+        if (placesModel->isHidden(item)) continue;
+        const QString group = item.data(KFilePlacesModel::GroupRole).toString();
+        if (group == QLatin1String("Libraries")) libraries.append(item);
+        if (group == QLatin1String("Computer") && item != aero7IndexForName(QStringLiteral("Computer")))
+            drives.append(item);
+    }
     drawGroup(QStringLiteral("Favorites"), QStringLiteral("favorites"),
-              {QStringLiteral("Recent Places"), QStringLiteral("Desktop"),
-               QStringLiteral("Downloads")}, false, false);
+              {aero7IndexForName(QStringLiteral("Recent Places")), aero7IndexForName(QStringLiteral("Desktop")),
+               aero7IndexForName(QStringLiteral("Downloads"))}, false, false);
     y += 20;
-    drawGroup(QStringLiteral("Libraries"), QStringLiteral("folder-library"),
-              {QStringLiteral("Documents"), QStringLiteral("Music"),
-               QStringLiteral("New Library"), QStringLiteral("Pictures"),
-               QStringLiteral("Videos")}, false, true);
+    drawGroup(QStringLiteral("Libraries"), QStringLiteral("folder-library"), libraries, false, true);
     y += 20;
-    drawGroup(QStringLiteral("Computer"), QStringLiteral("computer"),
-              {QStringLiteral("Local Disk (C:)"), QStringLiteral("CD Drive (D:)")}, true, true);
+    drawGroup(QStringLiteral("Computer"), QStringLiteral("computer"), drives, true, true);
     y += 20;
     drawGroup(QStringLiteral("Network"), QStringLiteral("network-workgroup"), {}, true, false);
+}
+
+void PlacesPanel::activateAero7Place(const QModelIndex &index, bool newWindow)
+{
+    auto *places = static_cast<KFilePlacesModel *>(model());
+    if (!index.isValid() || places->isHidden(index)) return;
+    const auto *access = places->deviceForIndex(index).as<Solid::StorageAccess>();
+    if (access && !access->isAccessible()) {
+        // Custom Aero7 painting must not bypass the native asynchronous mount
+        // path. Do not navigate to a device's empty pre-mount URL.
+        if (findChild<QObject *>(QStringLiteral("aero7PendingSetup"))) return;
+        auto *request = new QObject(this);
+        request->setObjectName(QStringLiteral("aero7PendingSetup"));
+        const QPersistentModelIndex target(index);
+        connect(places, &KFilePlacesModel::setupDone, request,
+                [this, places, request, target, newWindow](const QModelIndex &finished, bool success) {
+            if (!target.isValid() || finished != target) return;
+            request->setObjectName(QString());
+            request->deleteLater();
+            if (!success) return; // KIO's errorMessage signal supplies the failure.
+            const QUrl opened = places->url(target);
+            if (!opened.isValid() || opened.isEmpty()) return;
+            if (newWindow) Q_EMIT newWindowRequested(opened);
+            else Q_EMIT placeActivated(opened);
+        });
+        QTimer::singleShot(30000, request, [this, request] {
+            request->setObjectName(QString());
+            request->deleteLater();
+            Q_EMIT errorMessage(QStringLiteral("The drive did not become available. Please try again."));
+        });
+        places->requestSetup(index);
+        return;
+    }
+    // Choosing somewhere else cancels delayed navigation, not the operating
+    // system's already-started mount operation.
+    if (auto *request = findChild<QObject *>(QStringLiteral("aero7PendingSetup"))) {
+        disconnect(places, nullptr, request, nullptr);
+        request->setObjectName(QString());
+        request->deleteLater();
+    }
+    const QUrl opened = places->url(index);
+    if (!opened.isValid() || opened.isEmpty()) return;
+    if (newWindow) Q_EMIT newWindowRequested(opened);
+    else Q_EMIT placeActivated(opened);
 }
 
 void PlacesPanel::mousePressEvent(QMouseEvent *event)
@@ -346,7 +419,7 @@ void PlacesPanel::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton && index.isValid()) {
         setCurrentIndex(index);
         viewport()->update();
-        Q_EMIT placeActivated(index.data(KFilePlacesModel::UrlRole).toUrl());
+        activateAero7Place(index);
         event->accept();
         return;
     }
@@ -359,20 +432,67 @@ void PlacesPanel::mousePressEvent(QMouseEvent *event)
 
 void PlacesPanel::contextMenuEvent(QContextMenuEvent *event)
 {
-    const QModelIndex index = aero7IndexAt(event->pos());
+    const QModelIndex index = event->reason() == QContextMenuEvent::Keyboard
+        ? currentIndex() : aero7IndexAt(event->pos());
     if (!index.isValid()) {
         event->accept();
         return;
     }
 
-    const QUrl url = index.data(KFilePlacesModel::UrlRole).toUrl();
     QMenu menu(this);
+    populateAero7ContextMenu(menu, index);
+    if (!menu.isEmpty()) menu.exec(event->globalPos());
+    event->accept();
+}
+
+void PlacesPanel::populateAero7ContextMenu(QMenu &menu, const QModelIndex &index)
+{
+    auto *places = static_cast<KFilePlacesModel *>(model());
+    if (!index.isValid() || index.model() != places || places->isHidden(index)) return;
+    const QUrl url = places->url(index);
     QAction *open = menu.addAction(Aero7Icons::icon(QStringLiteral("document-open-folder")),
                                    QStringLiteral("Open"));
-    connect(open, &QAction::triggered, this, [this, url]() { Q_EMIT placeActivated(url); });
+    const QPersistentModelIndex target(index);
+    connect(open, &QAction::triggered, this, [this, target]() { activateAero7Place(target); });
     QAction *newWindow = menu.addAction(Aero7Icons::icon(QStringLiteral("window-new")),
                                        QStringLiteral("Open in new window"));
-    connect(newWindow, &QAction::triggered, this, [this, url]() { Q_EMIT newWindowRequested(url); });
+    connect(newWindow, &QAction::triggered, this, [this, target]() { activateAero7Place(target, true); });
+
+    // KIO supplies capability/state-aware actions, but does not connect them.
+    // Own them with this short-lived menu and retain persistent indices: a USB
+    // drive can disappear while the context menu is open.
+    if (places->isDevice(index)) {
+        if (auto *eject = places->ejectActionForIndex(index)) {
+            eject->setParent(&menu);
+            eject->setObjectName(QStringLiteral("aero7EjectDrive"));
+            eject->setIcon(Aero7Icons::icon(QStringLiteral("media-eject")));
+            menu.addSeparator();
+            menu.addAction(eject);
+            connect(eject, &QAction::triggered, &menu, [places, target] {
+                if (target.isValid() && !places->isHidden(target)) {
+                    // Recheck capability after hotplug/model changes.
+                    const std::unique_ptr<QAction> current(places->ejectActionForIndex(target));
+                    if (current && current->isEnabled()) places->requestEject(target);
+                }
+            });
+        }
+        if (auto *teardown = places->teardownActionForIndex(index)) {
+            teardown->setParent(&menu);
+            teardown->setObjectName(QStringLiteral("aero7UnmountDrive"));
+            teardown->setIcon(Aero7Icons::icon(QStringLiteral("media-eject")));
+            teardown->setEnabled(teardown->isEnabled() && places->isTeardownAllowed(index)
+                                 && !m_indexToTearDown.isValid());
+            if (menu.actions().constLast()->objectName() != QLatin1String("aero7EjectDrive"))
+                menu.addSeparator();
+            menu.addAction(teardown);
+            connect(teardown, &QAction::triggered, &menu, [this, places, target] {
+                if (!target.isValid() || places->isHidden(target)
+                    || !places->isTeardownAllowed(target) || m_indexToTearDown.isValid()) return;
+                const std::unique_ptr<QAction> current(places->teardownActionForIndex(target));
+                if (current && current->isEnabled()) slotTearDownRequested(target);
+            });
+        }
+    }
 
     if (url.isLocalFile()) {
         const QString id = Aero7Libraries::instance().libraryIdForPath(url.toLocalFile());
@@ -384,8 +504,6 @@ void PlacesPanel::contextMenuEvent(QContextMenuEvent *event)
                     [this, id]() { Aero7Properties::showLibrary(id, this); });
         }
     }
-    menu.exec(event->globalPos());
-    event->accept();
 }
 
 void PlacesPanel::slotConfigureTrash()
@@ -450,6 +568,7 @@ void PlacesPanel::slotTearDownRequested(const QModelIndex &index)
     }
 
     m_indexToTearDown = QPersistentModelIndex(index);
+    m_tearDownPaths.insert(storageAccess, storageAccess->filePath());
 
     // disconnect the Solid::StorageAccess::teardownRequested
     // to prevent emitting PlacesPanel::storageTearDownExternallyRequested
@@ -462,7 +581,7 @@ void PlacesPanel::slotTearDownRequestedExternally(const QString &udi)
 {
     Q_UNUSED(udi);
     auto *storageAccess = static_cast<Solid::StorageAccess *>(sender());
-
+    m_tearDownPaths.insert(storageAccess, storageAccess->filePath());
     Q_EMIT storageTearDownExternallyRequested(storageAccess->filePath());
 }
 
@@ -471,12 +590,37 @@ void PlacesPanel::slotTearDownDone(const QModelIndex &index, Solid::ErrorType er
     Q_UNUSED(errorData); // All error handling is currently done in frameworks.
 
     if (index == m_indexToTearDown) {
-        if (error == Solid::ErrorType::NoError) {
-            // No error; it must have been unmounted successfully
-            Q_EMIT storageTearDownSuccessful();
-        }
         m_indexToTearDown = QPersistentModelIndex();
     }
+    Q_UNUSED(error);
+}
+
+void PlacesPanel::completeTearDown(const QObject *access, Solid::ErrorType error)
+{
+    // Consume the matching request on failure too. A later success on another
+    // drive must neither run stale recovery nor disconnect another listener.
+    const QString mountPath = m_tearDownPaths.take(access);
+    if (error == Solid::ErrorType::NoError && !mountPath.isEmpty() && mountPath != QLatin1String("/")) {
+        Q_EMIT storageTearDownSuccessful(mountPath);
+    }
+}
+
+void PlacesPanel::slotNativeTearDownDone(Solid::ErrorType error, const QVariant &errorData, const QString &udi)
+{
+    Q_UNUSED(errorData);
+    Q_UNUSED(udi);
+    auto *access = qobject_cast<Solid::StorageAccess *>(sender());
+    if (!access) return;
+    // Internal requests temporarily suppress the external-request callback.
+    // Restore it for the next native operation, including after a failure.
+    connect(access, &Solid::StorageAccess::teardownRequested, this,
+            &PlacesPanel::slotTearDownRequestedExternally, Qt::UniqueConnection);
+    completeTearDown(access, error);
+}
+
+void PlacesPanel::slotStorageAccessDestroyed(QObject *access)
+{
+    m_tearDownPaths.remove(access);
 }
 
 void PlacesPanel::slotRowsInserted(const QModelIndex &parent, int first, int last)
@@ -511,7 +655,12 @@ void PlacesPanel::connectDeviceSignals(const QModelIndex &index)
         return;
     }
 
-    connect(storageAccess, &Solid::StorageAccess::teardownRequested, this, &PlacesPanel::slotTearDownRequestedExternally);
+    connect(storageAccess, &Solid::StorageAccess::teardownRequested, this,
+            &PlacesPanel::slotTearDownRequestedExternally, Qt::UniqueConnection);
+    connect(storageAccess, &Solid::StorageAccess::teardownDone, this,
+            &PlacesPanel::slotNativeTearDownDone, Qt::UniqueConnection);
+    connect(storageAccess, &QObject::destroyed, this,
+            &PlacesPanel::slotStorageAccessDestroyed, Qt::UniqueConnection);
 }
 
 #include "moc_placespanel.cpp"

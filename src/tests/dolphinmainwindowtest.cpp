@@ -11,7 +11,9 @@
 #include "dolphintabwidget.h"
 #include "dolphinviewcontainer.h"
 #include "dolphinwindowheader.h"
+#include "dolphinurlnavigator.h"
 #include "aero7libraries.h"
+#include <KFilePlacesModel>
 #include "kitemviews/kfileitemmodel.h"
 #include "kitemviews/kfileitemmodelrolesupdater.h"
 #include "kitemviews/kitemlistcontainer.h"
@@ -20,6 +22,7 @@
 #include "kitemviews/kitemlistselectionmanager.h"
 #include "kitemviews/kitemlistwidget.h"
 #include "settings/viewmodes/viewmodesettings.h"
+#include "statusbar/dolphinstatusbar.h"
 #include "panels/places/placespanel.h"
 #include "testdir.h"
 #include "views/dolphinitemlistview.h"
@@ -30,18 +33,28 @@
 #include <KConfig>
 #include <KConfigGui>
 #include <KFileItem>
+#include <KSqueezedTextLabel>
 
 #include <QAccessible>
+#include <QAbstractButton>
 #include <QApplication>
 #include <QDomDocument>
 #include <QDockWidget>
 #include <QFileSystemWatcher>
 #include <QImage>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLabel>
+#include <QMenu>
 #include <QKeySequence>
 #include <QScopedPointer>
 #include <QSignalSpy>
 #include <QStandardPaths>
+#include <QStandardItemModel>
+#include <QStackedWidget>
+#include <QTabBar>
+#include <QTemporaryDir>
 #include <QTest>
 #include <QToolBar>
 #include <QToolButton>
@@ -57,6 +70,7 @@ private Q_SLOTS:
     void initTestCase();
     void init();
     void testSyncDesktopAndPhoneUi();
+    void testAero7ActionLayoutResource();
     void testClosingTabsWithSearchBoxVisible();
     void testActiveViewAfterClosingSplitView_data();
     void testActiveViewAfterClosingSplitView();
@@ -71,8 +85,33 @@ private Q_SLOTS:
     void testWindowTitle();
     void testFocusLocationBar();
     void testAero7ExplorerChromeContract();
+    void testAero7ClipboardEventBeforeOpeningFolder();
     void testAero7LibraryPlaceActivation();
+    void testAero7SystemDriveActivation();
+    void testAero7BreadcrumbSurvivesPlacesRefresh();
+    void testAero7NoInventedCdPlace();
+    void testAero7PlacesMenuRejectsInvalidOrForeignIndex();
+    void testAero7PlacesMenuUsesNativeStorageCapabilities();
+    void testAero7PlacesMenuDoesNotTearDownBookmarks();
+    void testAero7StorageRecoveryKeepsOtherObservers();
+    void testAero7StorageRecoveryUsesCompletedDrive();
+    void testAero7FailedStorageRequestIsConsumed_data();
+    void testAero7FailedStorageRequestIsConsumed();
+    void testAero7DestroyedStorageRequestIsDiscarded();
+    void testAero7ComputerNavigatorUsesResolvablePlace();
+    void testAero7SidebarHasNoMissingLibraryGap();
+    void testAero7SidebarDefaultLabelsFit();
+    void testAero7ComputerBackForwardHistory();
+    void testAero7ComputerLaunchSelectsItsPlace();
+    void testAero7ComputerTabRestoresSurface();
+    void testAero7ComputerTabsRemainMouseAccessible();
+    void testAero7ComputerSplitPaneRemainsVisible();
+    void testAero7SplitBreadcrumbFollowsActiveTab();
+    void testAero7NormalDetailsModeIsIdempotent();
+    void testAero7FolderDetailsSurviveTabAndSplitChanges();
     void testAero7WindowFitsAvailableScreen();
+    void testAero7ComputerDetailsNotClipped_data();
+    void testAero7ComputerDetailsNotClipped();
     void testFocusPlacesPanel();
     void testPlacesPanelWidthResistance();
     void testGoActions();
@@ -92,7 +131,8 @@ private:
 
 void DolphinMainWindowTest::initTestCase()
 {
-    QStandardPaths::setTestModeEnabled(true);
+    // main() provides a fresh process-local XDG profile. Qt's shared .qttest
+    // profile can retain libraries from an earlier run and invalidate fixtures.
     // Use fullWidth statusbar during testing, to test out most of the features.
     GeneralSettings *settings = GeneralSettings::self();
     settings->setShowStatusBar(GeneralSettings::EnumShowStatusBar::FullWidth);
@@ -108,12 +148,122 @@ void DolphinMainWindowTest::init()
     m_mainWindow.reset(new DolphinMainWindow());
 }
 
+void DolphinMainWindowTest::testAero7StorageRecoveryKeepsOtherObservers()
+{
+    QTemporaryDir drive;
+    QVERIFY(drive.isValid());
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(drive.path())}, false);
+    auto *panel = m_mainWindow->m_placesPanel;
+    QSignalSpy completions(panel, &PlacesPanel::storageTearDownSuccessful);
+    m_mainWindow->slotStorageTearDownExternallyRequested(drive.path());
+    Q_EMIT panel->storageTearDownSuccessful(drive.path());
+    QCOMPARE(m_mainWindow->activeViewContainer()->url(), QUrl::fromLocalFile(QDir::homePath()));
+    Q_EMIT panel->storageTearDownSuccessful(drive.path());
+    QCOMPARE(completions.count(), 2);
+}
+
+void DolphinMainWindowTest::testAero7StorageRecoveryUsesCompletedDrive()
+{
+    QTemporaryDir firstDrive;
+    QTemporaryDir secondDrive;
+    QVERIFY(firstDrive.isValid());
+    QVERIFY(secondDrive.isValid());
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(secondDrive.path())}, false);
+    // No host mounts: exercise only the window's completion dispatch.
+    m_mainWindow->slotStorageTearDownExternallyRequested(firstDrive.path());
+    m_mainWindow->slotStorageTearDownExternallyRequested(secondDrive.path());
+    Q_EMIT m_mainWindow->m_placesPanel->storageTearDownSuccessful(secondDrive.path());
+    QCOMPARE(m_mainWindow->activeViewContainer()->url(), QUrl::fromLocalFile(QDir::homePath()));
+}
+
+void DolphinMainWindowTest::testAero7FailedStorageRequestIsConsumed_data()
+{
+    QTest::addColumn<int>("failure");
+    QTest::newRow("busy") << int(Solid::DeviceBusy);
+    QTest::newRow("denied") << int(Solid::UnauthorizedOperation);
+    QTest::newRow("cancelled") << int(Solid::UserCanceled);
+}
+
+void DolphinMainWindowTest::testAero7FailedStorageRequestIsConsumed()
+{
+    QFETCH(int, failure);
+    QTemporaryDir firstDrive;
+    QTemporaryDir secondDrive;
+    QVERIFY(firstDrive.isValid());
+    QVERIFY(secondDrive.isValid());
+    const QUrl firstUrl = QUrl::fromLocalFile(firstDrive.path());
+    m_mainWindow->openDirectories({firstUrl}, false);
+    auto *panel = m_mainWindow->m_placesPanel;
+    QSignalSpy completions(panel, &PlacesPanel::storageTearDownSuccessful);
+    // Tokens stand in for two native access objects; no mount APIs are called.
+    QObject firstAccess;
+    QObject secondAccess;
+    panel->m_tearDownPaths.insert(&firstAccess, firstDrive.path());
+    panel->m_tearDownPaths.insert(&secondAccess, secondDrive.path());
+    panel->completeTearDown(&firstAccess, Solid::ErrorType(failure));
+    QVERIFY(!panel->m_tearDownPaths.contains(&firstAccess));
+    QVERIFY(panel->m_tearDownPaths.contains(&secondAccess));
+    QCOMPARE(completions.count(), 0);
+    QCOMPARE(m_mainWindow->activeViewContainer()->url(), firstUrl);
+    panel->completeTearDown(&secondAccess, Solid::NoError);
+    QCOMPARE(completions.count(), 1);
+    QCOMPARE(completions.at(0).at(0).toString(), secondDrive.path());
+    QCOMPARE(m_mainWindow->activeViewContainer()->url(), firstUrl);
+    panel->completeTearDown(&firstAccess, Solid::NoError);
+    QCOMPARE(completions.count(), 1); // A stale completion has no request.
+    panel->m_tearDownPaths.insert(&firstAccess, firstDrive.path());
+    panel->completeTearDown(&firstAccess, Solid::NoError);
+    QCOMPARE(completions.count(), 2);
+    QCOMPARE(m_mainWindow->activeViewContainer()->url(), QUrl::fromLocalFile(QDir::homePath()));
+    QVERIFY(panel->m_tearDownPaths.isEmpty());
+}
+
+void DolphinMainWindowTest::testAero7DestroyedStorageRequestIsDiscarded()
+{
+    auto *panel = m_mainWindow->m_placesPanel;
+    QSignalSpy completions(panel, &PlacesPanel::storageTearDownSuccessful);
+    QObject oldAccess;
+    QObject replacementAccess;
+    panel->m_tearDownPaths.insert(&oldAccess, QStringLiteral("/run/media/test/old"));
+    panel->m_tearDownPaths.insert(&replacementAccess, QStringLiteral("/run/media/test/new"));
+    panel->slotStorageAccessDestroyed(&oldAccess);
+    QVERIFY(!panel->m_tearDownPaths.contains(&oldAccess));
+    QVERIFY(panel->m_tearDownPaths.contains(&replacementAccess));
+    panel->completeTearDown(&oldAccess, Solid::NoError);
+    QCOMPARE(completions.count(), 0);
+    panel->completeTearDown(&replacementAccess, Solid::NoError);
+    QCOMPARE(completions.count(), 1);
+    QCOMPARE(completions.at(0).at(0).toString(), QStringLiteral("/run/media/test/new"));
+}
+
+void DolphinMainWindowTest::testAero7ClipboardEventBeforeOpeningFolder()
+{
+    // Wayland can deliver a clipboard event as soon as a newly shown window
+    // receives focus, before openDirectories() has supplied its first view.
+    QVERIFY(!m_mainWindow->activeViewContainer());
+    auto *paste = m_mainWindow->actionCollection()->action(KStandardAction::name(KStandardAction::Paste));
+    QVERIFY(paste);
+    m_mainWindow->updatePasteAction();
+    QVERIFY(!paste->isEnabled());
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
+    QVERIFY(m_mainWindow->activeViewContainer());
+    m_mainWindow->updatePasteAction();
+    QCOMPARE(paste->isEnabled(), m_mainWindow->activeViewContainer()->view()->pasteInfo().first);
+}
+
 /**
  * It is too easy to forget that most changes in dolphinui.rc should be mirrored in dolphinuiforphones.rc. This test makes sure that these two files stay
  * mostly identical. Differences between those files need to be explicitly added as exceptions to this test. So if you land here after changing either
  * dolphinui.rc or dolphinuiforphones.rc, then resolve this test failure either by making the exact same change to the other ui.rc file, or by adding the
  * changed object to the `exceptions` variable below.
  */
+void DolphinMainWindowTest::testAero7ActionLayoutResource()
+{
+    QCOMPARE(m_mainWindow->xmlFile(), QStringLiteral(":/kxmlgui5/dolphin/dolphinui.rc"));
+    QVERIFY(!m_mainWindow->domDocument().documentElement().isNull());
+    QCOMPARE(m_mainWindow->domDocument().documentElement().tagName(), QStringLiteral("gui"));
+}
+
 void DolphinMainWindowTest::testSyncDesktopAndPhoneUi()
 {
     std::unordered_set<QString> exceptions{{QStringLiteral("version"), QStringLiteral("ToolBar")}};
@@ -560,7 +710,7 @@ void DolphinMainWindowTest::testAero7ExplorerChromeContract()
     QDockWidget *placesDock = m_mainWindow->findChild<QDockWidget *>(
         QStringLiteral("placesDock"));
     QVERIFY(placesDock);
-    QCOMPARE(placesDock->width(), 133);
+    QCOMPARE(placesDock->width(), m_mainWindow->m_placesPanel->sizeHint().width());
     QVERIFY(!header->automaticColumnResizing());
     verifyNormalFolderHeader();
 
@@ -615,6 +765,389 @@ void DolphinMainWindowTest::testAero7LibraryPlaceActivation()
     QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), documentsLibrary);
 }
 
+void DolphinMainWindowTest::testAero7SystemDriveActivation()
+{
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    const QString path = QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+        .filePath(QStringLiteral("Aero7/Shell Places/Local Disk (C:)"));
+    m_mainWindow->slotPlaceActivated(QUrl::fromLocalFile(path));
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), QUrl::fromLocalFile("/"));
+    QTRY_VERIFY([&] {
+        for (const auto *button : m_mainWindow->activeViewContainer()->urlNavigator()->findChildren<QAbstractButton *>()) {
+            QString text = button->text();
+            text.remove(QLatin1Char('&'));
+            if (text == "Local Disk (C:)" && button->isVisible() && button->width() > 0)
+                return true;
+        }
+        return false;
+    }());
+}
+
+void DolphinMainWindowTest::testAero7BreadcrumbSurvivesPlacesRefresh()
+{
+    const QUrl root = QUrl::fromLocalFile(QStringLiteral("/"));
+    m_mainWindow->openDirectories({root}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    auto *navigator = m_mainWindow->activeViewContainer()->urlNavigator();
+    const auto labels = [navigator] {
+        QStringList result;
+        for (const auto *button : navigator->findChildren<QAbstractButton *>()) {
+            if (QString::fromLatin1(button->metaObject()->className()).endsWith(QLatin1String("KUrlNavigatorButton"))
+                && button->isVisible() && button->width() > 0) {
+                QString text = button->text();
+                text.remove(QLatin1Char('&'));
+                result.append(text);
+            }
+        }
+        return result;
+    };
+    const QStringList expected{QStringLiteral("Local Disk (C:)")};
+    QTRY_COMPARE(labels(), expected);
+    // Let the navigation-time repair finish before an unrelated model update.
+    // A busy-drive state change does not change this URL or the mount table.
+    QTest::qWait(150);
+    auto *places = m_mainWindow->m_placesPanel->model();
+    QVERIFY(places->rowCount() > 0);
+    for (int refresh = 0; refresh < 3; ++refresh) {
+        Q_EMIT places->dataChanged(places->index(0, 0), places->index(places->rowCount() - 1, 0), {Qt::DisplayRole});
+        QTRY_COMPARE(labels(), expected);
+        QTest::qWait(150);
+        QCOMPARE(labels(), expected);
+        QCOMPARE(navigator->locationUrl(), root);
+    }
+}
+
+void DolphinMainWindowTest::testAero7NoInventedCdPlace()
+{
+    const auto *model = m_mainWindow->m_placesPanel->model();
+    const QString oldPath = QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+        .filePath(QStringLiteral("Aero7/Shell Places/CD Drive (D:)"));
+    for (int row = 0; row < model->rowCount(); ++row)
+        QVERIFY(model->index(row, 0).data(KFilePlacesModel::UrlRole).toUrl()
+                != QUrl::fromLocalFile(oldPath));
+}
+
+void DolphinMainWindowTest::testAero7PlacesMenuRejectsInvalidOrForeignIndex()
+{
+    auto *panel = m_mainWindow->m_placesPanel;
+    QMenu menu;
+    panel->populateAero7ContextMenu(menu, QModelIndex());
+    QVERIFY(menu.isEmpty());
+    QStandardItemModel foreign(1, 1);
+    panel->populateAero7ContextMenu(menu, foreign.index(0, 0));
+    QVERIFY(menu.isEmpty());
+}
+
+void DolphinMainWindowTest::testAero7PlacesMenuUsesNativeStorageCapabilities()
+{
+    auto *panel = m_mainWindow->m_placesPanel;
+    auto *places = qobject_cast<KFilePlacesModel *>(panel->model());
+    QVERIFY(places);
+    int visiblePlaces = 0;
+    for (int row = 0; row < places->rowCount(); ++row) {
+        const auto index = places->index(row, 0);
+        QMenu menu;
+        panel->populateAero7ContextMenu(menu, index);
+        if (places->isHidden(index)) {
+            QVERIFY(menu.isEmpty());
+            continue;
+        }
+        ++visiblePlaces;
+        QVERIFY(menu.actions().size() >= 2);
+        QCOMPARE(menu.actions().at(0)->text(), QStringLiteral("Open"));
+        QCOMPARE(menu.actions().at(1)->text(), QStringLiteral("Open in new window"));
+        auto *eject = menu.findChild<QAction *>(QStringLiteral("aero7EjectDrive"));
+        auto *unmount = menu.findChild<QAction *>(QStringLiteral("aero7UnmountDrive"));
+        const std::unique_ptr<QAction> expectedEject(places->ejectActionForIndex(index));
+        const std::unique_ptr<QAction> expectedUnmount(places->teardownActionForIndex(index));
+        QCOMPARE(bool(eject), places->isDevice(index) && bool(expectedEject));
+        QCOMPARE(bool(unmount), places->isDevice(index) && bool(expectedUnmount));
+        if (unmount) {
+            QCOMPARE(unmount->parent(), &menu);
+            QCOMPARE(unmount->isEnabled(), expectedUnmount->isEnabled() && places->isTeardownAllowed(index));
+        }
+        if (eject) QCOMPARE(eject->parent(), &menu);
+        for (auto *action : menu.actions()) {
+            const QString label = QString(action->text()).remove(QLatin1Char('&'));
+            QVERIFY(!label.contains(QStringLiteral("Edit")));
+            QVERIFY(!label.contains(QStringLiteral("Hide")));
+            QVERIFY(!label.contains(QStringLiteral("Partition")));
+        }
+        // Deliberately never trigger storage actions against host devices.
+    }
+    QVERIFY(visiblePlaces > 0);
+}
+
+void DolphinMainWindowTest::testAero7PlacesMenuDoesNotTearDownBookmarks()
+{
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
+    auto *panel = m_mainWindow->m_placesPanel;
+    const auto index = panel->aero7IndexForName(QStringLiteral("Downloads"));
+    QVERIFY(index.isValid());
+    QMenu menu;
+    panel->populateAero7ContextMenu(menu, index);
+    QVERIFY(!menu.findChild<QAction *>(QStringLiteral("aero7UnmountDrive")));
+    QVERIFY(!menu.findChild<QAction *>(QStringLiteral("aero7EjectDrive")));
+    QSignalSpy teardown(panel, &PlacesPanel::storageTearDownRequested);
+    QSignalSpy opened(panel, &PlacesPanel::placeActivated);
+    menu.actions().first()->trigger();
+    QCOMPARE(teardown.count(), 0);
+    QCOMPARE(opened.count(), 1);
+}
+
+void DolphinMainWindowTest::testAero7ComputerNavigatorUsesResolvablePlace()
+{
+    const auto home = QUrl::fromLocalFile(QDir::homePath());
+    m_mainWindow->openDirectories({home}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    m_mainWindow->showAero7Computer();
+    auto *navigator = m_mainWindow->activeViewContainer()->urlNavigator();
+    QVERIFY2(navigator->locationUrl().isLocalFile(), "Computer must not launch KIO jobs for an unregistered protocol");
+    QVERIFY(QFileInfo::exists(navigator->locationUrl().toLocalFile()));
+    QTest::qWait(300);
+    QStringList labels;
+    for (const auto *button : navigator->findChildren<QAbstractButton *>()) {
+        if (button->isVisible() && button->width() > 0
+            && QString::fromLatin1(button->metaObject()->className()).endsWith("KUrlNavigatorButton"))
+            labels.append(QString(button->text()).remove('&'));
+    }
+    QCOMPARE(labels, QStringList{QStringLiteral("Computer")});
+    m_mainWindow->goBack();
+    QTRY_COMPARE(navigator->locationUrl(), home);
+}
+
+void DolphinMainWindowTest::testAero7SidebarHasNoMissingLibraryGap()
+{
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    auto *panel = m_mainWindow->m_placesPanel;
+    panel->viewport()->update();
+    QTest::qWait(100);
+    // On a fresh profile Pictures immediately follows Documents and Music.
+    // A nonexistent "New Library" must not consume a painted row.
+    QTest::mouseClick(panel->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(80, 188));
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(),
+                 QUrl::fromLocalFile(Aero7Libraries::instance().materializedPath(QStringLiteral("pictures"))));
+}
+
+void DolphinMainWindowTest::testAero7SidebarDefaultLabelsFit()
+{
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    auto *panel = m_mainWindow->m_placesPanel;
+    QTest::qWait(100);
+    for (const auto &label : {QStringLiteral("Local Disk (C:)"), QStringLiteral("Recent Places")})
+        QVERIFY2(panel->viewport()->width() >= panel->fontMetrics().horizontalAdvance(label) + 54,
+                 qPrintable(QStringLiteral("Default sidebar clips %1").arg(label)));
+}
+
+void DolphinMainWindowTest::testAero7ComputerBackForwardHistory()
+{
+    const auto root = QUrl::fromLocalFile(QStringLiteral("/"));
+    const auto pictures = QUrl::fromLocalFile(Aero7Libraries::instance().materializedPath(QStringLiteral("pictures")));
+    m_mainWindow->openDirectories({root}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    m_mainWindow->changeUrl(pictures);
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), pictures);
+    QTest::qWait(100);
+    m_mainWindow->showAero7Computer();
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+    m_mainWindow->goBack();
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), pictures);
+    QCOMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 0);
+    m_mainWindow->goForward();
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+    QCOMPARE(m_mainWindow->m_placesPanel->currentIndex().data().toString(), QStringLiteral("Computer"));
+    m_mainWindow->goBack();
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), pictures);
+    m_mainWindow->goBack();
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), root);
+    m_mainWindow->goForward();
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), pictures);
+    m_mainWindow->goForward();
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+}
+
+void DolphinMainWindowTest::testAero7ComputerLaunchSelectsItsPlace()
+{
+    m_mainWindow->openDirectories({QUrl(QStringLiteral("aero7computer:/"))}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+    QTRY_COMPARE(m_mainWindow->m_placesPanel->currentIndex().data().toString(), QStringLiteral("Computer"));
+    QVERIFY(m_mainWindow->activeViewContainer()->url().isLocalFile());
+    QCOMPARE(m_mainWindow->activeViewContainer()->url().fileName(), QStringLiteral("Computer"));
+}
+
+void DolphinMainWindowTest::testAero7ComputerTabRestoresSurface()
+{
+    m_mainWindow->openDirectories({QUrl(QStringLiteral("aero7computer:/"))}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+    const int computerTab = m_mainWindow->m_tabWidget->currentIndex();
+    m_mainWindow->openNewTabAndActivate(QUrl::fromLocalFile(QDir::homePath()));
+    const int homeTab = m_mainWindow->m_tabWidget->currentIndex();
+    QVERIFY(homeTab != computerTab);
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 0);
+    m_mainWindow->m_tabWidget->setCurrentIndex(computerTab);
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+    QCOMPARE(m_mainWindow->m_placesPanel->currentIndex().data().toString(), QStringLiteral("Computer"));
+    m_mainWindow->m_tabWidget->setCurrentIndex(homeTab);
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 0);
+    QCOMPARE(m_mainWindow->activeViewContainer()->url(), QUrl::fromLocalFile(QDir::homePath()));
+}
+
+void DolphinMainWindowTest::testAero7ComputerTabsRemainMouseAccessible()
+{
+    m_mainWindow->openDirectories({QUrl(QStringLiteral("aero7computer:/"))}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+    auto *tabs = m_mainWindow->m_tabWidget;
+    const int computerTab = tabs->currentIndex();
+    m_mainWindow->openNewTabAndActivate(QUrl::fromLocalFile(QDir::homePath()));
+    const int homeTab = tabs->currentIndex();
+    auto *bar = tabs->tabBar();
+    QTRY_VERIFY(bar->isVisible());
+    QTest::mouseClick(bar, Qt::LeftButton, Qt::NoModifier, bar->tabRect(computerTab).center());
+    QTRY_COMPARE(tabs->currentIndex(), computerTab);
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+    QTRY_VERIFY(bar->isVisible());
+    QVERIFY(bar->visibleRegion().contains(bar->tabRect(homeTab).center()));
+    QTest::mouseClick(bar, Qt::LeftButton, Qt::NoModifier, bar->tabRect(homeTab).center());
+    QTRY_COMPARE(tabs->currentIndex(), homeTab);
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 0);
+    QTest::mouseClick(bar, Qt::LeftButton, Qt::NoModifier, bar->tabRect(computerTab).center());
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+    tabs->closeTab(computerTab);
+    QTRY_COMPARE(tabs->count(), 1);
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 0);
+    QCOMPARE(m_mainWindow->activeViewContainer()->url(), QUrl::fromLocalFile(QDir::homePath()));
+}
+
+void DolphinMainWindowTest::testAero7ComputerSplitPaneRemainsVisible()
+{
+    m_mainWindow->openDirectories({QUrl(QStringLiteral("aero7computer:/"))}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 1);
+    auto *page = m_mainWindow->m_tabWidget->currentTabPage();
+    QPointer<QStackedWidget> computerStack = m_mainWindow->m_aero7ContentStack;
+    page->setSplitViewEnabled(true, WithoutAnimation, QUrl::fromLocalFile(QDir::homePath()));
+    QTRY_VERIFY(!page->primaryViewActive());
+    QTRY_COMPARE(m_mainWindow->m_aero7ContentStack->currentIndex(), 0);
+    QVERIFY(computerStack->isVisible());
+    QCOMPARE(computerStack->currentIndex(), 1);
+    QVERIFY(page->secondaryViewContainer()->view()->isVisible());
+    QTRY_VERIFY(!page->primaryViewContainer()->statusBarWidget()->isVisible());
+    QVERIFY(page->secondaryViewContainer()->statusBarWidget()->isVisible());
+    page->primaryViewContainer()->statusBarWidget()->updateMode();
+    QTRY_VERIFY(!page->primaryViewContainer()->statusBarWidget()->isVisible());
+    page->primaryViewContainer()->setActive(true);
+    QTRY_VERIFY(page->primaryViewActive());
+    QCOMPARE(m_mainWindow->m_aero7ContentStack, computerStack.data());
+    QVERIFY(page->secondaryViewContainer()->view()->isVisible());
+    QTRY_VERIFY(!page->secondaryViewContainer()->statusBarWidget()->isVisible());
+    QVERIFY(page->primaryViewContainer()->statusBarWidget()->isVisible());
+    page->secondaryViewContainer()->statusBarWidget()->updateMode();
+    QTRY_VERIFY(!page->secondaryViewContainer()->statusBarWidget()->isVisible());
+    m_mainWindow->changeUrl(QUrl::fromLocalFile(QDir::rootPath()));
+    QTRY_COMPARE(computerStack->currentIndex(), 0);
+    QVERIFY(page->secondaryViewContainer()->view()->isVisible());
+    QCOMPARE(page->secondaryViewContainer()->url(), QUrl::fromLocalFile(QDir::homePath()));
+    QTRY_VERIFY(!page->secondaryViewContainer()->statusBarWidget()->isVisible());
+    QVERIFY(page->primaryViewContainer()->statusBarWidget()->isVisible());
+}
+
+void DolphinMainWindowTest::testAero7SplitBreadcrumbFollowsActiveTab()
+{
+    m_mainWindow->openDirectories({QUrl(QStringLiteral("aero7computer:/"))}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    auto *tabs = m_mainWindow->m_tabWidget;
+    auto *page = tabs->currentTabPage();
+    auto *secondaryHole = m_mainWindow->findChild<QWidget *>(QStringLiteral("secondaryNavHole"));
+    QVERIFY(secondaryHole);
+    QVERIFY(!secondaryHole->isVisible());
+    const int splitTab = tabs->currentIndex();
+    page->setSplitViewEnabled(true, WithoutAnimation, QUrl::fromLocalFile(QDir::rootPath()));
+    QTRY_VERIFY(secondaryHole->isVisible());
+    page->setSplitViewEnabled(false, WithoutAnimation);
+    QTRY_VERIFY(!secondaryHole->isVisible());
+    page->setSplitViewEnabled(true, WithoutAnimation, QUrl::fromLocalFile(QDir::rootPath()));
+    QTRY_VERIFY(secondaryHole->isVisible());
+    tabs->openNewActivatedTab(QUrl(QStringLiteral("aero7computer:/")));
+    QTRY_VERIFY(!secondaryHole->isVisible());
+    tabs->setCurrentIndex(splitTab);
+    QTRY_VERIFY(secondaryHole->isVisible());
+    tabs->closeTab(splitTab);
+    QTRY_VERIFY(!secondaryHole->isVisible());
+}
+
+void DolphinMainWindowTest::testAero7NormalDetailsModeIsIdempotent()
+{
+    DolphinStatusBar details(nullptr);
+    details.setDefaultText(QStringLiteral("4 items"));
+    auto *label = details.findChild<KSqueezedTextLabel *>();
+    QVERIFY(label);
+    QTRY_COMPARE(label->fullText(), QStringLiteral("4 items"));
+    details.setComputerMode(false);
+    QTRY_COMPARE(label->fullText(), QStringLiteral("4 items"));
+    details.setHoveredItemText(QStringLiteral("photo.png"));
+    QTRY_COMPARE(label->fullText(), QStringLiteral("photo.png"));
+    details.setComputerMode(false);
+    QTRY_COMPARE(label->fullText(), QStringLiteral("photo.png"));
+    details.setHoveredItemText(QString());
+    QTRY_COMPARE(label->fullText(), QStringLiteral("4 items"));
+}
+
+void DolphinMainWindowTest::testAero7FolderDetailsSurviveTabAndSplitChanges()
+{
+    TestDir first;
+    TestDir second;
+    first.createFile(QStringLiteral("one.txt"));
+    second.createFiles({QStringLiteral("two.txt"), QStringLiteral("three.txt")});
+    m_mainWindow->openDirectories({first.url()}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    const auto text = [](DolphinViewContainer *container) {
+        auto *label = container->statusBarWidget()->findChild<KSqueezedTextLabel *>();
+        return label ? label->fullText() : QString();
+    };
+    auto *tabs = m_mainWindow->m_tabWidget;
+    auto *firstView = tabs->currentTabPage()->activeViewContainer();
+    QTRY_COMPARE(text(firstView), QStringLiteral("1 item"));
+    const QString firstText = text(firstView);
+    const int firstTab = tabs->currentIndex();
+    tabs->openNewActivatedTab(second.url());
+    auto *secondView = tabs->currentTabPage()->activeViewContainer();
+    QTRY_COMPARE(text(secondView), QStringLiteral("2 items"));
+    const QString secondText = text(secondView);
+    QVERIFY(firstText != secondText); // Distinct real directory counts.
+    tabs->setCurrentIndex(firstTab);
+    QTRY_COMPARE(text(firstView), firstText);
+    auto *page = tabs->currentTabPage();
+    page->setSplitViewEnabled(true, WithAnimation, second.url());
+    QTRY_COMPARE(text(page->activeViewContainer()), secondText);
+    page->primaryViewContainer()->setActive(true);
+    QTRY_COMPARE(text(page->activeViewContainer()), firstText);
+    page->secondaryViewContainer()->setActive(true);
+    QTRY_COMPARE(text(page->activeViewContainer()), secondText);
+    page->setSplitViewEnabled(false, WithAnimation);
+    const QString remainingText = page->activeViewContainer()->url() == first.url() ? firstText : secondText;
+    QTRY_COMPARE(text(page->activeViewContainer()), remainingText);
+    tabs->openNewActivatedTab(QUrl(QStringLiteral("aero7computer:/")));
+    tabs->setCurrentIndex(firstTab);
+    QTRY_COMPARE(text(page->activeViewContainer()), remainingText);
+}
+
 void DolphinMainWindowTest::testAero7WindowFitsAvailableScreen()
 {
     m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
@@ -640,6 +1173,38 @@ void DolphinMainWindowTest::testAero7WindowFitsAvailableScreen()
     QCOMPARE(m_mainWindow->width(), fittedWidth);
     m_mainWindow->m_winHeader->setComputerMode(false);
     QTRY_COMPARE(m_mainWindow->width(), fittedWidth);
+}
+
+void DolphinMainWindowTest::testAero7ComputerDetailsNotClipped_data()
+{
+    QTest::addColumn<int>("pointSize");
+    QTest::newRow("normal") << 9;
+    QTest::newRow("large") << 12;
+    QTest::newRow("accessibility") << 18;
+}
+
+void DolphinMainWindowTest::testAero7ComputerDetailsNotClipped()
+{
+    QFETCH(int, pointSize);
+    QFont font = m_mainWindow->font();
+    font.setPointSize(pointSize);
+    m_mainWindow->setFont(font);
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    m_mainWindow->showAero7Computer();
+    auto *details = m_mainWindow->activeViewContainer()->statusBarWidget();
+    KSqueezedTextLabel *label = nullptr;
+    for (auto *candidate : details->findChildren<KSqueezedTextLabel *>()) {
+        if (candidate->fullText().contains(QStringLiteral("\nProcessor:"))) {
+            label = candidate;
+            break;
+        }
+    }
+    QVERIFY(label);
+    const int twoLines = label->fontMetrics().height() + label->fontMetrics().lineSpacing();
+    QTRY_VERIFY2(label->height() >= twoLines, "Computer's processor line is clipped by a one-line label height");
+    QTRY_VERIFY(details->rect().contains(QRect(label->mapTo(details, QPoint(0, 0)), label->size())));
 }
 
 void DolphinMainWindowTest::testFocusPlacesPanel()
@@ -992,6 +1557,20 @@ void DolphinMainWindowTest::testAccessibilityTree()
     QVERIFY(m_mainWindow->isVisible());
     QTRY_VERIFY_WITH_TIMEOUT(QApplication::activeWindow() != nullptr, 100);
 
+    // Breadcrumb buttons are reused and relabelled asynchronously. Start the
+    // static focus-chain audit only once the current destination is reachable,
+    // not midway through replacing the preceding window's breadcrumb buttons.
+    QTRY_VERIFY([&] {
+        const QString leaf = QFileInfo(QDir::homePath()).fileName();
+        for (const auto *button : m_mainWindow->activeViewContainer()->urlNavigator()->findChildren<QAbstractButton *>()) {
+            QString text = button->text();
+            text.remove(QLatin1Char('&'));
+            if (text == leaf && button->isVisible() && (button->focusPolicy() & Qt::TabFocus))
+                return true;
+        }
+        return false;
+    }());
+
     QAccessibleInterface *accessibleInterfaceOfMainWindow = QAccessible::queryAccessibleInterface(m_mainWindow.get());
     Q_ASSERT(accessibleInterfaceOfMainWindow);
 
@@ -1010,6 +1589,14 @@ void DolphinMainWindowTest::testAccessibilityTree()
         std::set<const QObject *> testedObjects; // Makes sure we stop testing when we arrive at an item that was already tested.
         while (qApp->focusObject() && !testedObjects.count(qApp->focusObject())) {
             const auto currentlyFocusedObject = qApp->focusObject();
+            QVERIFY2(!currentlyFocusedObject->property("aero7LinuxPrefix").toBool(),
+                     "Hidden implementation-path breadcrumbs must not receive keyboard focus.");
+            if (qEnvironmentVariableIsSet("AERO7_TRACE_FOCUS")) {
+                const auto *widget = qobject_cast<QWidget *>(currentlyFocusedObject);
+                qInfo() << "AERO7_FOCUS" << i << currentlyFocusedObject
+                        << (widget ? widget->geometry() : QRect())
+                        << currentlyFocusedObject->property("text");
+            }
             const QAccessibleInterface *accessibleIntefaceOfCurrentlyFocusedObject = QAccessible::queryAccessibleInterface(currentlyFocusedObject);
             QVERIFY(accessibleIntefaceOfCurrentlyFocusedObject);
 
@@ -1484,6 +2071,32 @@ void DolphinMainWindowTest::cleanupTestCase()
     m_mainWindow->actionCollection()->action(KStandardAction::name(KStandardAction::Quit))->trigger();
 }
 
-QTEST_MAIN(DolphinMainWindowTest)
+int main(int argc, char **argv)
+{
+    QTemporaryDir profile;
+    if (!profile.isValid())
+        return 2;
+    qputenv("XDG_CONFIG_HOME", (profile.path() + "/config").toUtf8());
+    qputenv("XDG_DATA_HOME", (profile.path() + "/data").toUtf8());
+    qputenv("XDG_CACHE_HOME", (profile.path() + "/cache").toUtf8());
+    QApplication app(argc, argv);
+    QJsonArray libraries;
+    for (const auto &name : {QStringLiteral("Documents"), QStringLiteral("Music"),
+                             QStringLiteral("Pictures"), QStringLiteral("Videos")}) {
+        const QString folder = profile.path() + "/folders/" + name;
+        if (!QDir().mkpath(folder))
+            return 2;
+        libraries.append(QJsonObject{{"id", name.toLower()}, {"name", name},
+                                     {"locations", QJsonArray{folder}}, {"saveLocation", folder}});
+    }
+    QDir().mkpath(profile.path() + "/config/aero7");
+    QFile config(profile.path() + "/config/aero7/libraries.json");
+    if (!config.open(QIODevice::WriteOnly)
+        || config.write(QJsonDocument(QJsonObject{{"libraries", libraries}}).toJson()) < 0)
+        return 2;
+    config.close();
+    DolphinMainWindowTest test;
+    return QTest::qExec(&test, argc, argv);
+}
 
 #include "dolphinmainwindowtest.moc"

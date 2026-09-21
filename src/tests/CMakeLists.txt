@@ -3,12 +3,30 @@ set( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR} )
 find_package(Qt6Test CONFIG REQUIRED)
 include(ECMAddTests)
 
+# ECM's install-manifest check skips a fresh build before package(). Validate
+# the metadata directly in check(), without network requests or a host install.
+find_program(AERO7_APPSTREAMCLI_EXECUTABLE NAMES appstreamcli REQUIRED)
+add_test(NAME aero7appstreammetadata
+    COMMAND ${AERO7_APPSTREAMCLI_EXECUTABLE} validate --no-net
+        ${CMAKE_CURRENT_SOURCE_DIR}/../org.aero7.FileExplorer.metainfo.xml)
+set_tests_properties(aero7appstreammetadata PROPERTIES TIMEOUT 20)
+
+ecm_add_test(aero7commondialogtest.cpp LINK_LIBRARIES aero7shellui Qt6::Test)
+set_tests_properties(aero7commondialogtest PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 20)
+
 include(FindGem)  # For servicemenutest, see bottom of this file
+
+ecm_add_test(aero7storagetest.cpp LINK_LIBRARIES Qt6::Core Qt6::Test)
 
 add_executable(aero7iconindependencetest aero7iconindependencetest.cpp)
 target_link_libraries(aero7iconindependencetest PRIVATE aero7shellui Qt6::Widgets)
 add_test(NAME aero7iconindependencetest COMMAND aero7iconindependencetest)
 set_tests_properties(aero7iconindependencetest PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+add_executable(aero7librariesdefaultstest aero7librariesdefaultstest.cpp)
+target_link_libraries(aero7librariesdefaultstest PRIVATE aero7shellui Qt6::Core)
+add_test(NAME aero7librariesfreshprofile COMMAND aero7librariesdefaultstest)
+add_test(NAME aero7librariesexistingprofile COMMAND aero7librariesdefaultstest existing)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 add_test(NAME aero7iconpolicytest

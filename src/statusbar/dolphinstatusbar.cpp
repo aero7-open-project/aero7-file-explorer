@@ -177,8 +177,10 @@ DolphinStatusBar::DolphinStatusBar(QWidget *parent)
 
     QFontMetrics fontMetrics(m_label->font());
 
-    m_label->setFixedHeight(contentHeight);
-    m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    // Computer shows two lines. A one-line fixed height clips the processor
+    // text even though the surrounding Windows-style details strip has room.
+    m_label->setMinimumHeight(contentHeight);
+    m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     m_zoomSlider->setMaximumWidth(fontMetrics.averageCharWidth() * 15);
 
@@ -322,6 +324,11 @@ QUrl DolphinStatusBar::url() const
 
 void DolphinStatusBar::setComputerMode(bool enabled)
 {
+    // Activating a tab or split pane reapplies its presentation mode. Keep
+    // the existing folder count/selection/hover text when that mode is unchanged.
+    if (m_computerMode == enabled) {
+        return;
+    }
     m_computerMode = enabled;
     if (enabled) {
         m_updateLabelTextTimer->stop();
@@ -510,6 +517,10 @@ void DolphinStatusBar::updateLabelText()
         m_label->setTextElideMode(Qt::ElideMiddle);
         m_label->setText(m_hoveredItemText.isEmpty() ? m_defaultText : m_hoveredItemText);
     }
+    if (isEnabled() && !isAnimationRunning()) {
+        setMaximumHeight(preferredHeight());
+        updateGeometry();
+    }
     updateWidthToContent();
 }
 
@@ -581,7 +592,7 @@ void DolphinStatusBar::paintEvent(QPaintEvent *paintEvent)
 
 int DolphinStatusBar::preferredHeight() const
 {
-    return 54;
+    return qMax(54, m_topLayout ? m_topLayout->sizeHint().height() : 54);
 }
 
 #include "moc_dolphinstatusbar.cpp"

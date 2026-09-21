@@ -160,7 +160,10 @@ void DolphinNavigatorsWidgetAction::setSecondaryNavigatorVisible(bool visible)
 #endif
     updateText();
 
-    // Q_EMIT secondaryUrlNavigatorChanged();
+    if (auto *navigator = secondaryUrlNavigator()) {
+        navigator->setVisible(visible);
+    }
+    Q_EMIT secondaryNavigatorVisibilityChanged(visible);
 }
 
 void DolphinNavigatorsWidgetAction::setBackgroundEnabled(bool enabled)

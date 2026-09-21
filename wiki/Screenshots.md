@@ -1,41 +1,52 @@
-# File Explorer Screenshots
+# File Explorer Screenshots — 1920×1080
 
-These screenshots were captured from the current Aero7 File Explorer package
-inside installed Aero7 virtual machines at the native 1024×768 guest
-resolution. They show working application surfaces and live system data rather
-than design mockups.
+New captures from **5 September 2026**, running **aero7-file-explorer
+25.12.3-32** in an existing Aero7 QEMU/KVM guest. Every PNG is a direct
+**1920×1080**, **100% scale** framebuffer capture. No resizing, cropping,
+painted corrections, or generated replacement UI was used.
 
-## Documents
-
-[![Documents in a fresh Aero7 installation](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-documents.png)](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-documents.png)
-
-The fresh-install capture shows the Aero7 navigation header, command bar,
-Favorites, Libraries, integrated Computer group, Network, Details columns, and
-status area. The Computer group exposes the user-facing system disk and optical
-media without listing raw Linux mounts.
-
-## Libraries
-
-[![Aero7 Libraries](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-libraries.png)](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-libraries.png)
-
-Libraries presents Documents, Music, Pictures, and Videos through the shared
-Aero7 Library model. Definitions can contain multiple real folders and are
-also available in Aero7 common dialogs.
+The installed test archives are older than some Beta 2 source/recipes.
+These are not a fresh final-ISO acceptance run. See the
+[complete capture record](https://github.com/aero7-open-project/aero7/wiki/Screenshot-Capture-Details).
 
 ## Computer
 
-[![Integrated Computer view](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-computer.png)](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-computer.png)
+[![Computer integrated into File Explorer](images/beta2-1080p/explorer-computer.png)](images/beta2-1080p/explorer-computer.png)
 
-Computer is integrated into File Explorer and uses live capacity and
-free-space data. Volume presentation is intentionally different from exposing
-every Linux mount point.
+The same Explorer window displays the virtual system disk's real capacity and
+free space plus an optical-drive entry. Raw Linux implementation mounts are
+filtered from this user-facing list. The lower hardware-summary line is
+partly clipped in this captured build; this is still a visual issue.
 
-## Downloads and Details layout
+See [Computer and Navigation](Computer-and-Navigation) for detection, mount
+visibility, and permission boundaries.
 
-[![Downloads Details view](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-downloads.png)](https://raw.githubusercontent.com/aero7-open-project/aero7-file-explorer/main/docs/screenshots/file-explorer-downloads.png)
+## Libraries
 
-The Downloads capture records the final fixed navigation-pane and Details
-column geometry used by the Windows 7 comparison pass.
+[![Libraries in Details view](images/beta2-1080p/explorer-libraries.png)](images/beta2-1080p/explorer-libraries.png)
 
-See the [User Guide](User-Guide) for the window layout and the
-[Feature Reference](Feature-Reference) for implemented behavior.
+The retained test profile contains the four standard Libraries plus a
+previously created **New Library**. That extra entry is not a factory default.
+This is Details view, not a claim that Library artwork matches Windows
+pixel-for-pixel. Read [Libraries](Libraries) before altering included folders.
+
+## Library Properties
+
+[![Documents Library Properties](images/beta2-1080p/library-properties.png)](images/beta2-1080p/library-properties.png)
+
+The dialog shows the real included folder, save-location command, include and
+remove controls, optimization type, navigation visibility, Restore Defaults,
+and Apply/Cancel. A sample Aero7-Guides folder was added during the walkthrough.
+
+## What these screenshots do not prove
+
+They show actual navigation/property surfaces. They do not certify every
+copy/move/error/conflict path, all remote protocols, administrator continuation,
+or the remaining upstream-derived search/view/accessibility tests. See
+[Everyday Tasks](Everyday-Tasks), [Feature Reference](Feature-Reference), and
+[Troubleshooting](Troubleshooting).
+
+[SHA-256 checksums](images/beta2-1080p/SHA256SUMS.txt) identify the original
+images. Historical 1024×768 captures remain in the source's
+[older screenshot directory](https://github.com/aero7-open-project/aero7-file-explorer/tree/beta/docs/screenshots);
+they are not the new 1080p capture set.

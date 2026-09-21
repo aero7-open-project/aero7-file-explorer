@@ -332,6 +332,30 @@ void ViewPropertiesTest::testExtendedAttributeFull()
         KConfig viewSettings(dotDirectoryFile, KConfig::SimpleConfig);
         QCOMPARE(viewSettings.groupList(), {"Dolphin"});
         QCOMPARE(viewSettings.group("Dolphin").readEntry("SortRole"), "someNewSortRole");
+        ViewProperties reloaded(m_testDir->url());
+        QCOMPARE(reloaded.sortRole(), QByteArrayLiteral("someNewSortRole"));
+
+        // Updating an existing fallback must keep unrelated folder metadata.
+        viewSettings.group("Desktop Entry").writeEntry("Comment", "Keep this comment");
+        QVERIFY(viewSettings.sync());
+        reloaded.setSortRole("secondSortRole");
+        reloaded.save();
+        {
+            KConfig fallback(dotDirectoryFile, KConfig::SimpleConfig);
+            QCOMPARE(fallback.group("Dolphin").readEntry("SortRole"), "secondSortRole");
+            QCOMPARE(fallback.group("Desktop Entry").readEntry("Comment"), "Keep this comment");
+        }
+
+        // Free xattr space and save the same instance again: it must migrate
+        // back without losing settings or unrelated .directory groups.
+        QCOMPARE(metadata.setAttribute("data", QString()), KFileMetaData::UserMetaData::NoError);
+        reloaded.setSortRole("thirdSortRole");
+        reloaded.save();
+        ViewProperties migrated(m_testDir->url());
+        QCOMPARE(migrated.sortRole(), QByteArrayLiteral("thirdSortRole"));
+        KConfig retained(dotDirectoryFile, KConfig::SimpleConfig);
+        QVERIFY(!retained.hasGroup("Dolphin"));
+        QCOMPARE(retained.group("Desktop Entry").readEntry("Comment"), "Keep this comment");
     } else {
         QVERIFY(QFile::exists(dotDirectoryFile));
     }

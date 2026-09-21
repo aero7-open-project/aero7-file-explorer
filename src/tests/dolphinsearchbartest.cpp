@@ -23,6 +23,7 @@ private Q_SLOTS:
     void cleanup();
 
     void testPopupLazyLoading();
+    void testPopupScopeControls();
     void testTextClearing();
     void testUrlChangeSignals();
 
@@ -50,6 +51,29 @@ void DolphinSearchBarTest::testPopupLazyLoading()
 {
     m_searchBar->setVisible(true, WithoutAnimation);
     QVERIFY2(m_searchBar->m_popup->isEmpty(), "The popup should only be populated or updated when it was opened at least once by the user.");
+}
+
+void DolphinSearchBarTest::testPopupScopeControls()
+{
+    QVERIFY(m_searchBar->m_popup->isEmpty());
+    m_searchBar->m_popup->popup(QPoint(0, 0));
+    QTRY_VERIFY(m_searchBar->m_popup->isVisible());
+    QCOMPARE(m_searchBar->m_popup->actions().size(), 1);
+    QVERIFY(m_searchBar->m_popup->isAncestorOf(m_searchBar->m_fromHereButton));
+    QVERIFY(m_searchBar->m_popup->isAncestorOf(m_searchBar->m_everywhereButton));
+    m_searchBar->m_everywhereButton->click();
+    QVERIFY(m_searchBar->m_everywhereButton->isChecked());
+    QVERIFY(!m_searchBar->m_fromHereButton->isChecked());
+    m_searchBar->m_popup->hide();
+
+    // Reopening must reuse the scope row, and reflect intervening changes.
+    m_searchBar->m_fromHereButton->click();
+    m_searchBar->m_popup->popup(QPoint(0, 0));
+    QTRY_VERIFY(m_searchBar->m_popup->isVisible());
+    QCOMPARE(m_searchBar->m_popup->actions().size(), 1);
+    QVERIFY(m_searchBar->m_fromHereButton->isChecked());
+    QCOMPARE(m_searchBar->m_popup->findChildren<QToolButton *>().count(m_searchBar->m_fromHereButton), 1);
+    m_searchBar->m_popup->hide();
 }
 
 /**

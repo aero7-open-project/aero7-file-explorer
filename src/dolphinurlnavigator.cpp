@@ -13,6 +13,8 @@
 #include "dolphinurlnavigatorscontroller.h"
 #include "global.h"
 #include "aero7/aero7libraries.h"
+#include "aero7/aero7storage.h"
+#include "aero7/aero7mountwatcher.h"
 
 #include <KLocalizedString>
 #include <KUrlComboBox>
@@ -26,6 +28,7 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QMouseEvent>
+#include <QStandardPaths>
 #include <QTimer>
 
 DolphinUrlNavigator::DolphinUrlNavigator(QWidget *parent)
@@ -69,6 +72,16 @@ DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
     // the full path, then reduce the Linux-only prefix to a folder glyph so the
     // visible path is "aero > Downloads".
     connect(this, &KUrlNavigator::urlChanged, this, &DolphinUrlNavigator::updateAero7Breadcrumbs);
+    // KUrlNavigator also rebuilds its buttons on Places-model changes, without
+    // changing the URL. A failed teardown updates device state but not mountinfo,
+    // so neither urlChanged nor MountWatcher repairs the overwritten labels.
+    // Follow the same model events and queue presentation after the native update.
+    auto *places = DolphinPlacesModelSingleton::instance().placesModel();
+    connect(places, &QAbstractItemModel::dataChanged, this, &DolphinUrlNavigator::updateAero7Breadcrumbs);
+    connect(places, &QAbstractItemModel::rowsInserted, this, &DolphinUrlNavigator::updateAero7Breadcrumbs);
+    connect(places, &QAbstractItemModel::rowsRemoved, this, &DolphinUrlNavigator::updateAero7Breadcrumbs);
+    connect(places, &QAbstractItemModel::modelReset, this, &DolphinUrlNavigator::updateAero7Breadcrumbs);
+    connect(this, &KUrlNavigator::layoutChanged, this, &DolphinUrlNavigator::updateAero7TabOrder);
     connect(this, &KUrlNavigator::editableStateChanged, this, [this](bool editable) {
         if (editable) {
             QTimer::singleShot(0, this, [this]() {
@@ -78,6 +91,7 @@ DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
         }
     });
     updateAero7Breadcrumbs();
+    new Aero7Storage::MountWatcher(this, [this] { updateAero7Breadcrumbs(); });
 
     auto readOnlyBadge = new QLabel();
     readOnlyBadge->setPixmap(Aero7Icons::icon(QStringLiteral("emblem-readonly")).pixmap(12, 12));
@@ -93,9 +107,19 @@ void DolphinUrlNavigator::updateAero7Breadcrumbs()
         const auto hideBreadcrumbPart = [this](QAbstractButton *button) {
             button->installEventFilter(this);
             button->setProperty("aero7LinuxPrefix", true);
+            if (!button->property("aero7OriginalFocusPolicy").isValid())
+                button->setProperty("aero7OriginalFocusPolicy", int(button->focusPolicy()));
+            button->setFocusPolicy(Qt::NoFocus);
             button->setMinimumWidth(0);
             button->setMaximumWidth(0);
             button->hide();
+        };
+        const auto showBreadcrumbPart = [](QAbstractButton *button) {
+            button->setProperty("aero7LinuxPrefix", false);
+            const QVariant originalPolicy = button->property("aero7OriginalFocusPolicy");
+            if (originalPolicy.isValid())
+                button->setFocusPolicy(static_cast<Qt::FocusPolicy>(originalPolicy.toInt()));
+            button->show();
         };
         const auto anchorBreadcrumbsAtLeft = [this]() {
             // KF6 uses expanding spacer items to distribute breadcrumb buttons
@@ -114,6 +138,7 @@ void DolphinUrlNavigator::updateAero7Breadcrumbs()
             }
             layout()->invalidate();
             layout()->activate();
+            updateAero7TabOrder();
         };
         for (QAbstractButton *button : findChildren<QAbstractButton *>()) {
             const QString className = QString::fromLatin1(button->metaObject()->className());
@@ -122,28 +147,38 @@ void DolphinUrlNavigator::updateAero7Breadcrumbs()
                 button->setEnabled(false);
                 continue;
             }
-            if (!className.endsWith(QLatin1String("KUrlNavigatorButton"))) {
-                continue;
-            }
-            crumbs.append(button);
+        }
+        // QObject child order reflects construction/reuse, not path order.
+        // Read the actual layout so stale or recycled buttons cannot become
+        // the destination label after navigating from a deep folder to C:.
+        for (int index = 0; index < layout()->count(); ++index) {
+            auto *button = qobject_cast<QAbstractButton *>(layout()->itemAt(index)->widget());
+            if (button && QString::fromLatin1(button->metaObject()->className())
+                              .endsWith(QLatin1String("KUrlNavigatorButton")))
+                crumbs.append(button);
         }
 
         QString virtualLabel;
-        if (locationUrl().scheme() == QLatin1String("aero7computer"))
+        const QString computerPlace = QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+            .filePath(QStringLiteral("Aero7/Shell Places/Computer"));
+        if (locationUrl().isLocalFile()
+            && QDir::cleanPath(locationUrl().toLocalFile()) == computerPlace)
             virtualLabel = QStringLiteral("Computer");
         else if (locationUrl().scheme() == QLatin1String("trash"))
             virtualLabel = QStringLiteral("Recycle Bin");
         else if (locationUrl().scheme() == QLatin1String("network"))
             virtualLabel = QStringLiteral("Network");
+        else if (locationUrl().isLocalFile()
+                 && QDir::cleanPath(locationUrl().toLocalFile()) == QLatin1String("/"))
+            virtualLabel = QStringLiteral("Local Disk (C:)");
         if (!virtualLabel.isEmpty() && !crumbs.isEmpty()) {
             for (qsizetype index = 0; index + 1 < crumbs.size(); ++index)
                 hideBreadcrumbPart(crumbs.at(index));
             QAbstractButton *button = crumbs.constLast();
-            button->setProperty("aero7LinuxPrefix", false);
             const int width = button->fontMetrics().horizontalAdvance(virtualLabel) + 24;
             button->setFixedWidth(width);
             button->setText(virtualLabel);
-            button->show();
+            showBreadcrumbPart(button);
             anchorBreadcrumbsAtLeft();
             return;
         }
@@ -181,10 +216,31 @@ void DolphinUrlNavigator::updateAero7Breadcrumbs()
                 for (qsizetype index = 0; index < visibleLabels.size(); ++index) {
                     QAbstractButton *button = crumbs.at(firstVisible + index);
                     const QString &label = visibleLabels.at(index);
-                    button->setProperty("aero7LinuxPrefix", false);
                     button->setFixedWidth(button->fontMetrics().horizontalAdvance(label) + 24);
                     button->setText(label);
-                    button->show();
+                    showBreadcrumbPart(button);
+                }
+                anchorBreadcrumbsAtLeft();
+                return;
+            }
+        }
+
+        // The underlying buttons keep their actual KIO URLs and menus. Only
+        // the mounted-root label and Linux-only ancestor visibility change.
+        // Clicking USB > Documents therefore still opens the real USB root.
+        if (locationUrl().isLocalFile()) {
+            const QStringList labels = Aero7Storage::removableBreadcrumbs(
+                locationUrl().toLocalFile(), Aero7Storage::mounted());
+            if (!labels.isEmpty() && labels.size() <= crumbs.size()) {
+                const qsizetype firstVisible = crumbs.size() - labels.size();
+                for (qsizetype index = 0; index < firstVisible; ++index)
+                    hideBreadcrumbPart(crumbs.at(index));
+                for (qsizetype index = 0; index < labels.size(); ++index) {
+                    auto *button = crumbs.at(firstVisible + index);
+                    const QString &label = labels.at(index);
+                    button->setFixedWidth(button->fontMetrics().horizontalAdvance(label) + 24);
+                    button->setText(label);
+                    showBreadcrumbPart(button);
                 }
                 anchorBreadcrumbsAtLeft();
                 return;
@@ -203,7 +259,7 @@ void DolphinUrlNavigator::updateAero7Breadcrumbs()
             } else {
                 const int width = button->fontMetrics().horizontalAdvance(label) + 24;
                 button->setFixedWidth(width);
-                button->show();
+                showBreadcrumbPart(button);
             }
         }
         anchorBreadcrumbsAtLeft();
@@ -216,12 +272,36 @@ void DolphinUrlNavigator::updateAero7Breadcrumbs()
     QTimer::singleShot(75, this, applyBreadcrumbs);
 }
 
+void DolphinUrlNavigator::updateAero7TabOrder()
+{
+    // Upstream builds its focus proxy/order before Aero7 hides implementation
+    // crumbs. Reconcile both with the remaining visual hierarchy, including
+    // layouts refreshed later by KIO. Otherwise Tab may skip the leaf while
+    // Shift+Tab reaches it, or focus a zero-width root button.
+    QWidget *first = nullptr;
+    QWidget *previous = nullptr;
+    for (int index = 0; index < layout()->count(); ++index) {
+        QWidget *widget = layout()->itemAt(index)->widget();
+        if (!widget || widget->isHidden() || !widget->isEnabled()
+            || widget->property("aero7LinuxPrefix").toBool()
+            || !(widget->focusPolicy() & Qt::TabFocus)) continue;
+        if (!first) first = widget;
+        if (previous) QWidget::setTabOrder(previous, widget);
+        previous = widget;
+    }
+    setFocusProxy(first);
+}
+
 bool DolphinUrlNavigator::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() == QEvent::Show) {
         if (auto *button = qobject_cast<QAbstractButton *>(watched);
             button && button->property("aero7LinuxPrefix").toBool()) {
+            button->setFocusPolicy(Qt::NoFocus);
             QTimer::singleShot(0, button, [button]() {
+                // KUrlNavigator may have reused this button for a visible
+                // destination before the queued hide runs.
+                if (!button->property("aero7LinuxPrefix").toBool()) return;
                 button->setMinimumWidth(0);
                 button->setMaximumWidth(0);
                 button->hide();

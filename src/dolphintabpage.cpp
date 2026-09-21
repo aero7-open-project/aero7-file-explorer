@@ -548,6 +548,7 @@ void DolphinTabPage::disconnectViewActivatedSignals()
 DolphinViewContainer *DolphinTabPage::createViewContainer(const QUrl &url) const
 {
     DolphinViewContainer *container = new DolphinViewContainer(url, m_splitter);
+    container->setStatusBarExternallyHosted(false);
     container->setActive(false);
 
     const DolphinView *view = container->view();

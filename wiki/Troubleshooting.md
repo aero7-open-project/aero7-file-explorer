@@ -67,6 +67,34 @@ still produce errors.
 
 ## Reporting a bug
 
+### A taskbar pin has no icon or opens the wrong application
+
+Confirm `aero7-file-explorer` is installed, then check the pin targets
+`org.aero7.FileExplorer.desktop` with that exact capitalization. Close older
+Explorer processes after updating and sign out/in if the shell still holds a
+stale launcher. Do not install a second Dolphin package or pin all historical
+aliases as a workaround. Report the desktop and Explorer package versions
+together when a fresh-install pin is broken.
+
+### Release-test limits
+
+The 5 September [1080p Computer capture](Screenshots) shows clipping in the
+lower hardware-summary line in historical package 25.12.3-32. Include the
+window size and scale when reporting similar behavior; the gallery preserves
+that older observation instead of silently rewriting it.
+
+The later follow-up fixes address
+search-popup initialization and shutdown, folder-settings fallback persistence,
+Places keyboard focus, accessible control names, and the action-layout lookup
+under the Aero7 application identity. File Explorer 25.12.3-55 passed the fresh
+21 September online/offline test-candidate taskbar/identity and log checks. A
+successful screenshot still is not evidence that every file operation or
+physical/removable device works.
+Physical/removable devices and remote filesystems also require their own
+testing. Refer to the main Aero7 Beta 2 release notes for the release gate.
+
+### What to include
+
 Open an issue in the
 [Aero7 File Explorer tracker](https://github.com/aero7-open-project/aero7-file-explorer/issues)
 with:
