@@ -728,6 +728,10 @@ void DolphinMainWindowTest::testAero7ExplorerChromeContract()
     QVERIFY(helpButton);
     QVERIFY(helpButton->menu());
     QVERIFY(!helpButton->menu()->isEmpty());
+    QSignalSpy helpOpened(helpButton->menu(), &QMenu::aboutToShow);
+    QTimer::singleShot(100, helpButton->menu(), &QMenu::hide);
+    QTest::mouseClick(helpButton, Qt::LeftButton);
+    QCOMPARE(helpOpened.count(), 1);
     QCOMPARE(history->size(), QSize(20, 21));
     QCOMPARE(refresh->size(), QSize(24, 21));
 
