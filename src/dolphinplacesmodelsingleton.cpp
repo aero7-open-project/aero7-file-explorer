@@ -20,7 +20,9 @@
 #include <QCoreApplication>
 #include <QIcon>
 #include <QDir>
+#include <QFileInfo>
 #include <QMimeData>
+#include <QSettings>
 #include <QSet>
 #include <QStandardPaths>
 #include <QTimer>
@@ -32,11 +34,152 @@ QString specialPlacePath(const QString &name)
     return QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
         .filePath(QStringLiteral("Aero7/Shell Places/%1").arg(name));
 }
+
+QString favoritesSettingsPath()
+{
+    return QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation))
+        .filePath(QStringLiteral("aero7-file-explorer-favorites.ini"));
+}
+}
+
+QVector<DolphinPlacesModel::Favorite> DolphinPlacesModel::defaultFavorites()
+{
+    return {
+        {QStringLiteral("Recent Places"), QUrl::fromLocalFile(specialPlacePath(QStringLiteral("Recent Places"))),
+         QStringLiteral("document-open-recent")},
+        {QStringLiteral("Desktop"), QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)),
+         QStringLiteral("user-desktop")},
+        {QStringLiteral("Downloads"), QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)),
+         QStringLiteral("folder-download")},
+    };
+}
+
+void DolphinPlacesModel::saveFavorites() const
+{
+    QSettings settings(favoritesSettingsPath(), QSettings::IniFormat);
+    settings.setValue(QStringLiteral("Configured"), true);
+    settings.beginWriteArray(QStringLiteral("Favorites"));
+    for (int i = 0; i < m_favorites.size(); ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue(QStringLiteral("Name"), m_favorites.at(i).name);
+        settings.setValue(QStringLiteral("Url"), m_favorites.at(i).url.toString());
+        settings.setValue(QStringLiteral("Icon"), m_favorites.at(i).icon);
+    }
+    settings.endArray();
+    settings.sync();
+}
+
+QModelIndex DolphinPlacesModel::favoriteIndex(const QUrl &favoriteUrl) const
+{
+    for (int row = 0; row < rowCount(); ++row) {
+        const QModelIndex item = index(row, 0);
+        if (url(item).matches(favoriteUrl, QUrl::StripTrailingSlash)) return item;
+    }
+    return {};
+}
+
+bool DolphinPlacesModel::isFavorite(const QUrl &favoriteUrl) const
+{
+    for (const Favorite &favorite : m_favorites)
+        if (favorite.url.matches(favoriteUrl, QUrl::StripTrailingSlash)) return true;
+    return false;
+}
+
+void DolphinPlacesModel::ensureFavorites()
+{
+    for (const Favorite &favorite : std::as_const(m_favorites)) {
+        QModelIndex item = favoriteIndex(favorite.url);
+        if (!item.isValid()) {
+            addPlace(favorite.name, favorite.url, favorite.icon);
+            item = favoriteIndex(favorite.url);
+        } else if (text(item) != favorite.name) {
+            editPlace(item, favorite.name, favorite.url, favorite.icon);
+        }
+        if (item.isValid() && isHidden(item)) setPlaceHidden(item, false);
+    }
+}
+
+bool DolphinPlacesModel::addFavorite(const QUrl &favoriteUrl)
+{
+    if (!favoriteUrl.isLocalFile() || !QFileInfo(favoriteUrl.toLocalFile()).isDir()
+        || isFavorite(favoriteUrl)) return false;
+    const QString name = QFileInfo(favoriteUrl.toLocalFile()).fileName();
+    m_favorites.append({name.isEmpty() ? favoriteUrl.toLocalFile() : name,
+                        favoriteUrl, QStringLiteral("folder-open")});
+    saveFavorites();
+    ensureFavorites();
+    return true;
+}
+
+bool DolphinPlacesModel::removeFavorite(const QUrl &favoriteUrl)
+{
+    for (int i = 0; i < m_favorites.size(); ++i) {
+        if (!m_favorites.at(i).url.matches(favoriteUrl, QUrl::StripTrailingSlash)) continue;
+        const QModelIndex item = favoriteIndex(favoriteUrl);
+        const bool builtIn = [&]() {
+            for (const Favorite &entry : defaultFavorites())
+                if (entry.url.matches(favoriteUrl, QUrl::StripTrailingSlash)) return true;
+            return false;
+        }();
+        if (item.isValid()) {
+            if (builtIn) setPlaceHidden(item, true);
+            else removePlace(item);
+        }
+        m_favorites.removeAt(i);
+        saveFavorites();
+        return true;
+    }
+    return false;
+}
+
+bool DolphinPlacesModel::renameFavorite(const QUrl &favoriteUrl, const QString &name)
+{
+    const QString label = name.trimmed();
+    if (label.isEmpty()) return false;
+    for (Favorite &favorite : m_favorites) {
+        if (!favorite.url.matches(favoriteUrl, QUrl::StripTrailingSlash)) continue;
+        favorite.name = label;
+        if (const QModelIndex item = favoriteIndex(favoriteUrl); item.isValid())
+            editPlace(item, label, favorite.url, favorite.icon);
+        saveFavorites();
+        return true;
+    }
+    return false;
+}
+
+void DolphinPlacesModel::restoreFavorites()
+{
+    const QVector<Favorite> defaults = defaultFavorites();
+    for (const Favorite &favorite : std::as_const(m_favorites)) {
+        bool builtIn = false;
+        for (const Favorite &entry : defaults)
+            if (entry.url.matches(favorite.url, QUrl::StripTrailingSlash)) builtIn = true;
+        if (!builtIn) {
+            if (const QModelIndex item = favoriteIndex(favorite.url); item.isValid()) removePlace(item);
+        }
+    }
+    m_favorites = defaults;
+    saveFavorites();
+    ensureFavorites();
 }
 
 DolphinPlacesModel::DolphinPlacesModel(QObject *parent)
     : KFilePlacesModel(parent)
 {
+    QSettings favoriteSettings(favoritesSettingsPath(), QSettings::IniFormat);
+    if (favoriteSettings.value(QStringLiteral("Configured"), false).toBool()) {
+        const int count = favoriteSettings.beginReadArray(QStringLiteral("Favorites"));
+        for (int i = 0; i < count; ++i) {
+            favoriteSettings.setArrayIndex(i);
+            const QUrl url(favoriteSettings.value(QStringLiteral("Url")).toString());
+            if (url.isValid() && url.isLocalFile())
+                m_favorites.append({favoriteSettings.value(QStringLiteral("Name")).toString(), url,
+                                    favoriteSettings.value(QStringLiteral("Icon"), QStringLiteral("folder-open")).toString()});
+        }
+        favoriteSettings.endArray();
+    } else {
+        m_favorites = defaultFavorites();
+    }
     connect(&Trash::instance(), &Trash::emptinessChanged, this, &DolphinPlacesModel::slotTrashEmptinessChanged);
 
     // Seed the Windows 7-style navigation locations once. KFilePlacesModel
@@ -132,17 +275,16 @@ DolphinPlacesModel::DolphinPlacesModel(QObject *parent)
     if (recentRow >= 0 && desktopRow >= 0 && recentRow > desktopRow)
         movePlace(recentRow, desktopRow);
 
+    ensureFavorites();
+
     setGroupHidden(KFilePlacesModel::RecentlySavedType, true);
     setGroupHidden(KFilePlacesModel::SearchForType, true);
     setGroupHidden(KFilePlacesModel::DevicesType, false);
     setGroupHidden(KFilePlacesModel::RemovableDevicesType, false);
     setGroupHidden(KFilePlacesModel::RemoteType, true);
     QSet<QString> visible;
-    visible.insert(QUrl::fromLocalFile(QStandardPaths::writableLocation(
-                       QStandardPaths::DesktopLocation)).toString());
-    visible.insert(QUrl::fromLocalFile(QStandardPaths::writableLocation(
-                       QStandardPaths::DownloadLocation)).toString());
-    visible.insert(QUrl::fromLocalFile(recentPath).toString());
+    for (const Favorite &favorite : std::as_const(m_favorites))
+        visible.insert(favorite.url.toString());
     visible.insert(QUrl::fromLocalFile(computerPath).toString());
     visible.insert(QUrl::fromLocalFile(localDiskPath).toString());
     visible.insert(QUrl::fromLocalFile(networkPath).toString());

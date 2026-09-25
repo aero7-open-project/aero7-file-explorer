@@ -31,6 +31,7 @@ private:
     QToolButton *m_newFolder = nullptr;
     QToolButton *m_preview = nullptr;
     QToolButton *m_views = nullptr;
+    QToolButton *m_help = nullptr;
     QToolButton *m_restoreAll = nullptr;
     QToolButton *m_emptyRecycleBin = nullptr;
     QToolButton *m_recycleBinProperties = nullptr;

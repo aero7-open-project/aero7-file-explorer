@@ -57,7 +57,9 @@ Q_SIGNALS:
     void openInSplitViewRequested(const QUrl &url);
 
 protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
@@ -87,9 +89,12 @@ private:
     QModelIndex aero7IndexAt(const QPoint &position) const;
     void activateAero7Place(const QModelIndex &index, bool newWindow = false);
     void populateAero7ContextMenu(QMenu &menu, const QModelIndex &index);
+    void populateFavoritesHeaderMenu(QMenu &menu);
 
     QList<QAction *> m_customContextMenuActions;
     QList<Aero7NavigationHit> m_aero7NavigationHits;
+    QRect m_favoritesHeaderRect;
+    QUrl m_currentFolderUrl;
 
     QPersistentModelIndex m_indexToTearDown;
     // Key by the actual access object: a hotplugged replacement may reuse a UDI.

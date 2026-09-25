@@ -81,6 +81,7 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
         button->setText(text);
         button->setAutoRaise(true);
         button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        button->setIconSize(QSize(16, 16));
         button->setFixedHeight(26);
         // Explorer command bars compress their contents when the display is
         // narrowed; long labels must never become a top-level window minimum.
@@ -152,14 +153,15 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     m_preview->setToolTip(QStringLiteral("Show the preview pane"));
     m_preview->setAccessibleName(tr("Show the preview pane"));
     m_preview->setFixedWidth(38);
-    auto *help = makeButton(QString());
-    help->setProperty("aero7IconCommand", true);
-    help->setIcon(Aero7Icons::icon(QStringLiteral("dialog-question")));
-    help->setIconSize(QSize(16, 16));
-    help->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    help->setToolTip(QStringLiteral("Get help"));
-    help->setAccessibleName(tr("Get help"));
-    help->setFixedWidth(30);
+    m_help = makeButton(QString());
+    m_help->setObjectName(QStringLiteral("aero7ExplorerHelpButton"));
+    m_help->setProperty("aero7IconCommand", true);
+    m_help->setIcon(Aero7Icons::icon(QStringLiteral("dialog-question")));
+    m_help->setIconSize(QSize(16, 16));
+    m_help->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    m_help->setToolTip(QStringLiteral("Get help"));
+    m_help->setAccessibleName(tr("Get help"));
+    m_help->setFixedWidth(30);
     outer->addWidget(commandBar);
 
     auto *searchIcon = new QLabel(ui->searchBar);
@@ -196,7 +198,15 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     ui->navs->back()->setFixedSize(27, 25);
     ui->navs->forward()->setFixedSize(24, 25);
     ui->navs->menuButton()->setFixedSize(13, 25);
+    for (auto *button : {ui->navs->back(), ui->navs->forward()}) {
+        button->setFlat(true);
+        button->setIconSize(QSize(25, 25));
+        button->setStyleSheet(QStringLiteral("QPushButton { border: 0; background: transparent; padding: 0; }"));
+    }
+    ui->navs->back()->setIcon(Aero7Icons::icon(QStringLiteral("go-previous")));
+    ui->navs->forward()->setIcon(Aero7Icons::icon(QStringLiteral("go-next")));
     ui->searchBar->setFixedSize(200, 23);
+    ui->searchBar->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
     setStyleSheet(QStringLiteral(R"(
         #aero7ExplorerHeader { background: #f3f8fd; }
@@ -293,7 +303,7 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
                                         stop:0.84 #ebf2f9,
                                         stop:0.92 #eaf1f9,
                                         stop:1 #fafcfe);
-            padding: 1px 27px 1px 6px;
+            padding: 0 27px 0 6px;
             color: #222;
         }
         QLabel#aero7SearchIcon {

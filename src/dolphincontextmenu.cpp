@@ -18,11 +18,13 @@
 #include "trash/dolphintrash.h"
 #include "views/dolphinview.h"
 #include "aero7properties.h"
+#include "aero7libraries.h"
 
 #include <KActionCollection>
 #include <KFileItemListProperties>
 #include <KHamburgerMenu>
 #include <KIO/EmptyTrashJob>
+#include <KIO/CopyJob>
 #include <KIO/JobUiDelegate>
 #include <KIO/ListJob>
 #include <KIO/Paste>
@@ -36,6 +38,26 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QAction>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QProcess>
+#include <QStandardPaths>
+
+namespace {
+bool createAero7Shortcut(const QUrl &source, const QString &destinationDir)
+{
+    if (!source.isLocalFile() || !QFileInfo(destinationDir).isDir()) return false;
+    const QString name = QFileInfo(source.toLocalFile()).fileName();
+    const QDir destination(destinationDir);
+    const QString baseName = name + QStringLiteral(" - Shortcut");
+    QString shortcut = destination.filePath(baseName + QStringLiteral(".lnk"));
+    for (int number = 2; QFileInfo::exists(shortcut); ++number)
+        shortcut = destination.filePath(QStringLiteral("%1 (%2).lnk").arg(baseName).arg(number));
+    return QFile::link(source.toLocalFile(), shortcut);
+}
+}
 
 DolphinContextMenu::DolphinContextMenu(DolphinMainWindow *parent,
                                        const KFileItem &fileInfo,
@@ -225,9 +247,10 @@ void DolphinContextMenu::addDirectoryItemContextMenu()
     connect(openAction, &QAction::triggered, this, [this]() {
         m_mainWindow->changeUrl(DolphinView::openItemAsFolderUrl(m_fileInfo));
     });
-    if (ContextMenuSettings::showOpenInNewWindow()) {
-        addAction(m_mainWindow->actionCollection()->action(QStringLiteral("open_in_new_window")));
-    }
+    addAction(Aero7Icons::icon(QStringLiteral("window-new")),
+              QStringLiteral("Open in new window"), this, [this] {
+        Dolphin::openNewWindow({DolphinView::openItemAsFolderUrl(m_fileInfo)}, m_mainWindow);
+    });
     addSeparator();
 }
 
@@ -305,6 +328,70 @@ void DolphinContextMenu::addItemContextMenu()
         addOpenWithActions();
     }
 
+    if (m_selectedItems.size() == 1 && m_fileInfo.isDir() && m_fileInfo.url().isLocalFile()) {
+        const QUrl folderUrl = m_fileInfo.url();
+        QMenu *share = addMenu(QStringLiteral("Share with"));
+        share->addAction(QStringLiteral("Advanced sharing settings"), this, [] {
+            QProcess::startDetached(QStringLiteral("control"),
+                                    {QStringLiteral("--page"), QStringLiteral("network-settings")});
+        });
+        QAction *previousVersions = addAction(QStringLiteral("Restore previous versions"));
+        previousVersions->setEnabled(false);
+        previousVersions->setToolTip(QStringLiteral("No previous versions are available for this folder."));
+
+        QMenu *libraries = addMenu(QStringLiteral("Include in library"));
+        for (Aero7Library library : Aero7Libraries::instance().libraries()) {
+            libraries->addAction(Aero7Icons::icon(QStringLiteral("folder-%1").arg(library.id)),
+                                 library.name, this, [this, library, folderUrl]() mutable {
+                const QString path = folderUrl.toLocalFile();
+                if (!library.locations.contains(path)) library.locations.append(path);
+                QString error;
+                if (!Aero7Libraries::instance().saveLibrary(library, &error))
+                    QMessageBox::warning(m_mainWindow, QStringLiteral("Include in Library"), error);
+            });
+        }
+    }
+
+    QMenu *sendTo = addMenu(QStringLiteral("Send to"));
+    const QList<QUrl> selectedUrls = [this] {
+        QList<QUrl> urls;
+        for (const KFileItem &item : std::as_const(m_selectedItems)) urls.append(item.url());
+        return urls;
+    }();
+    sendTo->addAction(Aero7Icons::icon(QStringLiteral("user-desktop")),
+                      QStringLiteral("Desktop (create shortcut)"), this, [this, selectedUrls] {
+        const QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        for (const QUrl &source : selectedUrls)
+            if (!createAero7Shortcut(source, desktop))
+                QMessageBox::warning(m_mainWindow, QStringLiteral("Create Shortcut"),
+                                     QStringLiteral("Could not create a shortcut for %1.").arg(source.fileName()));
+    });
+    sendTo->addAction(Aero7Icons::icon(QStringLiteral("folder-download")),
+                      QStringLiteral("Downloads"), this, [this, selectedUrls] {
+        auto *job = KIO::copy(selectedUrls, QUrl::fromLocalFile(
+            QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)));
+        KJobWidgets::setWindow(job, m_mainWindow);
+        job->uiDelegate()->setAutoErrorHandlingEnabled(true);
+    });
+    if (m_selectedItems.size() == 1 && m_fileInfo.isDir() && m_fileInfo.url().isLocalFile()) {
+        auto *places = DolphinPlacesModelSingleton::instance().placesModel();
+        QAction *favorite = sendTo->addAction(Aero7Icons::icon(QStringLiteral("bookmarks")),
+                                              QStringLiteral("Favorites"), this, [places, url = m_fileInfo.url()] {
+            places->addFavorite(url);
+        });
+        favorite->setEnabled(!places->isFavorite(m_fileInfo.url()));
+    }
+    QAction *shortcut = addAction(Aero7Icons::icon(QStringLiteral("insert-link")),
+                                  QStringLiteral("Create shortcut"), this, [this, selectedUrls] {
+        if (!m_baseUrl.isLocalFile()) return;
+        for (const QUrl &source : selectedUrls)
+            if (!createAero7Shortcut(source, m_baseUrl.toLocalFile()))
+                QMessageBox::warning(m_mainWindow, QStringLiteral("Create Shortcut"),
+                                     QStringLiteral("Could not create a shortcut for %1.").arg(source.fileName()));
+    });
+    shortcut->setEnabled(m_baseUrl.isLocalFile() && selectedItemsProps.isLocal());
+    addSeparator();
+
     insertDefaultItemActions(selectedItemsProps);
 
     // insert 'Properties...' entry
@@ -349,6 +436,13 @@ void DolphinContextMenu::addViewportContextMenu()
         pasteAction->setText(QStringLiteral("Paste"));
         addAction(pasteAction);
     }
+    if (m_baseUrl.isLocalFile() && QFileInfo(m_baseUrl.toLocalFile()).isDir()) {
+        auto *places = DolphinPlacesModelSingleton::instance().placesModel();
+        QAction *favorite = addAction(Aero7Icons::icon(QStringLiteral("bookmarks")),
+                                      QStringLiteral("Add current folder to Favorites"), this,
+                                      [places, url = m_baseUrl] { places->addFavorite(url); });
+        favorite->setEnabled(!places->isFavorite(m_baseUrl));
+    }
 
     KNewFileMenu *newFileMenu = m_mainWindow->newFileMenu();
     newFileMenu->checkUpToDate();
@@ -366,17 +460,16 @@ void DolphinContextMenu::insertDefaultItemActions(const KFileItemListProperties 
     const KActionCollection *collection = m_mainWindow->actionCollection();
 
     // Insert 'Cut', 'Copy', 'Copy Location' and 'Paste'
-    addAction(collection->action(KStandardAction::name(KStandardAction::Cut)));
-    addAction(collection->action(KStandardAction::name(KStandardAction::Copy)));
+    QAction *cutAction = collection->action(KStandardAction::name(KStandardAction::Cut));
+    cutAction->setText(QStringLiteral("Cut"));
+    addAction(cutAction);
+    QAction *copyAction = collection->action(KStandardAction::name(KStandardAction::Copy));
+    copyAction->setText(QStringLiteral("Copy"));
+    addAction(copyAction);
     QAction *pasteAction = createPasteAction();
     if (pasteAction) {
         addAction(pasteAction);
     }
-
-    // Insert 'Rename'
-    QAction *renameAction = collection->action(KStandardAction::name(KStandardAction::RenameFile));
-    renameAction->setText(QStringLiteral("Rename"));
-    addAction(renameAction);
 
     addSeparator();
 
@@ -391,6 +484,9 @@ void DolphinContextMenu::insertDefaultItemActions(const KFileItemListProperties 
     } else if (properties.supportsDeleting()) {
         addAction(m_mainWindow->actionCollection()->action(KStandardAction::name(KStandardAction::DeleteFile)));
     }
+    QAction *renameAction = collection->action(KStandardAction::name(KStandardAction::RenameFile));
+    renameAction->setText(QStringLiteral("Rename"));
+    addAction(renameAction);
 }
 
 bool DolphinContextMenu::placeExists(const QUrl &url) const

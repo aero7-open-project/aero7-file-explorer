@@ -28,7 +28,10 @@
 
 #include <QIcon>
 #include <QContextMenuEvent>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QFileInfo>
+#include <QInputDialog>
 #include <QMenu>
 #include <QMimeData>
 #include <QMouseEvent>
@@ -112,6 +115,7 @@ PlacesPanel::~PlacesPanel() = default;
 
 void PlacesPanel::setUrl(const QUrl &url)
 {
+    m_currentFolderUrl = url;
     QUrl navigationUrl = url;
     if (url.isLocalFile()) {
         const QString candidate = QDir::cleanPath(QFileInfo(url.toLocalFile()).absoluteFilePath());
@@ -204,8 +208,29 @@ static bool isInternalDrag(const QMimeData *mimeData)
     return false;
 }
 
+static QUrl draggedFavoriteFolder(const QMimeData *mimeData)
+{
+    if (!mimeData || !mimeData->hasUrls() || mimeData->urls().size() != 1) return {};
+    const QUrl url = mimeData->urls().constFirst();
+    return url.isLocalFile() && QFileInfo(url.toLocalFile()).isDir() ? url : QUrl();
+}
+
+void PlacesPanel::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (draggedFavoriteFolder(event->mimeData()).isValid()) {
+        event->acceptProposedAction();
+        return;
+    }
+    KFilePlacesView::dragEnterEvent(event);
+}
+
 void PlacesPanel::dragMoveEvent(QDragMoveEvent *event)
 {
+    if (m_favoritesHeaderRect.contains(event->position().toPoint())
+        && draggedFavoriteFolder(event->mimeData()).isValid()) {
+        event->acceptProposedAction();
+        return;
+    }
     const QModelIndex index = indexAt(event->position().toPoint());
     if (index.isValid()) {
         auto *placesModel = static_cast<KFilePlacesModel *>(model());
@@ -224,6 +249,21 @@ void PlacesPanel::dragMoveEvent(QDragMoveEvent *event)
     }
 
     KFilePlacesView::dragMoveEvent(event);
+}
+
+void PlacesPanel::dropEvent(QDropEvent *event)
+{
+    if (m_favoritesHeaderRect.contains(event->position().toPoint())) {
+        const QUrl folder = draggedFavoriteFolder(event->mimeData());
+        if (folder.isValid()) {
+            DolphinPlacesModelSingleton::instance().placesModel()->addFavorite(folder);
+            viewport()->update();
+            event->setDropAction(Qt::LinkAction);
+            event->accept();
+            return;
+        }
+    }
+    KFilePlacesView::dropEvent(event);
 }
 
 QModelIndex PlacesPanel::aero7IndexForName(const QString &name) const
@@ -283,6 +323,7 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
     const int groupHeight = 21;
     const int iconSize = 16;
     int y = 7;
+    const auto *placesModel = DolphinPlacesModelSingleton::instance().placesModel();
 
     const auto drawSelection = [&](const QRect &rect, bool active) {
         if (!active)
@@ -308,7 +349,13 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
             painter.drawPolygon(QPolygon({QPoint(19, itemY + 7), QPoint(19, itemY + 13),
                                            QPoint(23, itemY + 10)}));
         }
-        const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+        QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+        for (const DolphinPlacesModel::Favorite &favorite : placesModel->favorites()) {
+            if (placesModel->url(index).matches(favorite.url, QUrl::StripTrailingSlash)) {
+                icon = Aero7Icons::icon(favorite.icon);
+                break;
+            }
+        }
         icon.paint(&painter, QRect(iconX, itemY + 2, iconSize, iconSize), Qt::AlignCenter,
                    selected == index ? QIcon::Selected : QIcon::Normal);
         painter.setPen(QColor(QStringLiteral("#111111")));
@@ -324,6 +371,7 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
                                bool childDisclosures) {
         const QModelIndex groupIndex = clickable ? aero7IndexForName(name) : QModelIndex();
         const QRect groupRect(1, y, qMax(0, width - 2), groupHeight);
+        if (name == QLatin1String("Favorites")) m_favoritesHeaderRect = groupRect;
         drawSelection(groupRect, groupIndex.isValid() && selected == groupIndex);
 
         painter.setPen(Qt::NoPen);
@@ -332,7 +380,7 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
             ? QPolygon({QPoint(11, y + 7), QPoint(11, y + 13), QPoint(15, y + 10)})
             : QPolygon({QPoint(10, y + 9), QPoint(16, y + 9), QPoint(13, y + 13)});
         painter.drawPolygon(triangle);
-        QIcon::fromTheme(iconName).paint(&painter, QRect(20, y + 2, iconSize, iconSize));
+        Aero7Icons::icon(iconName).paint(&painter, QRect(20, y + 2, iconSize, iconSize));
         painter.setPen(QColor(QStringLiteral("#274b72")));
         painter.drawText(QRect(41, y, width - 44, groupHeight),
                          Qt::AlignVCenter | Qt::AlignLeft, name);
@@ -349,7 +397,11 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
 
     QModelIndexList libraries;
     QModelIndexList drives;
-    const auto *placesModel = DolphinPlacesModelSingleton::instance().placesModel();
+    QModelIndexList favorites;
+    for (const DolphinPlacesModel::Favorite &favorite : placesModel->favorites()) {
+        const QModelIndex item = placesModel->favoriteIndex(favorite.url);
+        if (item.isValid() && !placesModel->isHidden(item)) favorites.append(item);
+    }
     for (int row = 0; row < placesModel->rowCount(); ++row) {
         const QModelIndex item = placesModel->index(row, 0);
         if (placesModel->isHidden(item)) continue;
@@ -358,9 +410,7 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
         if (group == QLatin1String("Computer") && item != aero7IndexForName(QStringLiteral("Computer")))
             drives.append(item);
     }
-    drawGroup(QStringLiteral("Favorites"), QStringLiteral("favorites"),
-              {aero7IndexForName(QStringLiteral("Recent Places")), aero7IndexForName(QStringLiteral("Desktop")),
-               aero7IndexForName(QStringLiteral("Downloads"))}, false, false);
+    drawGroup(QStringLiteral("Favorites"), QStringLiteral("bookmarks"), favorites, false, false);
     y += 20;
     drawGroup(QStringLiteral("Libraries"), QStringLiteral("folder-library"), libraries, false, true);
     y += 20;
@@ -432,6 +482,13 @@ void PlacesPanel::mousePressEvent(QMouseEvent *event)
 
 void PlacesPanel::contextMenuEvent(QContextMenuEvent *event)
 {
+    if (event->reason() != QContextMenuEvent::Keyboard && m_favoritesHeaderRect.contains(event->pos())) {
+        QMenu menu(this);
+        populateFavoritesHeaderMenu(menu);
+        menu.exec(event->globalPos());
+        event->accept();
+        return;
+    }
     const QModelIndex index = event->reason() == QContextMenuEvent::Keyboard
         ? currentIndex() : aero7IndexAt(event->pos());
     if (!index.isValid()) {
@@ -447,7 +504,7 @@ void PlacesPanel::contextMenuEvent(QContextMenuEvent *event)
 
 void PlacesPanel::populateAero7ContextMenu(QMenu &menu, const QModelIndex &index)
 {
-    auto *places = static_cast<KFilePlacesModel *>(model());
+    auto *places = static_cast<DolphinPlacesModel *>(model());
     if (!index.isValid() || index.model() != places || places->isHidden(index)) return;
     const QUrl url = places->url(index);
     QAction *open = menu.addAction(Aero7Icons::icon(QStringLiteral("document-open-folder")),
@@ -457,6 +514,28 @@ void PlacesPanel::populateAero7ContextMenu(QMenu &menu, const QModelIndex &index
     QAction *newWindow = menu.addAction(Aero7Icons::icon(QStringLiteral("window-new")),
                                        QStringLiteral("Open in new window"));
     connect(newWindow, &QAction::triggered, this, [this, target]() { activateAero7Place(target, true); });
+
+    if (places->isFavorite(url)) {
+        menu.addSeparator();
+        QAction *remove = menu.addAction(Aero7Icons::icon(QStringLiteral("edit-delete")), QStringLiteral("Remove"));
+        connect(remove, &QAction::triggered, this, [this, places, url] {
+            places->removeFavorite(url);
+            viewport()->update();
+        });
+        QAction *rename = menu.addAction(Aero7Icons::icon(QStringLiteral("document-properties")), QStringLiteral("Rename"));
+        connect(rename, &QAction::triggered, this, [this, places, url] {
+            bool accepted = false;
+            const QString current = places->text(places->favoriteIndex(url));
+            const QString name = QInputDialog::getText(this, QStringLiteral("Rename Favorite"),
+                                                        QStringLiteral("Name:"), QLineEdit::Normal,
+                                                        current, &accepted);
+            if (accepted && places->renameFavorite(url, name)) viewport()->update();
+        });
+        QAction *properties = menu.addAction(Aero7Icons::icon(QStringLiteral("document-properties")),
+                                             QStringLiteral("Properties"));
+        connect(properties, &QAction::triggered, this, [this, url] { Aero7Properties::show({url}, this); });
+        return;
+    }
 
     // KIO supplies capability/state-aware actions, but does not connect them.
     // Own them with this short-lived menu and retain persistent indices: a USB
@@ -503,6 +582,26 @@ void PlacesPanel::populateAero7ContextMenu(QMenu &menu, const QModelIndex &index
             connect(properties, &QAction::triggered, this,
                     [this, id]() { Aero7Properties::showLibrary(id, this); });
         }
+    }
+}
+
+void PlacesPanel::populateFavoritesHeaderMenu(QMenu &menu)
+{
+    auto *places = DolphinPlacesModelSingleton::instance().placesModel();
+    QAction *restore = menu.addAction(Aero7Icons::icon(QStringLiteral("edit-reset")),
+                                      QStringLiteral("Restore favorite links"));
+    connect(restore, &QAction::triggered, this, [this, places] {
+        places->restoreFavorites();
+        viewport()->update();
+    });
+    if (m_currentFolderUrl.isLocalFile() && QFileInfo(m_currentFolderUrl.toLocalFile()).isDir()
+        && !places->isFavorite(m_currentFolderUrl)) {
+        QAction *add = menu.addAction(Aero7Icons::icon(QStringLiteral("bookmarks")),
+                                      QStringLiteral("Add current folder to Favorites"));
+        connect(add, &QAction::triggered, this, [this, places] {
+            places->addFavorite(m_currentFolderUrl);
+            viewport()->update();
+        });
     }
 }
 

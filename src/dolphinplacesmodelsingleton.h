@@ -10,6 +10,8 @@
 #include <QScopedPointer>
 #include <QString>
 #include <QHash>
+#include <QUrl>
+#include <QVector>
 
 #include <KFilePlacesModel>
 
@@ -24,11 +26,24 @@ class DolphinPlacesModel : public KFilePlacesModel
     Q_OBJECT
 
 public:
+    struct Favorite {
+        QString name;
+        QUrl url;
+        QString icon;
+    };
+
     explicit DolphinPlacesModel(QObject *parent = nullptr);
     ~DolphinPlacesModel() override;
 
     bool panelsLocked() const;
     void setPanelsLocked(bool locked);
+    const QVector<Favorite> &favorites() const { return m_favorites; }
+    bool isFavorite(const QUrl &url) const;
+    bool addFavorite(const QUrl &url);
+    bool removeFavorite(const QUrl &url);
+    bool renameFavorite(const QUrl &url, const QString &name);
+    void restoreFavorites();
+    QModelIndex favoriteIndex(const QUrl &url) const;
 
     QStringList mimeTypes() const override;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
@@ -42,10 +57,14 @@ private Q_SLOTS:
 
 private:
     bool isTrash(const QModelIndex &index) const;
+    static QVector<Favorite> defaultFavorites();
+    void saveFavorites() const;
+    void ensureFavorites();
 
     bool m_isEmpty = false;
     bool m_panelsLocked = true; // common-case, panels are locked
     QHash<QString, QString> m_storageNames;
+    QVector<Favorite> m_favorites;
 };
 
 /**

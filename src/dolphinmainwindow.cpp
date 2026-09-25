@@ -2884,6 +2884,10 @@ void DolphinMainWindow::setupDockWidgets()
 void DolphinMainWindow::setupWindowHeader()
 {
     m_winHeader = new DolphinWindowHeader();
+    if (auto *helpMenu = findChild<KHelpMenu *>(QString(), Qt::FindDirectChildrenOnly)) {
+        m_winHeader->m_help->setMenu(helpMenu->menu());
+        m_winHeader->m_help->setPopupMode(QToolButton::InstantPopup);
+    }
     auto d = m_winHeader->ui;
 
     // Explorer has one fixed navigation pane. Never restore Dolphin's Folders
