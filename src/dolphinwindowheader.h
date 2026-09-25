@@ -37,6 +37,7 @@ private:
     QList<QToolButton *> m_computerCommands;
     QList<QToolButton *> m_recycleBinCommands;
     QString m_normalSearchPlaceholder;
+    QString m_locationIconName = QStringLiteral("folder-open");
     bool m_computerMode = false;
     bool m_recycleBinMode = false;
 };

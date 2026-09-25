@@ -8,7 +8,6 @@
 #include "dolphinurlnavigator.h"
 #include "aero7icons.h"
 
-#include "dolphin_generalsettings.h"
 #include "dolphinplacesmodelsingleton.h"
 #include "dolphinurlnavigatorscontroller.h"
 #include "global.h"
@@ -39,9 +38,8 @@ DolphinUrlNavigator::DolphinUrlNavigator(QWidget *parent)
 DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
     : KUrlNavigator(DolphinPlacesModelSingleton::instance().placesModel(), url, parent)
 {
-    const GeneralSettings *settings = GeneralSettings::self();
-    // Aero7 exposes a fixed Windows 7 breadcrumb. The upstream editable URL
-    // mode (including click-to-edit) is intentionally unavailable.
+    // Keep the Windows 7 breadcrumb presentation, while allowing the empty
+    // area of the address box to open KUrlNavigator's normal path editor.
     setUrlEditable(false);
     // Match Windows Explorer: the breadcrumb starts at the user profile and
     // never exposes Linux implementation paths such as /home/aero.
@@ -49,7 +47,15 @@ DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
     setHomeUrl(QUrl::fromLocalFile(
         QFileInfo(Dolphin::homeUrl().toLocalFile()).absolutePath()));
     setPlacesSelectorVisible(DolphinUrlNavigatorsController::placesSelectorVisible());
-    editor()->setCompletionMode(KCompletion::CompletionMode(settings->urlCompletionMode()));
+    // Automatic inline completion can rewrite a manually entered absolute
+    // path while each character is typed (for example, /home/admin becomes
+    // /home/admin/home/admin). Keep the editor literal like Explorer's bar.
+    editor()->setCompletionMode(KCompletion::CompletionNone);
+    connect(editor()->lineEdit(), &QLineEdit::returnPressed, this, [this]() {
+        const QUrl destination = QUrl::fromUserInput(editor()->lineEdit()->text(),
+                                                      QDir::homePath(), QUrl::AssumeLocalFile);
+        if (destination.isValid()) setLocationUrl(destination);
+    });
     setWhatsThis(xi18nc("@info:whatsthis location bar",
                         "<para>This describes the location of the files and folders "
                         "displayed below.</para><para>The name of the currently viewed "
@@ -64,8 +70,6 @@ DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
                         "This will open the dedicated page in the Handbook.</para>"));
 
     DolphinUrlNavigatorsController::registerDolphinUrlNavigator(this);
-
-    connect(this, &KUrlNavigator::returnPressed, this, &DolphinUrlNavigator::slotReturnPressed);
 
     // KUrlNavigator normally collapses everything at the Home place, leaving
     // only "Downloads" visible. Windows 7 keeps the user profile crumb. Build
@@ -82,14 +86,6 @@ DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
     connect(places, &QAbstractItemModel::rowsRemoved, this, &DolphinUrlNavigator::updateAero7Breadcrumbs);
     connect(places, &QAbstractItemModel::modelReset, this, &DolphinUrlNavigator::updateAero7Breadcrumbs);
     connect(this, &KUrlNavigator::layoutChanged, this, &DolphinUrlNavigator::updateAero7TabOrder);
-    connect(this, &KUrlNavigator::editableStateChanged, this, [this](bool editable) {
-        if (editable) {
-            QTimer::singleShot(0, this, [this]() {
-                setUrlEditable(false);
-                updateAero7Breadcrumbs();
-            });
-        }
-    });
     updateAero7Breadcrumbs();
     new Aero7Storage::MountWatcher(this, [this] { updateAero7Breadcrumbs(); });
 
@@ -313,19 +309,24 @@ bool DolphinUrlNavigator::eventFilter(QObject *watched, QEvent *event)
 
 void DolphinUrlNavigator::mousePressEvent(QMouseEvent *event)
 {
-    // Blank breadcrumb space is inert in Aero7; KUrlNavigator otherwise uses
-    // it as a hidden entry point into its editable URL field.
-    event->accept();
+    if (event->button() == Qt::LeftButton && !isUrlEditable()) {
+        setUrlEditable(true);
+        editor()->lineEdit()->setFocus();
+        editor()->lineEdit()->selectAll();
+        event->accept();
+        return;
+    }
+    KUrlNavigator::mousePressEvent(event);
 }
 
 void DolphinUrlNavigator::mouseReleaseEvent(QMouseEvent *event)
 {
-    event->accept();
+    KUrlNavigator::mouseReleaseEvent(event);
 }
 
 void DolphinUrlNavigator::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    event->accept();
+    KUrlNavigator::mouseDoubleClickEvent(event);
 }
 
 DolphinUrlNavigator::~DolphinUrlNavigator()
@@ -367,8 +368,16 @@ std::unique_ptr<DolphinUrlNavigator::VisualState> DolphinUrlNavigator::visualSta
 
 void DolphinUrlNavigator::setVisualState(const VisualState &visualState)
 {
-    Q_UNUSED(visualState)
-    setUrlEditable(false);
+    setUrlEditable(visualState.isUrlEditable);
+    if (!visualState.isUrlEditable) return;
+
+    QLineEdit *lineEdit = editor()->lineEdit();
+    lineEdit->setText(visualState.text);
+    if (visualState.selectionStart >= 0 && visualState.selectionLength > 0)
+        lineEdit->setSelection(visualState.selectionStart, visualState.selectionLength);
+    else
+        lineEdit->setCursorPosition(visualState.cursorPosition);
+    if (visualState.hasFocus) lineEdit->setFocus();
 }
 
 void DolphinUrlNavigator::clearText() const
@@ -400,7 +409,9 @@ bool DolphinUrlNavigator::readOnlyBadgeVisible() const
 
 void DolphinUrlNavigator::slotReturnPressed()
 {
-    setUrlEditable(false);
+    // A location change is still propagating to the view at this point.
+    // Switch back to breadcrumbs after it finishes.
+    QTimer::singleShot(0, this, [this] { setUrlEditable(false); });
 }
 
 void DolphinUrlNavigator::keyPressEvent(QKeyEvent *keyEvent)

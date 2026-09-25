@@ -510,11 +510,8 @@ void DolphinMainWindow::slotTerminalDirectoryChanged(const QUrl &url)
 
 void DolphinMainWindow::slotEditableStateChanged(bool editable)
 {
-    Q_UNUSED(editable)
     KToggleAction *editableLocationAction = static_cast<KToggleAction *>(actionCollection()->action(QStringLiteral("editable_location")));
-    editableLocationAction->setChecked(false);
-    if (m_activeViewContainer && m_activeViewContainer->urlNavigator())
-        m_activeViewContainer->urlNavigator()->setUrlEditable(false);
+    editableLocationAction->setChecked(editable);
 }
 
 void DolphinMainWindow::slotSelectionChanged(const KFileItemList &selection)
@@ -1418,15 +1415,22 @@ void DolphinMainWindow::toggleFilterBar()
 void DolphinMainWindow::toggleEditLocation()
 {
     KUrlNavigator *urlNavigator = m_activeViewContainer->urlNavigator();
-    urlNavigator->setUrlEditable(false);
-    m_activeViewContainer->view()->setFocus();
+    const bool editable = !urlNavigator->isUrlEditable();
+    urlNavigator->setUrlEditable(editable);
+    if (editable) {
+        urlNavigator->editor()->lineEdit()->setFocus();
+        urlNavigator->editor()->lineEdit()->selectAll();
+    } else {
+        m_activeViewContainer->view()->setFocus();
+    }
 }
 
 void DolphinMainWindow::replaceLocation()
 {
     KUrlNavigator *navigator = m_activeViewContainer->urlNavigator();
-    navigator->setUrlEditable(false);
-    m_activeViewContainer->view()->setFocus();
+    navigator->setUrlEditable(true);
+    navigator->editor()->lineEdit()->setFocus();
+    navigator->editor()->lineEdit()->selectAll();
 }
 
 void DolphinMainWindow::togglePanelLockState()
@@ -2341,14 +2345,13 @@ void DolphinMainWindow::setupActions()
 
     KToggleAction *editableLocation = actionCollection()->add<KToggleAction>(QStringLiteral("editable_location"));
     editableLocation->setChecked(false);
-    editableLocation->setEnabled(false);
     editableLocation->setVisible(false);
-    editableLocation->setShortcuts({});
+    connect(editableLocation, &QAction::triggered, this, &DolphinMainWindow::toggleEditLocation);
 
     QAction *replaceLocation = actionCollection()->addAction(QStringLiteral("replace_location"));
-    replaceLocation->setEnabled(false);
-    replaceLocation->setVisible(false);
-    replaceLocation->setShortcuts({});
+    actionCollection()->setDefaultShortcut(replaceLocation, QKeySequence(Qt::CTRL | Qt::Key_L));
+    connect(replaceLocation, &QAction::triggered, this, &DolphinMainWindow::replaceLocation);
+    addAction(replaceLocation);
 
     // setup 'Go' menu
     {
@@ -2950,6 +2953,10 @@ void DolphinMainWindow::setupWindowHeader()
     });
     m_winHeader->m_share->setMenu(shareMenu);
     m_winHeader->m_share->setPopupMode(QToolButton::InstantPopup);
+    libraryMenu->setTitle(QStringLiteral("Include in library"));
+    shareMenu->setTitle(QStringLiteral("Share with"));
+    organizeMenu->addMenu(libraryMenu);
+    organizeMenu->addMenu(shareMenu);
     connect(m_winHeader->m_newFolder, &QToolButton::clicked,
             this, &DolphinMainWindow::createDirectory);
     const auto updateRecycleBinCommands = [this](bool isEmpty) {
@@ -3014,11 +3021,15 @@ void DolphinMainWindow::setupWindowHeader()
     viewsMenu->addSeparator();
     addView(QStringLiteral("List"), DolphinView::CompactView, 0);
     addView(QStringLiteral("Details"), DolphinView::DetailsView, 0,
-            {"text", "modificationtime", "type", "size"});
+            {"text", "size", "type", "modificationtime"});
     addView(QStringLiteral("Tiles"), DolphinView::IconsView, 3,
             {"text", "size", "type"});
     addView(QStringLiteral("Content"), DolphinView::DetailsView, -1,
             {"text", "type", "size", "modificationtime", "rating", "tags"});
+    if (QAction *preview = actionCollection()->action(QStringLiteral("show_information_panel"))) {
+        viewsMenu->addSeparator();
+        viewsMenu->addAction(preview);
+    }
     m_winHeader->m_views->setMenu(viewsMenu);
     m_winHeader->m_views->setPopupMode(QToolButton::InstantPopup);
 
@@ -3498,8 +3509,7 @@ void DolphinMainWindow::connectViewSignals(DolphinViewContainer *container)
         m_tabWidget->currentTabPage()->primaryViewActive() ? navigators->primaryUrlNavigator() : navigators->secondaryUrlNavigator();
 
     QAction *editableLocactionAction = actionCollection()->action(QStringLiteral("editable_location"));
-    editableLocactionAction->setChecked(false);
-    editableLocactionAction->setEnabled(false);
+    editableLocactionAction->setChecked(navigator->isUrlEditable());
     editableLocactionAction->setVisible(false);
     connect(navigator, &KUrlNavigator::editableStateChanged, this, &DolphinMainWindow::slotEditableStateChanged);
     connect(navigator, &KUrlNavigator::tabRequested, this, &DolphinMainWindow::openNewTab);

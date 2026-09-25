@@ -7,6 +7,7 @@
  */
 
 #include "kfileitemmodel.h"
+#include "aero7/aero7downloadsgrouping.h"
 
 #include "dolphin_contentdisplaysettings.h"
 #include "dolphin_generalsettings.h"
@@ -2734,6 +2735,8 @@ QList<QPair<int, QVariant>> KFileItemModel::timeRoleGroups(const std::function<Q
     QList<QPair<int, QVariant>> groups;
 
     const QDate currentDate = QDate::currentDate();
+    const bool windowsDownloadsGroups = sortRole() == QByteArrayLiteral("modificationtime")
+        && Aero7Downloads::isDownloadsLocation(directory());
 
     QDate previousFileDate;
     QString groupValue;
@@ -2754,7 +2757,34 @@ QList<QPair<int, QVariant>> KFileItemModel::timeRoleGroups(const std::function<Q
         const int daysDistance = fileDate.daysTo(currentDate);
 
         QString newGroupValue;
-        if (currentDate.year() == fileDate.year() && currentDate.month() == fileDate.month()) {
+        if (windowsDownloadsGroups) {
+            switch (Aero7Downloads::dateGroup(fileDate, currentDate, QLocale().firstDayOfWeek())) {
+            case Aero7Downloads::DateGroup::Today:
+                newGroupValue = i18nc("@title:group Downloads by date", "Today");
+                break;
+            case Aero7Downloads::DateGroup::Yesterday:
+                newGroupValue = i18nc("@title:group Downloads by date", "Yesterday");
+                break;
+            case Aero7Downloads::DateGroup::EarlierThisWeek:
+                newGroupValue = i18nc("@title:group Downloads by date", "Earlier this week");
+                break;
+            case Aero7Downloads::DateGroup::LastWeek:
+                newGroupValue = i18nc("@title:group Downloads by date", "Last week");
+                break;
+            case Aero7Downloads::DateGroup::EarlierThisMonth:
+                newGroupValue = i18nc("@title:group Downloads by date", "Earlier this month");
+                break;
+            case Aero7Downloads::DateGroup::LastMonth:
+                newGroupValue = i18nc("@title:group Downloads by date", "Last month");
+                break;
+            case Aero7Downloads::DateGroup::EarlierThisYear:
+                newGroupValue = i18nc("@title:group Downloads by date", "Earlier this year");
+                break;
+            case Aero7Downloads::DateGroup::LongTimeAgo:
+                newGroupValue = i18nc("@title:group Downloads by date", "A long time ago");
+                break;
+            }
+        } else if (currentDate.year() == fileDate.year() && currentDate.month() == fileDate.month()) {
             switch (daysDistance / 7) {
             case 0:
                 switch (daysDistance) {

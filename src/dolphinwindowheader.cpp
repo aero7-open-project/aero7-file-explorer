@@ -91,9 +91,16 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
         return button;
     };
     m_organize = makeButton(QStringLiteral("Organize"));
+    m_organize->setIcon(Aero7Icons::icon(QStringLiteral("document-properties")));
+    m_organize->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     m_include = makeButton(QStringLiteral("Include in library"));
     m_share = makeButton(QStringLiteral("Share with"));
+    m_views = makeButton(QStringLiteral("Views"));
+    m_views->setIcon(Aero7Icons::icon(QStringLiteral("view-list-details")));
+    m_views->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     m_newFolder = makeButton(QStringLiteral("New folder"));
+    m_newFolder->setIcon(Aero7Icons::icon(QStringLiteral("folder-new")));
+    m_newFolder->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     const auto makeComputerButton = [this, commands](const QString &text,
                                                       const QStringList &command) {
         auto *button = new Aero7CommandButton(this);
@@ -136,14 +143,6 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     m_emptyRecycleBin = makeRecycleBinButton(QStringLiteral("Empty the Recycle Bin"));
     m_recycleBinProperties = makeRecycleBinButton(QStringLiteral("Recycle Bin properties"));
     commands->addStretch(1);
-    m_views = makeButton(QString());
-    m_views->setProperty("aero7IconCommand", true);
-    m_views->setIcon(Aero7Icons::icon(QStringLiteral("view-list-details")));
-    m_views->setIconSize(QSize(16, 16));
-    m_views->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    m_views->setToolTip(QStringLiteral("Change your view"));
-    m_views->setAccessibleName(tr("Change your view"));
-    m_views->setFixedWidth(50);
     m_preview = makeButton(QString());
     m_preview->setProperty("aero7IconCommand", true);
     m_preview->setCheckable(true);
@@ -197,15 +196,18 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
     ui->navs->back()->setFixedSize(27, 25);
     ui->navs->forward()->setFixedSize(24, 25);
     ui->navs->menuButton()->setFixedSize(13, 25);
-    ui->searchBar->setFixedSize(240, 23);
+    ui->searchBar->setFixedSize(200, 23);
 
     setStyleSheet(QStringLiteral(R"(
-        #aero7ExplorerHeader { background: #eef5fc; }
-        #aero7NavigationBar { background: #b9d1ea; }
+        #aero7ExplorerHeader { background: #f3f8fd; }
+        #aero7NavigationBar {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                        stop:0 #f6fbff, stop:1 #dcecf9);
+        }
         #aero7NavigationGap {
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                        stop:0 #b9d1ea,
-                                        stop:0.74 #b9d1ea,
+                                        stop:0 #dcecf9,
+                                        stop:0.74 #dcecf9,
                                         stop:0.75 #a9bfd6,
                                         stop:1 #a9bfd6);
         }
@@ -252,7 +254,7 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
         }
         #aero7CommandBar {
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                        stop:0 #f5f9fd, stop:1 #e5eef8);
+                                        stop:0 #ffffff, stop:1 #e9f2fb);
             border-top: 1px solid #d7e2ed;
             border-bottom: 1px solid #a0afc3;
         }
@@ -321,8 +323,12 @@ void DolphinWindowHeader::updateShellMode()
 {
     m_organize->setVisible(true);
     const bool normalFolderMode = !m_computerMode && !m_recycleBinMode;
-    m_include->setVisible(normalFolderMode);
-    m_share->setVisible(normalFolderMode);
+    // Match the compact Windows 7 command row. These actions remain in the
+    // Organize and Views menus.
+    m_include->setVisible(false);
+    m_share->setVisible(false);
+    m_views->setVisible(true);
+    m_preview->setVisible(false);
     m_newFolder->setVisible(normalFolderMode);
     for (QToolButton *button : std::as_const(m_computerCommands))
         button->setVisible(m_computerMode);
@@ -337,7 +343,7 @@ void DolphinWindowHeader::updateShellMode()
         ui->searchBar->setPlaceholderText(m_normalSearchPlaceholder);
 
     if (QLabel *icon = findChild<QLabel *>(QStringLiteral("aero7LocationIcon"))) {
-        QString iconName = QStringLiteral("folder-download");
+        QString iconName = m_locationIconName;
         if (m_computerMode)
             iconName = QStringLiteral("computer");
         else if (m_recycleBinMode)
@@ -349,9 +355,12 @@ void DolphinWindowHeader::updateShellMode()
 void DolphinWindowHeader::setLocationName(const QString &name)
 {
     const QString scope = name.trimmed().isEmpty() ? QStringLiteral("this folder") : name.trimmed();
+    m_locationIconName = scope == QLatin1String("Downloads")
+        ? QStringLiteral("folder-download") : QStringLiteral("folder-open");
     m_normalSearchPlaceholder = QStringLiteral("Search %1").arg(scope);
     if (!m_computerMode && !m_recycleBinMode)
         ui->searchBar->setPlaceholderText(m_normalSearchPlaceholder);
+    updateShellMode();
 }
 
 DolphinWindowHeader::~DolphinWindowHeader()

@@ -33,6 +33,7 @@
 #include <KConfig>
 #include <KConfigGui>
 #include <KFileItem>
+#include <KUrlComboBox>
 #include <KSqueezedTextLabel>
 
 #include <QAccessible>
@@ -46,6 +47,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMenu>
 #include <QKeySequence>
 #include <QScopedPointer>
@@ -657,15 +659,29 @@ void DolphinMainWindowTest::testFocusLocationBar()
     QVERIFY(m_mainWindow->isVisible());
     QTRY_VERIFY_WITH_TIMEOUT(QApplication::activeWindow() != nullptr, 100);
 
-    QAction *replaceLocationAction = m_mainWindow->actionCollection()->action(QStringLiteral("replace_location"));
-    replaceLocationAction->trigger();
-    QVERIFY(!m_mainWindow->activeViewContainer()->urlNavigator()->isUrlEditable());
-    QVERIFY(m_mainWindow->activeViewContainer()->view()->hasFocus());
+    QTest::keyClick(m_mainWindow.data(), Qt::Key_L, Qt::ControlModifier);
+    QTRY_VERIFY(m_mainWindow->activeViewContainer()->urlNavigator()->isUrlEditable());
+    QVERIFY(m_mainWindow->activeViewContainer()->urlNavigator()->editor()->lineEdit()->hasFocus());
 
     QAction *editableLocationAction = m_mainWindow->actionCollection()->action(QStringLiteral("editable_location"));
     editableLocationAction->trigger();
     QVERIFY(!m_mainWindow->activeViewContainer()->urlNavigator()->isUrlEditable());
     QVERIFY(m_mainWindow->activeViewContainer()->view()->hasFocus());
+
+    DolphinUrlNavigator *navigator = m_mainWindow->activeViewContainer()->urlNavigator();
+    QTest::mouseClick(navigator, Qt::LeftButton, Qt::NoModifier,
+                      QPoint(navigator->width() - 4, navigator->height() / 2));
+    QTRY_VERIFY(navigator->isUrlEditable());
+    QLineEdit *pathEditor = navigator->editor()->lineEdit();
+    QVERIFY(pathEditor->hasFocus());
+    pathEditor->selectAll();
+    const QString downloadsPath = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    QTest::keyClicks(pathEditor, downloadsPath);
+    QCOMPARE(pathEditor->text(), downloadsPath);
+    QTest::keyClick(pathEditor, Qt::Key_Return);
+    QTRY_COMPARE(navigator->locationUrl(), QUrl::fromLocalFile(downloadsPath));
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->urlNavigatorInternalWithHistory()->locationUrl(), QUrl::fromLocalFile(downloadsPath));
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), QUrl::fromLocalFile(downloadsPath));
 }
 
 void DolphinMainWindowTest::testAero7ExplorerChromeContract()
@@ -689,6 +705,19 @@ void DolphinMainWindowTest::testAero7ExplorerChromeContract()
     QVERIFY(history && history->isVisible());
     QVERIFY(refresh && refresh->isVisible());
     QVERIFY(searchIcon && !searchIcon->pixmap().isNull());
+    QToolButton *organizeButton = nullptr;
+    QToolButton *viewsButton = nullptr;
+    QToolButton *newFolderButton = nullptr;
+    for (QToolButton *button : m_mainWindow->m_winHeader->findChildren<QToolButton *>()) {
+        if (button->text() == QLatin1String("Organize")) organizeButton = button;
+        if (button->text() == QLatin1String("Views")) viewsButton = button;
+        if (button->text() == QLatin1String("New folder")) newFolderButton = button;
+    }
+    QVERIFY(organizeButton && organizeButton->isVisible());
+    QVERIFY(viewsButton && viewsButton->isVisible());
+    QVERIFY(newFolderButton && newFolderButton->isVisible());
+    QVERIFY(organizeButton->x() < viewsButton->x());
+    QVERIFY(viewsButton->x() < newFolderButton->x());
     QCOMPARE(history->size(), QSize(20, 21));
     QCOMPARE(refresh->size(), QSize(24, 21));
 
@@ -696,7 +725,8 @@ void DolphinMainWindowTest::testAero7ExplorerChromeContract()
     KItemListView *itemListView = view->m_container->controller()->view();
     QTRY_VERIFY(itemListView->isHeaderVisible());
     KItemListHeader *header = itemListView->header();
-    const auto verifyNormalFolderHeader = [header]() {
+    const auto verifyNormalFolderHeader = [header, itemListView]() {
+        QCOMPARE(itemListView->visibleRoles(), (QList<QByteArray>{"text", "size", "type", "modificationtime"}));
         QCOMPARE(header->leftPadding(), 10.0);
         QCOMPARE(header->columnWidth("text"), 284.0);
         QCOMPARE(header->columnWidth("modificationtime"), 120.0);
@@ -726,7 +756,7 @@ void DolphinMainWindowTest::testAero7ExplorerChromeContract()
     history->menu()->hide();
 
     view->setVisibleRoles({"text", "path", "deletiontime", "size", "type"});
-    view->setVisibleRoles({"text", "modificationtime", "type", "size"});
+    view->setVisibleRoles({"text", "size", "type", "modificationtime"});
     verifyNormalFolderHeader();
 
     const QImage titleIcon = m_mainWindow->windowIcon().pixmap(16, 16).toImage();

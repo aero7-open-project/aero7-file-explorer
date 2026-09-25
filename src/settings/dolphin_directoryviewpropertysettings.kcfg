@@ -60,7 +60,7 @@
 
         <entry name="SortFoldersFirst" type="Bool" >
             <label context="@label">Show folders first when sorting files and folders</label>
-            <default>true</default>
+            <default>false</default>
         </entry>
 
         <entry name="SortHiddenLast" type="Bool" >
@@ -95,5 +95,4 @@
         </entry>
     </group>
 </kcfg>
-
 

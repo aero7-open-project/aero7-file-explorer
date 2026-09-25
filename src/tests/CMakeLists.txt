@@ -17,6 +17,8 @@ set_tests_properties(aero7commondialogtest PROPERTIES ENVIRONMENT "QT_QPA_PLATFO
 include(FindGem)  # For servicemenutest, see bottom of this file
 
 ecm_add_test(aero7storagetest.cpp LINK_LIBRARIES Qt6::Core Qt6::Test)
+ecm_add_test(aero7downloadsgroupingtest.cpp LINK_LIBRARIES Qt6::Core Qt6::Test)
+target_include_directories(aero7downloadsgroupingtest PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 add_executable(aero7iconindependencetest aero7iconindependencetest.cpp)
 target_link_libraries(aero7iconindependencetest PRIVATE aero7shellui Qt6::Widgets)

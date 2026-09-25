@@ -6,6 +6,7 @@
  */
 
 #include "viewproperties.h"
+#include "aero7/aero7downloadsgrouping.h"
 
 #include "dolphin_directoryviewpropertysettings.h"
 #include "dolphin_generalsettings.h"
@@ -126,7 +127,7 @@ ViewProperties::ViewProperties(const QUrl &url)
     bool useSearchView = false;
     bool useTrashView = false;
     bool useRecentDocumentsView = false;
-    bool useDownloadsView = false;
+    const bool useDownloadsView = Aero7Downloads::isDownloadsLocation(url);
 
     // We try and save it to the file .directory in the directory being viewed.
     // If the directory is not writable by the user or the directory is not local,
@@ -143,7 +144,7 @@ ViewProperties::ViewProperties(const QUrl &url)
     } else if (url.scheme() == QLatin1String("timeline")) {
         m_filePath = destinationDir(QStringLiteral("timeline"));
         useRecentDocumentsView = true;
-    } else if (useGlobalViewProps) {
+    } else if (useGlobalViewProps && !useDownloadsView) {
         m_filePath = destinationDir(QStringLiteral("global"));
     } else if (url.isLocalFile()) {
         m_filePath = url.toLocalFile();
@@ -168,9 +169,6 @@ ViewProperties::ViewProperties(const QUrl &url)
             m_filePath = destinationDir(QStringLiteral("local")) + m_filePath;
         }
 
-        if (m_filePath == QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)) {
-            useDownloadsView = true;
-        }
     } else {
         m_filePath = destinationDir(QStringLiteral("remote")) + m_filePath;
     }
@@ -229,9 +227,13 @@ ViewProperties::ViewProperties(const QUrl &url)
                 setVisibleRoles({"text", "path", "accesstime"});
             } else {
                 setSortRole(QByteArrayLiteral("modificationtime"));
+                setViewMode(DolphinView::DetailsView);
+                setVisibleRoles({"text", "size", "type", "modificationtime"});
             }
         } else {
-            m_changedProps = false;
+            // Ordinary folders follow their selected sort, including files.
+            // Downloads has its own date-grouped view above.
+            setSortFoldersFirst(false);
         }
         setZoomLevel(-1);
     }

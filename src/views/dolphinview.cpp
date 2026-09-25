@@ -294,7 +294,7 @@ DolphinView::DolphinView(const QUrl &url, QWidget *parent)
     // Users can still change it through the Windows-style Views button.
     setViewMode(DolphinView::DetailsView);
     setZoomLevel(0);
-    setVisibleRoles({"text", "modificationtime", "type", "size"});
+    setVisibleRoles({"text", "size", "type", "modificationtime"});
     m_view->header()->setAutomaticColumnResizing(false);
     m_view->header()->setColumnWidths({
         {"text", 284},
@@ -630,7 +630,7 @@ void DolphinView::setVisibleRoles(const QList<QByteArray> &roles)
     const QList<QByteArray> recycleBinRoles{
         "text", "path", "deletiontime", "size", "type"};
     const QList<QByteArray> normalFolderRoles{
-        "text", "modificationtime", "type", "size"};
+        "text", "size", "type", "modificationtime"};
     if (roles == recycleBinRoles) {
         // Windows 7 keeps all five Recycle Bin headings readable instead of
         // inheriting the narrower normal-folder widths.
@@ -2290,7 +2290,7 @@ void DolphinView::slotDirectoryLoadingCompleted()
         const QList<QByteArray> recycleBinRoles{
             "text", "path", "deletiontime", "size", "type"};
         const QList<QByteArray> normalFolderRoles{
-            "text", "modificationtime", "type", "size"};
+            "text", "size", "type", "modificationtime"};
         if (m_visibleRoles == recycleBinRoles) {
             header->setAutomaticColumnResizing(false);
             header->setColumnWidths({
@@ -2650,7 +2650,7 @@ void DolphinView::applyViewProperties(const ViewProperties &props)
         const QList<QByteArray> recycleBinRoles{
             "text", "path", "deletiontime", "size", "type"};
         const QList<QByteArray> normalFolderRoles{
-            "text", "modificationtime", "type", "size"};
+            "text", "size", "type", "modificationtime"};
         if (m_visibleRoles == recycleBinRoles) {
             header->setAutomaticColumnResizing(false);
             header->setColumnWidths({
