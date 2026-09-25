@@ -3214,7 +3214,9 @@ void DolphinMainWindow::setupWindowHeader()
     /* Navigator(s) */
     auto *locationIcon = new QLabel(d->primaryNavHole);
     locationIcon->setObjectName(QStringLiteral("aero7LocationIcon"));
-    locationIcon->setFixedSize(21, 21);
+    // The Windows 7 glyph occupies 16 pixels. A wider widget shifted every
+    // breadcrumb label five pixels to the right of the reference address bar.
+    locationIcon->setFixedSize(16, 21);
     locationIcon->setAlignment(Qt::AlignCenter);
     locationIcon->setPixmap(Aero7Icons::icon(QStringLiteral("folder-download")).pixmap(16, 16));
     d->primaryNavHole->layout()->addWidget(locationIcon);
