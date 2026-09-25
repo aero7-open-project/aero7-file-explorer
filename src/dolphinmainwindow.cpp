@@ -103,6 +103,7 @@
 #include <QMessageBox>
 #include <QProcess>
 #include <QPixmap>
+#include <QPainter>
 #include <QPushButton>
 #include <QScreen>
 #include <QSharedPointer>
@@ -330,15 +331,6 @@ DolphinMainWindow::DolphinMainWindow()
     if (GeneralSettings::version() < 201 && !toolBar()->actions().contains(hamburgerMenu)) {
         addHamburgerMenuToToolbar();
     }
-
-    // Unfortunately we can't attach the help QMenu to the help_menu QAction because it is created by in setupGUI(), which is only called _after_ setupActions(). Hence we have to connect it here, post-hoc.
-    qobject_cast<QToolButton *>(
-        qobject_cast<QWidgetAction *>(
-            actionCollection()->action(QStringLiteral("help_menu"))
-        )->defaultWidget()
-    )->setMenu(
-        this->findChild<KHelpMenu *>(QString(), Qt::FindDirectChildrenOnly)->menu()
-    );
 
     updateAllowedToolbarAreas();
     updateNavigatorsBackground();
@@ -2884,9 +2876,27 @@ void DolphinMainWindow::setupDockWidgets()
 void DolphinMainWindow::setupWindowHeader()
 {
     m_winHeader = new DolphinWindowHeader();
-    if (auto *helpMenu = findChild<KHelpMenu *>(QString(), Qt::FindDirectChildrenOnly)) {
-        m_winHeader->m_help->setMenu(helpMenu->menu());
-        m_winHeader->m_help->setPopupMode(QToolButton::InstantPopup);
+    auto *aero7Help = new QMenu(this);
+    aero7Help->setObjectName(QStringLiteral("aero7ExplorerHelpMenu"));
+    aero7Help->addAction(QStringLiteral("File Explorer Help"), this, [this] {
+        QMessageBox::information(this, QStringLiteral("Aero7 File Explorer Help"),
+                                 QStringLiteral("Use the location bar to open a folder or type a path. "
+                                                "Right-click a folder and choose Add to Favorites to pin it. "
+                                                "Right-click Favorites in the navigation pane to restore its default links."));
+    });
+    aero7Help->addAction(QStringLiteral("About Aero7 File Explorer"), this, [this] {
+        QMessageBox::about(this, QStringLiteral("About Aero7 File Explorer"),
+                           QStringLiteral("Aero7 File Explorer"));
+    });
+    if (auto *legacyHelp = findChild<KHelpMenu *>(QString(), Qt::FindDirectChildrenOnly)) {
+        legacyHelp->menu()->clear();
+        legacyHelp->menu()->addActions(aero7Help->actions());
+    }
+    m_winHeader->m_help->setMenu(aero7Help);
+    m_winHeader->m_help->setPopupMode(QToolButton::InstantPopup);
+    if (auto *helpAction = qobject_cast<QWidgetAction *>(actionCollection()->action(QStringLiteral("help_menu")))) {
+        if (auto *helpButton = qobject_cast<QToolButton *>(helpAction->defaultWidget()))
+            helpButton->setMenu(aero7Help);
     }
     auto d = m_winHeader->ui;
 
@@ -3075,8 +3085,34 @@ void DolphinMainWindow::setupWindowHeader()
     /* Nav menu */
 
     // Enabling done in ::updateHistory()
-    QMenu *menu = m_backAction->popupMenu();
-    d->navs->setMenu(menu);
+    auto *navigationHistory = new QMenu(d->navs);
+    navigationHistory->setObjectName(QStringLiteral("aero7NavigationHistoryMenu"));
+    connect(navigationHistory, &QMenu::aboutToShow, this, [this, navigationHistory] {
+        navigationHistory->clear();
+        const KUrlNavigator *navigator = activeViewContainer()->urlNavigatorInternalWithHistory();
+        for (int i = 0; i < navigator->historySize(); ++i) {
+            const QUrl url = navigator->locationUrl(i);
+            const QString label = url.toDisplayString(QUrl::PreferLocalFile);
+            QAction *entry = navigationHistory->addAction(label);
+            entry->setCheckable(true);
+            entry->setChecked(i == navigator->historyIndex());
+            connect(entry, &QAction::triggered, this, [this, url] { changeUrl(url); });
+        }
+        if (navigationHistory->isEmpty())
+            navigationHistory->addAction(QStringLiteral("No recent locations"))->setEnabled(false);
+    });
+    d->navs->setMenu(navigationHistory);
+    QPixmap historyArrow(11, 11);
+    historyArrow.fill(Qt::transparent);
+    {
+        QPainter painter(&historyArrow);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(QStringLiteral("#34526b")));
+        painter.drawPolygon(QPolygon{QPoint(2, 4), QPoint(9, 4), QPoint(5, 8)});
+    }
+    d->navs->menuButton()->setArrowType(Qt::NoArrow);
+    d->navs->menuButton()->setIcon(QIcon(historyArrow));
+    d->navs->menuButton()->setIconSize(historyArrow.size());
 
     /* Search bar */
     QList<QMetaObject::Connection> conns;
@@ -3189,13 +3225,15 @@ void DolphinMainWindow::setupWindowHeader()
     // to KUrlNavigator alone.  This keeps the location icon inside the same
     // 23-pixel Windows 7 address box and avoids a nested KDE frame.
     primaryNavigator->setBackgroundEnabled(false);
+    primaryNavigator->layout()->setContentsMargins(0, 0, 0, 0);
     static_cast<QHBoxLayout *>(d->primaryNavHole->layout())->addWidget(primaryNavigator, 1);
     auto *addressHistory = new QToolButton(d->primaryNavHole);
     addressHistory->setObjectName(QStringLiteral("aero7AddressHistoryButton"));
     addressHistory->setFixedSize(20, 21);
     addressHistory->setAutoRaise(true);
     addressHistory->setFocusPolicy(Qt::NoFocus);
-    addressHistory->setArrowType(Qt::DownArrow);
+    addressHistory->setIcon(QIcon(historyArrow));
+    addressHistory->setIconSize(historyArrow.size());
     addressHistory->setToolTip(QStringLiteral("Recent locations"));
     addressHistory->setAccessibleName(i18nc("@action:button", "Recent locations"));
     auto *addressHistoryMenu = new QMenu(addressHistory);
@@ -3209,13 +3247,9 @@ void DolphinMainWindow::setupWindowHeader()
                 const int currentIndex = navigator->historyIndex();
                 for (int i = 0; i < navigator->historySize(); ++i) {
                     const QUrl url = navigator->locationUrl(i);
-                    QString label = url.fileName();
-                    if (label.isEmpty())
-                        label = url.toDisplayString(QUrl::PreferLocalFile);
+                    const QString label = url.toDisplayString(QUrl::PreferLocalFile);
                     QAction *entry = addressHistoryMenu->addAction(
-                        QIcon::fromTheme(url.isLocalFile()
-                                             ? QStringLiteral("folder")
-                                             : QStringLiteral("folder-remote")),
+                        Aero7Icons::icon(QStringLiteral("folder-open")),
                         label);
                     entry->setCheckable(true);
                     entry->setChecked(i == currentIndex);

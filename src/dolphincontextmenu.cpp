@@ -339,17 +339,12 @@ void DolphinContextMenu::addItemContextMenu()
         previousVersions->setEnabled(false);
         previousVersions->setToolTip(QStringLiteral("No previous versions are available for this folder."));
 
-        QMenu *libraries = addMenu(QStringLiteral("Include in library"));
-        for (Aero7Library library : Aero7Libraries::instance().libraries()) {
-            libraries->addAction(Aero7Icons::icon(QStringLiteral("folder-%1").arg(library.id)),
-                                 library.name, this, [this, library, folderUrl]() mutable {
-                const QString path = folderUrl.toLocalFile();
-                if (!library.locations.contains(path)) library.locations.append(path);
-                QString error;
-                if (!Aero7Libraries::instance().saveLibrary(library, &error))
-                    QMessageBox::warning(m_mainWindow, QStringLiteral("Include in Library"), error);
-            });
-        }
+        auto *places = DolphinPlacesModelSingleton::instance().placesModel();
+        QAction *addFavorite = addAction(Aero7Icons::icon(QStringLiteral("bookmarks")),
+                                         QStringLiteral("Add to Favorites"), this, [places, folderUrl] {
+            places->addFavorite(folderUrl);
+        });
+        addFavorite->setEnabled(!places->isFavorite(folderUrl));
     }
 
     QMenu *sendTo = addMenu(QStringLiteral("Send to"));

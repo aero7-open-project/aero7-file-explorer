@@ -56,18 +56,8 @@ DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
                                                       QDir::homePath(), QUrl::AssumeLocalFile);
         if (destination.isValid()) setLocationUrl(destination);
     });
-    setWhatsThis(xi18nc("@info:whatsthis location bar",
-                        "<para>This describes the location of the files and folders "
-                        "displayed below.</para><para>The name of the currently viewed "
-                        "folder can be read at the very right. To the left of it is the "
-                        "name of the folder that contains it. The whole line is called "
-                        "the <emphasis>path</emphasis> to the current location because "
-                        "following these folders from left to right leads here.</para>"
-                        "<para>This interactive path "
-                        "is more powerful than one would expect. To learn more "
-                        "about the basic and advanced features of the location bar "
-                        "<link url='help:/dolphin/location-bar.html'>click here</link>. "
-                        "This will open the dedicated page in the Handbook.</para>"));
+    setWhatsThis(QStringLiteral("Aero7 File Explorer location bar: click a folder name to open it, "
+                               "or click the empty part of the bar to type a path."));
 
     DolphinUrlNavigatorsController::registerDolphinUrlNavigator(this);
 

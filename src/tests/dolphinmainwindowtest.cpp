@@ -101,6 +101,7 @@ private Q_SLOTS:
     void testAero7PlacesMenuDoesNotTearDownBookmarks();
     void testAero7FavoritesLifecycle();
     void testAero7FolderContextMenuActions();
+    void testAero7LocationDropDownsNavigate();
     void testAero7StorageRecoveryKeepsOtherObservers();
     void testAero7StorageRecoveryUsesCompletedDrive();
     void testAero7FailedStorageRequestIsConsumed_data();
@@ -728,12 +729,28 @@ void DolphinMainWindowTest::testAero7ExplorerChromeContract()
     QVERIFY(helpButton);
     QVERIFY(helpButton->menu());
     QVERIFY(!helpButton->menu()->isEmpty());
+    QCOMPARE(helpButton->menu()->objectName(), QStringLiteral("aero7ExplorerHelpMenu"));
+    QCOMPARE(helpButton->menu()->actions().first()->text(), QStringLiteral("File Explorer Help"));
     QSignalSpy helpOpened(helpButton->menu(), &QMenu::aboutToShow);
     QTimer::singleShot(100, helpButton->menu(), &QMenu::hide);
     QTest::mouseClick(helpButton, Qt::LeftButton);
     QCOMPARE(helpOpened.count(), 1);
     QCOMPARE(history->size(), QSize(20, 21));
     QCOMPARE(refresh->size(), QSize(24, 21));
+    QVERIFY(history->menu());
+    QSignalSpy addressOpened(history->menu(), &QMenu::aboutToShow);
+    QTimer::singleShot(100, history->menu(), &QMenu::hide);
+    QTest::mouseClick(history, Qt::LeftButton);
+    QCOMPARE(addressOpened.count(), 1);
+    QVERIFY(!history->menu()->actions().isEmpty());
+    QToolButton *navHistory = m_mainWindow->findChild<QToolButton *>(QStringLiteral("aero7HistoryButton"));
+    QVERIFY(navHistory && navHistory->menu());
+    QCOMPARE(navHistory->menu()->objectName(), QStringLiteral("aero7NavigationHistoryMenu"));
+    QVERIFY(!navHistory->icon().isNull());
+    QSignalSpy navigationOpened(navHistory->menu(), &QMenu::aboutToShow);
+    QTimer::singleShot(100, navHistory->menu(), &QMenu::hide);
+    QTest::mouseClick(navHistory, Qt::LeftButton);
+    QCOMPARE(navigationOpened.count(), 1);
 
     DolphinView *view = m_mainWindow->activeViewContainer()->view();
     KItemListView *itemListView = view->m_container->controller()->view();
@@ -988,6 +1005,14 @@ void DolphinMainWindowTest::testAero7FavoritesLifecycle()
     QVERIFY(drop.isAccepted());
     QVERIFY(places->isFavorite(folderUrl));
     QVERIFY(places->removeFavorite(folderUrl));
+    QTRY_VERIFY(panel->m_favoritesDropRect.height() > panel->m_favoritesHeaderRect.height());
+    const QPoint favoriteRow = panel->m_favoritesDropRect.bottomLeft() - QPoint(0, 10);
+    QDropEvent rowDrop(QPointF(favoriteRow), Qt::LinkAction,
+                       &draggedFolder, Qt::LeftButton, Qt::NoModifier);
+    panel->dropEvent(&rowDrop);
+    QVERIFY(rowDrop.isAccepted());
+    QVERIFY(places->isFavorite(folderUrl));
+    QVERIFY(places->removeFavorite(folderUrl));
 
     const QUrl downloads = QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
     QVERIFY(places->removeFavorite(downloads));
@@ -1020,12 +1045,13 @@ void DolphinMainWindowTest::testAero7FolderContextMenuActions()
     QStringList menuLabels;
     for (QAction *action : menu.actions()) menuLabels.append(action->text());
     for (const QString &name : {QStringLiteral("Open"), QStringLiteral("Open in new window"),
-                                QStringLiteral("Share with"), QStringLiteral("Include in library"),
+                                QStringLiteral("Share with"), QStringLiteral("Add to Favorites"),
                                 QStringLiteral("Send to"), QStringLiteral("Create shortcut"),
                                 QStringLiteral("Cut"), QStringLiteral("Copy"),
                                 QStringLiteral("Delete"), QStringLiteral("Rename"),
                                 QStringLiteral("Properties")})
         QVERIFY2(actionNamed(&menu, name), qPrintable(name + QStringLiteral(": ") + menuLabels.join(QStringLiteral(" | "))));
+    QVERIFY(!actionNamed(&menu, QStringLiteral("Include in library")));
     QAction *previous = actionNamed(&menu, QStringLiteral("Restore previous versions"));
     QVERIFY(previous);
     QVERIFY(!previous->isEnabled());
@@ -1033,7 +1059,7 @@ void DolphinMainWindowTest::testAero7FolderContextMenuActions()
     QVERIFY(sendTo->menu());
     QVERIFY(actionNamed(sendTo->menu(), QStringLiteral("Desktop (create shortcut)")));
     QVERIFY(actionNamed(sendTo->menu(), QStringLiteral("Downloads")));
-    QAction *favorite = actionNamed(sendTo->menu(), QStringLiteral("Favorites"));
+    QAction *favorite = actionNamed(&menu, QStringLiteral("Add to Favorites"));
     QVERIFY(favorite);
     favorite->trigger();
     QVERIFY(DolphinPlacesModelSingleton::instance().placesModel()->isFavorite(folder));
@@ -1044,6 +1070,39 @@ void DolphinMainWindowTest::testAero7FolderContextMenuActions()
     QVERIFY(shortcutFile.isSymLink());
     QCOMPARE(shortcutFile.symLinkTarget(), folder.toLocalFile());
     QVERIFY(DolphinPlacesModelSingleton::instance().placesModel()->removeFavorite(folder));
+}
+
+void DolphinMainWindowTest::testAero7LocationDropDownsNavigate()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("First")));
+    QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("Second")));
+    const QUrl first = QUrl::fromLocalFile(QDir(directory.path()).filePath(QStringLiteral("First")));
+    const QUrl second = QUrl::fromLocalFile(QDir(directory.path()).filePath(QStringLiteral("Second")));
+    m_mainWindow->openDirectories({first}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    m_mainWindow->changeUrl(second);
+    QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), second);
+
+    for (const QString &buttonName : {QStringLiteral("aero7HistoryButton"),
+                                      QStringLiteral("aero7AddressHistoryButton")}) {
+        QToolButton *button = m_mainWindow->findChild<QToolButton *>(buttonName);
+        QVERIFY(button && button->menu());
+        QMenu *menu = button->menu();
+        menu->popup(button->mapToGlobal(QPoint(0, button->height())));
+        QTRY_VERIFY(menu->isVisible());
+        QAction *firstAction = nullptr;
+        for (QAction *action : menu->actions())
+            if (action->text() == first.toDisplayString(QUrl::PreferLocalFile)) firstAction = action;
+        QVERIFY2(firstAction, qPrintable(buttonName));
+        firstAction->trigger();
+        menu->hide();
+        QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), first);
+        m_mainWindow->changeUrl(second);
+        QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), second);
+    }
 }
 
 void DolphinMainWindowTest::testAero7ComputerNavigatorUsesResolvablePlace()

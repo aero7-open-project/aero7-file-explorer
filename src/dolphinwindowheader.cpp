@@ -258,6 +258,16 @@ DolphinWindowHeader::DolphinWindowHeader(QWidget *parent)
             image: none;
             width: 0;
         }
+        QToolButton#aero7HistoryButton {
+            border: 0;
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+        QToolButton#aero7HistoryButton::menu-indicator {
+            image: none;
+            width: 0;
+        }
         QToolButton#aero7AddressHistoryButton:hover,
         QToolButton#aero7RefreshButton:hover {
             background: rgba(185, 218, 245, 145);

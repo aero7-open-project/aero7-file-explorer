@@ -94,6 +94,7 @@ private:
     QList<QAction *> m_customContextMenuActions;
     QList<Aero7NavigationHit> m_aero7NavigationHits;
     QRect m_favoritesHeaderRect;
+    QRect m_favoritesDropRect;
     QUrl m_currentFolderUrl;
 
     QPersistentModelIndex m_indexToTearDown;

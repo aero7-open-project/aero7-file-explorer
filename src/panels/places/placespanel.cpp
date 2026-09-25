@@ -226,7 +226,7 @@ void PlacesPanel::dragEnterEvent(QDragEnterEvent *event)
 
 void PlacesPanel::dragMoveEvent(QDragMoveEvent *event)
 {
-    if (m_favoritesHeaderRect.contains(event->position().toPoint())
+    if (m_favoritesDropRect.contains(event->position().toPoint())
         && draggedFavoriteFolder(event->mimeData()).isValid()) {
         event->acceptProposedAction();
         return;
@@ -253,7 +253,7 @@ void PlacesPanel::dragMoveEvent(QDragMoveEvent *event)
 
 void PlacesPanel::dropEvent(QDropEvent *event)
 {
-    if (m_favoritesHeaderRect.contains(event->position().toPoint())) {
+    if (m_favoritesDropRect.contains(event->position().toPoint())) {
         const QUrl folder = draggedFavoriteFolder(event->mimeData());
         if (folder.isValid()) {
             DolphinPlacesModelSingleton::instance().placesModel()->addFavorite(folder);
@@ -316,6 +316,8 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
     painter.fillRect(viewport()->rect(), palette().base());
     painter.setRenderHint(QPainter::Antialiasing, true);
     m_aero7NavigationHits.clear();
+    m_favoritesHeaderRect = {};
+    m_favoritesDropRect = {};
 
     const QModelIndex selected = currentIndex();
     const int width = viewport()->width();
@@ -393,6 +395,8 @@ void PlacesPanel::paintEvent(QPaintEvent *event)
             drawItem(child, y, childDisclosures);
             y += rowHeight;
         }
+        if (name == QLatin1String("Favorites"))
+            m_favoritesDropRect = QRect(1, groupRect.top(), qMax(0, width - 2), y - groupRect.top());
     };
 
     QModelIndexList libraries;
