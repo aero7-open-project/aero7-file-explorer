@@ -10,6 +10,7 @@
 #include <QScopedPointer>
 #include <QString>
 #include <QHash>
+#include <QSet>
 #include <QUrl>
 #include <QVector>
 
@@ -64,6 +65,7 @@ private:
     bool m_isEmpty = false;
     bool m_panelsLocked = true; // common-case, panels are locked
     QHash<QString, QString> m_storageNames;
+    QSet<QString> m_managedDriveRoots;
     QVector<Favorite> m_favorites;
 };
 

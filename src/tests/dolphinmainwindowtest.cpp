@@ -15,6 +15,7 @@
 #include "dolphinplacesmodelsingleton.h"
 #include "dolphincontextmenu.h"
 #include "aero7libraries.h"
+#include "aero7storage.h"
 #include <KFilePlacesModel>
 #include "kitemviews/kfileitemmodel.h"
 #include "kitemviews/kfileitemmodelrolesupdater.h"
@@ -96,6 +97,7 @@ private Q_SLOTS:
     void testAero7SystemDriveActivation();
     void testAero7BreadcrumbSurvivesPlacesRefresh();
     void testAero7NoInventedCdPlace();
+    void testAero7ManagedDriveSidebar();
     void testAero7PlacesMenuRejectsInvalidOrForeignIndex();
     void testAero7PlacesMenuUsesNativeStorageCapabilities();
     void testAero7PlacesMenuDoesNotTearDownBookmarks();
@@ -889,6 +891,52 @@ void DolphinMainWindowTest::testAero7NoInventedCdPlace()
     for (int row = 0; row < model->rowCount(); ++row)
         QVERIFY(model->index(row, 0).data(KFilePlacesModel::UrlRole).toUrl()
                 != QUrl::fromLocalFile(oldPath));
+}
+
+void DolphinMainWindowTest::testAero7ManagedDriveSidebar()
+{
+    QString drivePath;
+    QString driveName;
+    for (const auto &drive : Aero7Storage::mounted()) {
+        if (!Aero7Storage::isManagedStartupMount(drive.root)) continue;
+        drivePath = drive.root;
+        driveName = drive.name;
+        break;
+    }
+    if (drivePath.isEmpty()) QSKIP("No mounted Aero7-managed internal disk in this environment");
+
+    auto *panel = m_mainWindow->m_placesPanel;
+    auto *places = qobject_cast<DolphinPlacesModel *>(panel->model());
+    QVERIFY(places);
+    QModelIndex driveIndex;
+    for (int row = 0; row < places->rowCount(); ++row) {
+        const QModelIndex item = places->index(row, 0);
+        if (places->url(item) == QUrl::fromLocalFile(drivePath) && !places->isHidden(item)) {
+            driveIndex = item;
+            break;
+        }
+    }
+    QVERIFY2(driveIndex.isValid(), "Mounted managed disk is missing from the Computer sidebar");
+    QCOMPARE(driveIndex.data(Qt::DisplayRole).toString(), driveName);
+    QCOMPARE(driveIndex.data(KFilePlacesModel::GroupRole).toString(), QStringLiteral("Computer"));
+    QVERIFY(!qvariant_cast<QIcon>(driveIndex.data(Qt::DecorationRole)).isNull());
+
+    m_mainWindow->openDirectories({QUrl::fromLocalFile(QDir::homePath())}, false);
+    m_mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(m_mainWindow.data()));
+    panel->viewport()->update();
+    QTRY_VERIFY([&] {
+        for (const auto &hit : std::as_const(panel->m_aero7NavigationHits))
+            if (hit.index == driveIndex) return true;
+        return false;
+    }());
+    for (const auto &hit : std::as_const(panel->m_aero7NavigationHits)) {
+        if (hit.index != driveIndex) continue;
+        QTest::mouseClick(panel->viewport(), Qt::LeftButton, Qt::NoModifier, hit.rect.center());
+        QTRY_COMPARE(m_mainWindow->activeViewContainer()->url(), QUrl::fromLocalFile(drivePath));
+        return;
+    }
+    QFAIL("Managed disk sidebar hit target disappeared");
 }
 
 void DolphinMainWindowTest::testAero7PlacesMenuRejectsInvalidOrForeignIndex()
