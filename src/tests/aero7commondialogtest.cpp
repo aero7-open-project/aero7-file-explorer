@@ -659,6 +659,22 @@ private Q_SLOTS:
         QVERIFY(!Aero7Storage::visible(QStorageInfo()));
     }
 
+    void onlyExplicitAero7StartupMountsAreVisible()
+    {
+        const QByteArray fstab =
+            "# UUID=ignored /mnt/aero7-comment ext4 defaults,x-aero7-managed 0 0\n"
+            "UUID=data /mnt/aero7-geeked_ass_drive ext4 defaults,nofail,x-gvfs-show,x-aero7-managed 0 0\n"
+            "UUID=other /mnt/ordinary ext4 defaults,x-aero7-managed 0 0\n"
+            "UUID=hidden /mnt/aero7-hidden ext4 defaults 0 0\n"
+            "UUID=escape /mnt/aero7-../private ext4 defaults,x-aero7-managed 0 0\n"
+            "/dev/sdb1 /mnt/aero7-device ext4 defaults,x-aero7-managed 0 0\n";
+        const QSet<QString> managed = Aero7Storage::managedStartupMountRoots(fstab);
+        QCOMPARE(managed, QSet<QString>{QStringLiteral("/mnt/aero7-geeked_ass_drive")});
+        QVERIFY(Aero7Storage::visibleRoot("/mnt/aero7-geeked_ass_drive", "test", managed));
+        QVERIFY(!Aero7Storage::visibleRoot("/mnt/aero7-hidden", "test", managed));
+        QVERIFY(!Aero7Storage::visibleRoot("/mnt/ordinary", "test", managed));
+    }
+
     void computerSystemDriveOpensRoot()
     {
         Aero7ComputerView computer;

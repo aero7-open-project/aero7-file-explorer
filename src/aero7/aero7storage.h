@@ -2,6 +2,9 @@
 #pragma once
 
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QSet>
 #include <QStorageInfo>
 #include <QStringList>
 #include <algorithm>
@@ -9,6 +12,36 @@
 // Private shared presentation policy. No placeholder folders or invented devices.
 namespace Aero7Storage
 {
+inline QSet<QString> managedStartupMountRoots(const QByteArray &fstab)
+{
+    QSet<QString> roots;
+    for (const QByteArray &rawLine : fstab.split('\n')) {
+        const QByteArray line = rawLine.trimmed();
+        if (line.isEmpty() || line.startsWith('#')) continue;
+        const QList<QByteArray> fields = line.simplified().split(' ');
+        if (fields.size() < 4 || !fields.at(0).startsWith("UUID=")) continue;
+        const QString root = QString::fromLocal8Bit(fields.at(1));
+        if (root == QLatin1String("/mnt/aero7-")
+            || !root.startsWith(QLatin1String("/mnt/aero7-"))
+            || QDir::cleanPath(root) != root || QFileInfo(root).path() != QLatin1String("/mnt"))
+            continue;
+        const QList<QByteArray> options = fields.at(3).split(',');
+        if (options.contains("x-aero7-managed")) roots.insert(root);
+    }
+    return roots;
+}
+
+inline QSet<QString> managedStartupMountRoots()
+{
+    QFile fstab(QStringLiteral("/etc/fstab"));
+    return fstab.open(QIODevice::ReadOnly) ? managedStartupMountRoots(fstab.readAll()) : QSet<QString>{};
+}
+
+inline bool isManagedStartupMount(const QString &path)
+{
+    return managedStartupMountRoots().contains(QDir::cleanPath(path));
+}
+
 inline QString sizeText(qint64 bytes)
 {
     if (bytes < 0) return QStringLiteral("Unavailable");
@@ -27,13 +60,19 @@ inline QString sizeText(qint64 bytes)
     return QStringLiteral("%1 %2").arg(value, 0, 'f', value < 10.0 ? 1 : 0).arg(units.at(unit));
 }
 
-inline bool visibleRoot(const QString &path, const QString &user)
+inline bool visibleRoot(const QString &path, const QString &user,
+                        const QSet<QString> &managedRoots)
 {
     const QString root = QDir::cleanPath(path);
-    if (root == QLatin1String("/")) return true;
+    if (root == QLatin1String("/") || managedRoots.contains(root)) return true;
     if (user.isEmpty() || user.contains(QLatin1Char('/'))) return false;
     return root.startsWith(QStringLiteral("/run/media/%1/").arg(user))
         || root.startsWith(QStringLiteral("/media/%1/").arg(user));
+}
+
+inline bool visibleRoot(const QString &path, const QString &user)
+{
+    return visibleRoot(path, user, managedStartupMountRoots());
 }
 
 inline bool visible(const QStorageInfo &storage)
@@ -109,7 +148,8 @@ inline QList<Entry> mounted()
         const bool system = root == QLatin1String("/");
         result.append({volume, root, displayName(volume.name(), system, system ? 0 : ordinal++),
                        system ? QStringLiteral("drive-harddisk-root")
-                              : QStringLiteral("drive-removable-media")});
+                              : isManagedStartupMount(root) ? QStringLiteral("drive-harddisk")
+                                                            : QStringLiteral("drive-removable-media")});
     }
     return result;
 }

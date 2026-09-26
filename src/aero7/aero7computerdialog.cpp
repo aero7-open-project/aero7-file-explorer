@@ -152,7 +152,8 @@ void Aero7ComputerView::refresh()
     QList<Drive> hard;
     QList<Drive> removable;
     for (const auto &entry : Aero7Storage::mounted()) {
-        (entry.root == QLatin1String("/") ? hard : removable).append({entry, {}});
+        (entry.root == QLatin1String("/") || Aero7Storage::isManagedStartupMount(entry.root)
+            ? hard : removable).append({entry, {}});
     }
     auto *devices = findChild<Aero7StorageDevices *>();
     for (const auto &device : devices->unmounted()) {
