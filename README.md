@@ -45,7 +45,7 @@ application. Recycle Bin settings now expose the supported size and deletion
 behavior through the Aero7 settings interface.
 
 The source and package recipe are available on the `beta` branches.
-**Aero7 Beta 2 has NOT publicly released**; remaining bugs and stability tests
+**Aero7 Beta 2 has NOT been publicly released**; remaining bugs and stability tests
 are delaying the launch. The future Beta 2 ISO
 remains a separate, explicitly tested release artifact.
 
